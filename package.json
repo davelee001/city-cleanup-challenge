@@ -43,5 +43,17 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0"
   },
-  "private": true
+  "private": true,
+  "description": "[main 5f6c140] Resolve merge: keep merged README\r fatal: The current branch main has no upstream branch.\r To push the current branch and set the remote as upstream, use",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davelee001/city-cleanup-challenge.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davelee001/city-cleanup-challenge/issues"
+  },
+  "homepage": "https://github.com/davelee001/city-cleanup-challenge#readme"
 }
