@@ -1,6 +1,0 @@
-
-mnemonic: dignity rebel question lounge donkey horror route canyon parade fatigue ten equip yellow soon this win sea bottom flat video lawsuit laptop initial diesel
-derivationPath: m/44'/60'/0'/0/0
-privateKey: 5f0610e084252bc09bb7b920d13b816c934ffd339ce58d4ccae0473f04fe2383
-publicKey: 037ba2efd2764ae89004e75a98395659711fa38ecdba073ed9cc52ed380933bccb
-address: 0x0aF3fF024052F7E336bE14a14d67bbD00BA79Bfd
