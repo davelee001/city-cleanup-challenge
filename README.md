@@ -5,7 +5,7 @@ A simple monorepo containing a React Native (Expo) frontend and a Node.js Expres
 ## Project Structure
 
 - `backend/` — Express server with health endpoint and basic middleware.
-- `backend/city-cleanup-challenge/` — Expo app (React Native) with router-based navigation.
+- `city-cleanup-challenge/` — Expo app (React Native) with router-based navigation.
 
 ## Backend Quick Start
 
@@ -28,7 +28,7 @@ Pop-Location
 ## Frontend Quick Start (Expo)
 
 ```powershell
-Push-Location "D:\PROJECTS\city-cleanup-challenge\backend\city-cleanup-challenge"
+Push-Location "D:\PROJECTS\city-cleanup-challenge\city-cleanup-challenge"
 npm install
 npx expo start
 Pop-Location
