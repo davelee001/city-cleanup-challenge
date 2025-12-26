@@ -8,6 +8,8 @@ function createApp() {
   app.use(cors());
   app.use(morgan('tiny'));
 
+  app.use(express.static('public'));
+
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'city-cleanup-backend' });
   });
