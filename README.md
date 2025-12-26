@@ -23,6 +23,7 @@ Pop-Location
 
 - Health: `GET /health` returns `{ status: "ok" }`.
 - Info: `GET /api/info` returns basic app details.
+- Web: `GET /` returns a sample web page.
 
 ## Frontend Quick Start (Expo)
 
