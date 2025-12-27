@@ -1,0 +1,20 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Expo
+.expo/
+dist/
+.idea/
+*.jks
+*.p12
+*.keystore
+.p8
+*.mobileprovision
+credentials.json
+/ios/Pods/
+/android/.gradle/
+/android/app/build/
+/android/build/
+.DS_Store
