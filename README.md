@@ -21,7 +21,8 @@ npm run health
 Pop-Location
 ```
 
-- Health: `GET /health` returns `{ status: "ok" }`.
+- Health Page: `GET /health` returns an HTML page displaying the backend status.
+- Health Data: `GET /api/health-data` returns `{ status: "ok" }`.
 - Info: `GET /api/info` returns basic app details.
 - Web: `GET /` returns a sample web page.
 
@@ -42,3 +43,6 @@ Pop-Location
 ## License
 
 This project is for demo purposes; add a license if publishing.
+
+---
+*Test commit to verify author.*
