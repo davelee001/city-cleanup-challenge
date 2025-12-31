@@ -11,10 +11,13 @@ function createApp() {
   app.use(express.static('public'));
 
   app.get('/health', (req, res) => {
+<<<<<<< HEAD
     res.sendFile('health.html', { root: 'public' });
   });
 
   app.get('/api/health-data', (req, res) => {
+=======
+>>>>>>> e4dcf7d0725a7d10a4bdf2d352ace95286380ef5
     res.json({ status: 'ok', service: 'city-cleanup-backend' });
   });
 

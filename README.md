@@ -21,10 +21,10 @@ npm run health
 Pop-Location
 ```
 
-- Health Page: `GET /health` returns an HTML page displaying the backend status.
-- Health Data: `GET /api/health-data` returns `{ status: "ok" }`.
-- Info: `GET /api/info` returns basic app details.
-- Web: `GET /` returns a sample web page.
+Health Page: `GET /health` returns an HTML page displaying the backend status.
+Health Data: `GET /api/health-data` returns `{ status: "ok" }`.
+Info: `GET /api/info` returns basic app details.
+Web: `GET /` returns a sample web page.
 
 ## Frontend Quick Start (Expo)
 
@@ -44,7 +44,6 @@ The Expo app includes a sample page (App.js) that displays:
 - A note to check the backend health page for status
 
 This page is styled to match the backend's sample web page and serves as a starting point for further frontend development.
-
 ## Contributing
 
 - Use feature branches and PRs.
@@ -54,5 +53,3 @@ This page is styled to match the backend's sample web page and serves as a start
 
 This project is for demo purposes; add a license if publishing.
 
----
-*Test commit to verify author.*
