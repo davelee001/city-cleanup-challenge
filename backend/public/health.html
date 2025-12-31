@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Status</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 40px; }
+        h1 { color: #333; }
+        .status { padding: 20px; border-radius: 5px; }
+        .ok { background-color: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>Backend Health Status</h1>
+    <div id="status-container"></div>
+
+    <script>
+        fetch('/api/health-data')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('status-container');
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'status ' + (data.status === 'ok' ? 'ok' : '');
+                statusDiv.textContent = `Service: ${data.service}, Status: ${data.status}`;
+                container.appendChild(statusDiv);
+            })
+            .catch(error => {
+                console.error('Error fetching health data:', error);
+                const container = document.getElementById('status-container');
+                container.textContent = 'Error loading health status.';
+            });
+    </script>
+</body>
+</html>
