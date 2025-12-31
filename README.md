@@ -35,6 +35,16 @@ npx expo start
 Pop-Location
 ```
 
+### Sample Frontend Page
+
+The Expo app includes a sample page (App.js) that displays:
+
+- "City Cleanup Challenge" title
+- "Frontend is up and running!" message
+- A note to check the backend health page for status
+
+This page is styled to match the backend's sample web page and serves as a starting point for further frontend development.
+
 ## Contributing
 
 - Use feature branches and PRs.
