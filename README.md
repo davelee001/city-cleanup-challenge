@@ -7,6 +7,16 @@ A simple monorepo containing a React Native (Expo) frontend and a Node.js Expres
 - `backend/` — Express server with health endpoint and basic middleware.
 - `city-cleanup-challenge/` — Expo app (React Native) with router-based navigation.
 
+
+## Authentication Features
+
+### Backend
+
+- `POST /signup` — Register a new user. Send `{ username, password }` in the request body. Returns success or error if username exists.
+- `POST /login` — Log in with existing credentials. Send `{ username, password }` in the request body. Returns success or error if credentials are invalid.
+
+User data is stored in memory for demonstration purposes. No persistent storage is used.
+
 ## Backend Quick Start
 
 Prerequisites: Node.js 18+
@@ -26,6 +36,7 @@ Health Data: `GET /api/health-data` returns `{ status: "ok" }`.
 Info: `GET /api/info` returns basic app details.
 Web: `GET /` returns a sample web page.
 
+
 ## Frontend Quick Start (Expo)
 
 ```powershell
@@ -35,15 +46,15 @@ npx expo start
 Pop-Location
 ```
 
-### Sample Frontend Page
+### Authentication UI
 
-The Expo app includes a sample page (App.js) that displays:
+The Expo app now includes:
 
-- "City Cleanup Challenge" title
-- "Frontend is up and running!" message
-- A note to check the backend health page for status
+- **Sign Up page**: Allows new users to register.
+- **Login page**: Allows registered users to log in.
+- After login, users see a welcome message.
 
-This page is styled to match the backend's sample web page and serves as a starting point for further frontend development.
+Switch between login and signup using the provided links below each form.
 ## Contributing
 
 - Use feature branches and PRs.
