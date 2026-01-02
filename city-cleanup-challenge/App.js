@@ -1,14 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, View, Text, StyleSheet } from 'react-native';
+import Login from './Login';
+import Signup from './Signup';
 
-export default function App() {
+  const [user, setUser] = useState(null);
+  const [showSignup, setShowSignup] = useState(false);
   return (
     <SafeAreaView style={styles.container}>
-      <View>
-        <Text style={styles.title}>City Cleanup Challenge</Text>
-        <Text style={styles.subtitle}>Frontend is up and running!</Text>
-        <Text style={styles.link}>Check the backend health page for status.</Text>
-      </View>
+      {!user ? (
+        showSignup ? (
+          <>
+            <Signup onSignup={() => setShowSignup(false)} />
+            <Text style={styles.switchText} onPress={() => setShowSignup(false)}>
+              Already have an account? Log in
+            </Text>
+          </>
+        ) : (
+          <>
+            <Login onLogin={setUser} />
+            <Text style={styles.switchText} onPress={() => setShowSignup(true)}>
+              Don't have an account? Sign up
+            </Text>
+          </>
+        )
+      ) : (
+        <View>
+          <Text style={styles.title}>City Cleanup Challenge</Text>
+          <Text style={styles.subtitle}>Welcome, {user}!</Text>
+          <Text style={styles.link}>Check the backend health page for status.</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -38,5 +59,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#007bff',
     textAlign: 'center',
+  },
+  switchText: {
+    color: '#007bff',
+    marginTop: 16,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+    fontSize: 16,
   },
 });
