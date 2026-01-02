@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "city-cleanup-challenge",
+    "slug": "city-cleanup-challenge",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

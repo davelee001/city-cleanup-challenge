@@ -3,6 +3,7 @@ import { SafeAreaView, View, Text, StyleSheet } from 'react-native';
 import Login from './Login';
 import Signup from './Signup';
 
+export default function App() {
   const [user, setUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
   return (
