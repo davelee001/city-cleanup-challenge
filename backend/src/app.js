@@ -8,10 +8,34 @@ function createApp() {
 	app.use(express.json());
 	app.use(morgan('dev'));
 
-	// In-memory users array for demonstration
-	const users = [
-		{ username: 'admin', password: 'password' }
-	];
+// In-memory users array for demonstration
+const users = [
+	{ username: 'admin', password: 'password' }
+];
+
+// In-memory posts array for demonstration
+const posts = [];
+
+	// Create a new post
+	app.post('/posts', (req, res) => {
+		const { username, content } = req.body;
+		if (!username || !content) {
+			return res.status(400).json({ success: false, message: 'Username and content required' });
+		}
+		const post = {
+			id: posts.length + 1,
+			username,
+			content,
+			createdAt: new Date().toISOString()
+		};
+		posts.push(post);
+		return res.json({ success: true, post });
+	});
+
+	// Get all posts
+	app.get('/posts', (req, res) => {
+		res.json({ success: true, posts });
+	});
 
 
 	app.post('/signup', (req, res) => {
