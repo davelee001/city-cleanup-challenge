@@ -4,14 +4,26 @@ import { SafeAreaView, View, Text, StyleSheet, Button } from 'react-native';
 import Login from './Login';
 import Signup from './Signup';
 
+
 import Chatbot from './Chatbot';
 import Posts from './Posts';
+import Profile from './Profile';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
   const [showPosts, setShowPosts] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const handleLogout = () => {
+    setUser(null);
+    setShowProfile(false);
+    setShowPosts(false);
+    setShowChatbot(false);
+  };
+  const handleUsernameChange = (newUsername) => {
+    setUser(newUsername);
+  };
   return (
     <SafeAreaView style={styles.container}>
       {!user ? (
@@ -30,6 +42,11 @@ export default function App() {
             </Text>
           </>
         )
+      ) : showProfile ? (
+        <>
+          <Button title="Back to Home" onPress={() => setShowProfile(false)} />
+          <Profile username={user} onLogout={handleLogout} onUsernameChange={handleUsernameChange} />
+        </>
       ) : showChatbot ? (
         <>
           <Button title="Back to Home" onPress={() => setShowChatbot(false)} />
@@ -45,6 +62,7 @@ export default function App() {
           <Text style={styles.title}>City Cleanup Challenge</Text>
           <Text style={styles.subtitle}>Welcome, {user}!</Text>
           <Text style={styles.link}>Check the backend health page for status.</Text>
+          <Button title="Profile" onPress={() => setShowProfile(true)} />
           <Button title="View Posts" onPress={() => setShowPosts(true)} />
           <Button title="Chatbot Guide" onPress={() => setShowChatbot(true)} />
         </View>
