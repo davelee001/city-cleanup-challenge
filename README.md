@@ -1,13 +1,17 @@
 ## Posts Feature
 
+
 ### Backend
 
 - `POST /posts` — Create a new post. Send `{ username, content }` in the request body. Returns the created post.
 - `GET /posts` — Get all posts. Returns an array of posts.
+- `PUT /posts/:id` — Edit a post. Send `{ username, content }` in the request body. Only the post owner can edit.
+- `DELETE /posts/:id` — Delete a post. Send `{ username }` in the request body. Only the post owner can delete.
+
 
 ### Frontend
 
-- **Posts Screen**: After login, users can view all posts and create new posts. The posts screen communicates with the backend `/posts` endpoints.
+- **Posts Screen**: After login, users can view, create, edit, and delete their own posts. The posts screen communicates with the backend `/posts` endpoints.
 
 # City Cleanup Challenge
 
@@ -37,7 +41,7 @@ A simple monorepo containing a React Native (Expo) frontend and a Node.js Expres
 - `POST /signup` — Register a new user. Send `{ username, password }` in the request body. Returns success or error if username exists.
 - `POST /login` — Log in with existing credentials. Send `{ username, password }` in the request body. Returns success or error if credentials are invalid.
 
-User data is stored in memory for demonstration purposes. No persistent storage is used.
+User and post data are now stored persistently using SQLite. The backend uses a local SQLite database file (`backend/city-cleanup.db`) for all user and post data.
 
 ## Backend Quick Start
 
