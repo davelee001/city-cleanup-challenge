@@ -14,9 +14,24 @@ export default function Signup({ onSignup }) {
       setError('Please enter both username and password.');
       return;
     }
-    // TODO: Connect to backend
-    // onSignup(username);
-    setSuccess('Registration successful! You can now log in.');
+    try {
+      const response = await fetch('http://localhost:3000/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSuccess('Registration successful! You can now log in.');
+        if (onSignup) onSignup(username);
+      } else {
+        setError(data.message || 'Signup failed.');
+      }
+    } catch (err) {
+      setError('Network error.');
+    }
   };
 
   return (
