@@ -8,6 +8,17 @@ A simple monorepo containing a React Native (Expo) frontend and a Node.js Expres
 - `city-cleanup-challenge/` — Expo app (React Native) with router-based navigation.
 
 
+
+## Chatbot Feature
+
+### Backend
+
+- `POST /chatbot` — Send `{ message }` in the request body. Returns a chatbot reply to guide users, especially on how to make posts.
+
+### Frontend
+
+- **Chatbot Guide**: After login, users can access a chatbot UI that provides guidance on how to make posts and answers basic questions. The chatbot communicates with the backend `/chatbot` endpoint.
+
 ## Authentication Features
 
 ### Backend
