@@ -8,13 +8,27 @@ export default function Login({ onLogin }) {
 
   const handleLogin = async () => {
     setError('');
-    // TODO: Connect to backend
     if (!username || !password) {
       setError('Please enter both username and password.');
       return;
     }
-    // Placeholder for backend call
-    // onLogin(username);
+    try {
+      const response = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        onLogin(username);
+      } else {
+        setError(data.message || 'Login failed.');
+      }
+    } catch (err) {
+      setError('Network error.');
+    }
   };
 
   return (
