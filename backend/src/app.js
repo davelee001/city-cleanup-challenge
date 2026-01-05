@@ -1,3 +1,56 @@
+
+	// Get user profile by username
+	app.get('/profile/:username', (req, res) => {
+		const { username } = req.params;
+		db.get('SELECT username FROM users WHERE username = ?', [username], (err, user) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			if (!user) {
+				return res.status(404).json({ success: false, message: 'User not found' });
+			}
+			res.json({ success: true, user });
+		});
+	});
+
+	// Update user profile (username or password)
+	app.put('/profile/:username', (req, res) => {
+		const { username } = req.params;
+		const { newUsername, newPassword } = req.body;
+		if (!newUsername && !newPassword) {
+			return res.status(400).json({ success: false, message: 'No update fields provided' });
+		}
+		db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			if (!user) {
+				return res.status(404).json({ success: false, message: 'User not found' });
+			}
+			let query = 'UPDATE users SET ';
+			const params = [];
+			if (newUsername) {
+				query += 'username = ?';
+				params.push(newUsername);
+			}
+			if (newPassword) {
+				if (params.length) query += ', ';
+				query += 'password = ?';
+				params.push(newPassword);
+			}
+			query += ' WHERE username = ?';
+			params.push(username);
+			db.run(query, params, function (err2) {
+				if (err2) {
+					if (err2.code === 'SQLITE_CONSTRAINT') {
+						return res.status(409).json({ success: false, message: 'Username already exists' });
+					}
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				res.json({ success: true });
+			});
+		});
+	});
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
