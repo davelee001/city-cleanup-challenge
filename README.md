@@ -50,9 +50,11 @@ Pop-Location
 
 The Expo app now includes:
 
-- **Sign Up page**: Allows new users to register.
-- **Login page**: Allows registered users to log in.
+- **Sign Up page**: Allows new users to register (sends data to backend `/signup` endpoint).
+- **Login page**: Allows registered users to log in (sends data to backend `/login` endpoint).
 - After login, users see a welcome message.
+
+The frontend is now fully connected to the backend API for authentication. All registration and login actions are performed via HTTP requests to the backend server.
 
 Switch between login and signup using the provided links below each form.
 ## Contributing
