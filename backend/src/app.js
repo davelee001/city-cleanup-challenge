@@ -8,13 +8,10 @@ function createApp() {
 	app.use(express.json());
 	app.use(morgan('dev'));
 
-// In-memory users array for demonstration
-const users = [
-	{ username: 'admin', password: 'password' }
-];
 
-// In-memory posts array for demonstration
-const posts = [];
+// SQLite database
+const db = require('./db');
+
 
 	// Create a new post
 	app.post('/posts', (req, res) => {
@@ -22,20 +19,34 @@ const posts = [];
 		if (!username || !content) {
 			return res.status(400).json({ success: false, message: 'Username and content required' });
 		}
-		const post = {
-			id: posts.length + 1,
-			username,
-			content,
-			createdAt: new Date().toISOString()
-		};
-		posts.push(post);
-		return res.json({ success: true, post });
+		const createdAt = new Date().toISOString();
+		db.run(
+			'INSERT INTO posts (username, content, createdAt) VALUES (?, ?, ?)',
+			[username, content, createdAt],
+			function (err) {
+				if (err) {
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				db.get('SELECT * FROM posts WHERE id = ?', [this.lastID], (err2, post) => {
+					if (err2) {
+						return res.status(500).json({ success: false, message: 'Database error' });
+					}
+					return res.json({ success: true, post });
+				});
+			}
+		);
 	});
 
 	// Get all posts
 	app.get('/posts', (req, res) => {
-		res.json({ success: true, posts });
+		db.all('SELECT * FROM posts ORDER BY createdAt DESC', [], (err, rows) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			res.json({ success: true, posts: rows });
+		});
 	});
+
 
 
 	app.post('/signup', (req, res) => {
@@ -43,20 +54,36 @@ const posts = [];
 		if (!username || !password) {
 			return res.status(400).json({ success: false, message: 'Username and password required' });
 		}
-		if (users.find(u => u.username === username)) {
-			return res.status(409).json({ success: false, message: 'Username already exists' });
-		}
-		users.push({ username, password });
-		return res.json({ success: true, username });
+		db.run(
+			'INSERT INTO users (username, password) VALUES (?, ?)',
+			[username, password],
+			function (err) {
+				if (err) {
+					if (err.code === 'SQLITE_CONSTRAINT') {
+						return res.status(409).json({ success: false, message: 'Username already exists' });
+					}
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				return res.json({ success: true, username });
+			}
+		);
 	});
 
 	app.post('/login', (req, res) => {
 		const { username, password } = req.body;
-		const user = users.find(u => u.username === username && u.password === password);
-		if (user) {
-			return res.json({ success: true, username });
-		}
-		return res.status(401).json({ success: false, message: 'Invalid credentials' });
+		db.get(
+			'SELECT * FROM users WHERE username = ? AND password = ?',
+			[username, password],
+			(err, user) => {
+				if (err) {
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				if (user) {
+					return res.json({ success: true, username });
+				}
+				return res.status(401).json({ success: false, message: 'Invalid credentials' });
+			}
+		);
 	});
 
 
