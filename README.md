@@ -1,3 +1,14 @@
+## Posts Feature
+
+### Backend
+
+- `POST /posts` — Create a new post. Send `{ username, content }` in the request body. Returns the created post.
+- `GET /posts` — Get all posts. Returns an array of posts.
+
+### Frontend
+
+- **Posts Screen**: After login, users can view all posts and create new posts. The posts screen communicates with the backend `/posts` endpoints.
+
 # City Cleanup Challenge
 
 A simple monorepo containing a React Native (Expo) frontend and a Node.js Express backend.
