@@ -35,6 +35,21 @@ function createApp() {
 		return res.status(401).json({ success: false, message: 'Invalid credentials' });
 	});
 
+
+	// Chatbot guidance endpoint
+	app.post('/chatbot', (req, res) => {
+		const { message } = req.body;
+		let reply = '';
+		if (!message || /how.*post|make.*post|create.*post/i.test(message)) {
+			reply = 'To make a post, go to the main screen and tap the "+" button. Fill in the details and submit!';
+		} else if (/hello|hi|hey/i.test(message)) {
+			reply = 'Hello! Ask me how to make a post or any other question about using the app.';
+		} else {
+			reply = 'I can help you with making posts. Try asking: "How do I make a post?"';
+		}
+		res.json({ reply });
+	});
+
 	// Health check route
 	app.get('/health', (req, res) => {
 		res.send('OK');
