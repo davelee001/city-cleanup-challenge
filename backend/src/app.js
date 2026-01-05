@@ -1,3 +1,59 @@
+	// Edit a post (only by owner)
+	app.put('/posts/:id', (req, res) => {
+		const { id } = req.params;
+		const { username, content } = req.body;
+		if (!username || !content) {
+			return res.status(400).json({ success: false, message: 'Username and content required' });
+		}
+		db.get('SELECT * FROM posts WHERE id = ?', [id], (err, post) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			if (!post) {
+				return res.status(404).json({ success: false, message: 'Post not found' });
+			}
+			if (post.username !== username) {
+				return res.status(403).json({ success: false, message: 'Not authorized' });
+			}
+			db.run('UPDATE posts SET content = ? WHERE id = ?', [content, id], function (err2) {
+				if (err2) {
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				db.get('SELECT * FROM posts WHERE id = ?', [id], (err3, updatedPost) => {
+					if (err3) {
+						return res.status(500).json({ success: false, message: 'Database error' });
+					}
+					res.json({ success: true, post: updatedPost });
+				});
+			});
+		});
+	});
+
+	// Delete a post (only by owner)
+	app.delete('/posts/:id', (req, res) => {
+		const { id } = req.params;
+		const { username } = req.body;
+		if (!username) {
+			return res.status(400).json({ success: false, message: 'Username required' });
+		}
+		db.get('SELECT * FROM posts WHERE id = ?', [id], (err, post) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			if (!post) {
+				return res.status(404).json({ success: false, message: 'Post not found' });
+			}
+			if (post.username !== username) {
+				return res.status(403).json({ success: false, message: 'Not authorized' });
+			}
+			db.run('DELETE FROM posts WHERE id = ?', [id], function (err2) {
+				if (err2) {
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				res.json({ success: true });
+			});
+		});
+	});
 
 	// Get user profile by username
 	app.get('/profile/:username', (req, res) => {
