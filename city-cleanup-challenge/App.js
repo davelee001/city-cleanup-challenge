@@ -1,11 +1,14 @@
+
 import React, { useState } from 'react';
-import { SafeAreaView, View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView, View, Text, StyleSheet, Button } from 'react-native';
 import Login from './Login';
 import Signup from './Signup';
+import Chatbot from './Chatbot';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
   return (
     <SafeAreaView style={styles.container}>
       {!user ? (
@@ -24,11 +27,17 @@ export default function App() {
             </Text>
           </>
         )
+      ) : showChatbot ? (
+        <>
+          <Button title="Back to Home" onPress={() => setShowChatbot(false)} />
+          <Chatbot />
+        </>
       ) : (
         <View>
           <Text style={styles.title}>City Cleanup Challenge</Text>
           <Text style={styles.subtitle}>Welcome, {user}!</Text>
           <Text style={styles.link}>Check the backend health page for status.</Text>
+          <Button title="Chatbot Guide" onPress={() => setShowChatbot(true)} />
         </View>
       )}
     </SafeAreaView>
