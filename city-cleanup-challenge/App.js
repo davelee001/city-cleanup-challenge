@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, Button } from 'react-native';
 import Login from './Login';
 import Signup from './Signup';
-
-
 import Chatbot from './Chatbot';
 import Posts from './Posts';
 import Profile from './Profile';
+import Events from './Events';
+import EventMap from './EventMap';
+import Progress from './Progress';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -15,14 +16,31 @@ export default function App() {
   const [showChatbot, setShowChatbot] = useState(false);
   const [showPosts, setShowPosts] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showEvents, setShowEvents] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
+  
   const handleLogout = () => {
     setUser(null);
     setShowProfile(false);
     setShowPosts(false);
     setShowChatbot(false);
+    setShowEvents(false);
+    setShowMap(false);
+    setShowProgress(false);
   };
+  
   const handleUsernameChange = (newUsername) => {
     setUser(newUsername);
+  };
+
+  const resetViews = () => {
+    setShowProfile(false);
+    setShowPosts(false);
+    setShowChatbot(false);
+    setShowEvents(false);
+    setShowMap(false);
+    setShowProgress(false);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -57,14 +75,34 @@ export default function App() {
           <Button title="Back to Home" onPress={() => setShowPosts(false)} />
           <Posts username={user} />
         </>
+      ) : showEvents ? (
+        <>
+          <Button title="Back to Home" onPress={() => setShowEvents(false)} />
+          <Events username={user} onShowMap={() => { setShowEvents(false); setShowMap(true); }} />
+        </>
+      ) : showMap ? (
+        <>
+          <Button title="Back to Events" onPress={() => { setShowMap(false); setShowEvents(true); }} />
+          <EventMap username={user} />
+        </>
+      ) : showProgress ? (
+        <>
+          <Button title="Back to Home" onPress={() => setShowProgress(false)} />
+          <Progress username={user} />
+        </>
       ) : (
         <View>
           <Text style={styles.title}>City Cleanup Challenge</Text>
           <Text style={styles.subtitle}>Welcome, {user}!</Text>
-          <Text style={styles.link}>Check the backend health page for status.</Text>
-          <Button title="Profile" onPress={() => setShowProfile(true)} />
-          <Button title="View Posts" onPress={() => setShowPosts(true)} />
-          <Button title="Chatbot Guide" onPress={() => setShowChatbot(true)} />
+          <Text style={styles.description}>Join cleanup events in your area and make a difference!</Text>
+          
+          <View style={styles.mainButtons}>
+            <Button title="🗺️ Events & Map" onPress={() => setShowEvents(true)} />
+            <Button title="📊 My Progress" onPress={() => setShowProgress(true)} />
+            <Button title="💬 Posts" onPress={() => setShowPosts(true)} />
+            <Button title="🤖 Chatbot Guide" onPress={() => setShowChatbot(true)} />
+            <Button title="👤 Profile" onPress={() => setShowProfile(true)} />
+          </View>
         </View>
       )}
     </SafeAreaView>
@@ -91,6 +129,16 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 8,
     textAlign: 'center',
+  },
+  description: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  mainButtons: {
+    width: '100%',
+    gap: 12,
   },
   link: {
     fontSize: 16,
