@@ -5,6 +5,14 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "This app needs location access to help you find and check into cleanup events near you."
+        }
+      ]
+    ],
     "web": {
       "bundler": "metro"
     }
