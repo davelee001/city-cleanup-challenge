@@ -1,3 +1,17 @@
+## Backend Testing
+
+Automated tests are provided for backend API endpoints using Jest and Supertest.
+
+To run the tests:
+
+```powershell
+Push-Location "D:\PROJECTS\city-cleanup-challenge\backend"
+npm test
+Pop-Location
+```
+
+Tests cover authentication, health check, and basic API functionality.
+
 ## Posts Feature
 
 
