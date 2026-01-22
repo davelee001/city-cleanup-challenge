@@ -22,6 +22,17 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 - **User Profiles**: Manage your account and track personal progress
 - **Chatbot Guide**: Get help with app features and cleanup tips
 
+### 📊 Advanced Dashboard
+- **Real-time Analytics**: Live charts with auto-updating data visualization
+- **Interactive Maps**: Oil field locations with status indicators
+- **Dark/Light Mode**: Customizable theme switching for better UX
+- **Data Export**: Download reports in PDF, Excel, or CSV formats
+- **Smart Filtering**: Advanced search and filter capabilities
+- **Toast Notifications**: Real-time feedback for user actions
+- **PWA Support**: Offline mode with service worker caching
+- **Loading States**: Skeleton loaders for smooth user experience
+- **Mobile Responsive**: Optimized for all screen sizes
+
 ## Project Structure
 
 - `backend/` — Express server with SQLite database, location APIs, and RESTful endpoints
@@ -62,6 +73,7 @@ Pop-Location
 - **💬 Posts** — Community discussions and sharing
 - **🤖 Chatbot Guide** — Get help and guidance
 - **👤 Profile** — Manage account settings
+- **📈 Dashboard** — Advanced analytics and data visualization
 
 ### Event Management
 - Create events with GPS coordinates
@@ -130,7 +142,9 @@ Tests cover authentication, event management, check-ins, and API functionality.
 3. **Create Events** — Organize your own cleanup events
 4. **Check In** — Use GPS to check into events you attend
 5. **Track Progress** — Log waste collected and environmental impact
-6. **Share & Connect** — Post about your experiences
+6. **View Dashboard** — Analyze data with real-time charts and maps
+7. **Export Reports** — Download your data in PDF, Excel, or CSV
+8. **Share & Connect** — Post about your experiences
 
 ## 🌍 Environmental Impact
 
@@ -138,7 +152,36 @@ Track meaningful metrics:
 - **Waste Collected** — Total weight in kg across all events
 - **Event Participation** — Number of cleanup events attended
 - **Community Impact** — Collective progress by location
-- **Personal Growth** — Your cleanup journey over time
+- **� Dashboard Features
+
+The advanced dashboard provides comprehensive data visualization and analytics:
+
+### Real-time Analytics
+- **Live Charts**: Auto-updating visualizations with Chart.js
+- **Data Streaming**: Real-time updates every 3 seconds
+- **Multiple Chart Types**: Bar charts, line graphs, and custom visualizations
+
+### Interactive Mapping
+- **Oil Field Locations**: Visual markers for cleanup sites
+- **Status Indicators**: Active, Operational, Maintenance states
+- **GPS Coordinates**: Precise location tracking
+- **Custom Markers**: Color-coded location status
+
+### User Experience
+- **Dark/Light Mode**: Theme toggle for accessibility
+- **Toast Notifications**: Non-intrusive real-time feedback
+- **Loading Skeletons**: Smooth placeholder animations
+- **Mobile Responsive**: Adapts to all screen sizes
+
+### Data Management
+- **Search Functionality**: Real-time search across records
+- **Advanced Filters**: Multiple filter options (Active, Date, Priority, Status)
+- **Export Options**: Download data as PDF, Excel, or CSV
+- **PWA Capabilities**: Offline support with service worker caching
+
+For detailed dashboard documentation, see [DASHBOARD_README.md](city-cleanup-challenge/DASHBOARD_README.md)
+
+## �Personal Growth** — Your cleanup journey over time
 
 ## 💻 Tech Stack
 
@@ -146,6 +189,11 @@ Track meaningful metrics:
 - React Native (Expo)
 - expo-location (GPS/geolocation)
 - react-native-maps (Interactive maps)
+- Chart.js & D3.js (Data visualization)
+- React Hot Toast (Notifications)
+- jsPDF & XLSX (Data export)
+- Leaflet (Advanced mapping)
+- Service Workers (PWA/offline support)
 - Modern UI components
 
 ### Backend
