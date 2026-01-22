@@ -9,6 +9,7 @@ import Profile from './Profile';
 import Events from './Events';
 import EventMap from './EventMap';
 import Progress from './Progress';
+import Dashboard from './Dashboard';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -19,6 +20,7 @@ export default function App() {
   const [showEvents, setShowEvents] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
   
   const handleLogout = () => {
     setUser(null);
