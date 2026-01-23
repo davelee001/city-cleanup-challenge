@@ -22,7 +22,7 @@ export default function Login({ onLogin }) {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        onLogin(username);
+        onLogin(username, data.user?.role || 'user');
       } else {
         setError(data.message || 'Login failed.');
       }

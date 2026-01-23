@@ -7,14 +7,22 @@ import LoadingState from './components/LoadingState';
 import SearchFilter from './components/SearchFilter';
 import DataExport from './components/DataExport';
 
-const Dashboard = () => {
+const Dashboard = ({ username, userRole, onAdminPanel }) => {
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({});
   const [chartData, setChartData] = useState(null);
+  const [adminAnalytics, setAdminAnalytics] = useState(null);
+  const [systemStats, setSystemStats] = useState({
+    totalEvents: 0,
+    activeEvents: 0,
+    totalUsers: 0,
+    totalWaste: 0
+  });
 
   const theme = darkMode ? styles.darkTheme : styles.lightTheme;
+  const isAdmin = userRole === 'admin';
 
   // Simulate real-time data updates
   useEffect(() => {
@@ -24,9 +32,59 @@ const Dashboard = () => {
         ...prev,
         timestamp: new Date()
       }));
+      
+      // Fetch system stats for admin users
+      if (isAdmin) {
+        fetchSystemStats();
+      }
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAdmin]);
+
+  // Fetch admin analytics on component mount
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAdminAnalytics();
+      fetchSystemStats();
+    }
+  }, [isAdmin]);
+
+  const fetchAdminAnalytics = async () => {
+    if (!username || !isAdmin) return;
+    
+    try {
+      const response = await fetch(`http://localhost:3000/admin/analytics?username=${username}`);
+      const data = await response.json();
+      if (data.success) {
+        setAdminAnalytics(data.analytics);
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin analytics:', error);
+    }
+  };
+
+  const fetchSystemStats = async () => {
+    try {
+      // Simulate API calls for system stats
+      const statsPromises = [
+        fetch('http://localhost:3000/events').then(r => r.json()),
+        fetch(`http://localhost:3000/admin/analytics?username=${username}`).then(r => r.json())
+      ];
+      
+      const [eventsData, analyticsData] = await Promise.all(statsPromises);
+      
+      if (eventsData.success && analyticsData.success) {
+        setSystemStats({
+          totalEvents: analyticsData.analytics.eventStats?.totalEvents || 0,
+          activeEvents: analyticsData.analytics.eventStats?.activeEvents || 0,
+          totalUsers: analyticsData.analytics.userStats?.totalUsers || 0,
+          totalWaste: analyticsData.analytics.progressStats?.totalWaste || 0
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch system stats:', error);
+    }
+  };
 
   const handleExport = (format) => {
     setLoading(true);
@@ -56,12 +114,22 @@ const Dashboard = () => {
       {/* Header with Dark Mode Toggle */}
       <View style={[styles.header, theme.header]}>
         <Text style={[styles.title, theme.text]}>Dashboard</Text>
-        <View style={styles.themeToggle}>
-          <Text style={[theme.text, { marginRight: 10 }]}>Dark Mode</Text>
-          <Switch
-            value={darkMode}
-            onValueChange={toggleDarkMode}
-          />
+        <View style={styles.headerControls}>
+          {isAdmin && (
+            <TouchableOpacity 
+              style={styles.adminButton}
+              onPress={onAdminPanel}
+            >
+              <Text style={styles.adminButtonText}>⚙️ Admin Panel</Text>
+            </TouchableOpacity>
+          )}
+          <View style={styles.themeToggle}>
+            <Text style={[theme.text, { marginRight: 10 }]}>Dark Mode</Text>
+            <Switch
+              value={darkMode}
+              onValueChange={toggleDarkMode}
+            />
+          </View>
         </View>
       </View>
 
@@ -76,6 +144,58 @@ const Dashboard = () => {
 
       {/* Loading State */}
       {loading && <LoadingState theme={theme} />}
+
+      {/* Admin Analytics Section */}
+      {isAdmin && (
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, theme.text]}>System Overview</Text>
+          <View style={styles.statsGrid}>
+            <View style={[styles.statCard, theme.card]}>
+              <Text style={styles.statNumber}>{systemStats.totalUsers}</Text>
+              <Text style={[styles.statLabel, theme.text]}>Total Users</Text>
+              <Text style={[styles.statChange, { color: '#28a745' }]}>+12% this week</Text>
+            </View>
+            <View style={[styles.statCard, theme.card]}>
+              <Text style={styles.statNumber}>{systemStats.totalEvents}</Text>
+              <Text style={[styles.statLabel, theme.text]}>Total Events</Text>
+              <Text style={[styles.statChange, { color: '#28a745' }]}>+8% this month</Text>
+            </View>
+            <View style={[styles.statCard, theme.card]}>
+              <Text style={styles.statNumber}>{systemStats.activeEvents}</Text>
+              <Text style={[styles.statLabel, theme.text]}>Active Events</Text>
+              <Text style={[styles.statChange, { color: '#ffc107' }]}>Real-time</Text>
+            </View>
+            <View style={[styles.statCard, theme.card]}>
+              <Text style={styles.statNumber}>{systemStats.totalWaste.toFixed(1)} kg</Text>
+              <Text style={[styles.statLabel, theme.text]}>Waste Collected</Text>
+              <Text style={[styles.statChange, { color: '#28a745' }]}>+{(systemStats.totalWaste * 0.15).toFixed(1)} kg this week</Text>
+            </View>
+          </View>
+          
+          {adminAnalytics?.recentActivity && (
+            <View style={[styles.card, theme.card]}>
+              <Text style={[styles.cardTitle, theme.text]}>Recent Admin Activity</Text>
+              <View style={styles.activityList}>
+                {adminAnalytics.recentActivity.slice(0, 3).map((activity, index) => (
+                  <View key={index} style={styles.activityItem}>
+                    <Text style={[styles.activityUser, theme.text]}>{activity.username}</Text>
+                    <Text style={[styles.activityAction, theme.text]}>{activity.action}</Text>
+                    <Text style={[styles.activityTime, theme.text]}>
+                      {new Date(activity.timestamp).toLocaleTimeString()}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <TouchableOpacity 
+                style={styles.viewMoreButton}
+                onPress={onAdminPanel}
+              >
+                <Text style={styles.viewMoreText}>View Full Admin Panel →</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* Real-time Charts */}
       <View style={[styles.card, theme.card]}>
@@ -118,6 +238,23 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderBottomWidth: 1,
   },
+  headerControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  adminButton: {
+    backgroundColor: '#dc3545',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  adminButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -128,6 +265,81 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  statCard: {
+    width: '48%',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#007bff',
+  },
+  statLabel: {
+    fontSize: 14,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  statChange: {
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  activityList: {
+    marginVertical: 8,
+  },
+  activityItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  activityUser: {
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+  },
+  activityAction: {
+    fontSize: 12,
+    flex: 2,
+    textAlign: 'center',
+  },
+  activityTime: {
+    fontSize: 11,
+    flex: 1,
+    textAlign: 'right',
+  },
+  viewMoreButton: {
+    marginTop: 12,
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  viewMoreText: {
+    color: '#007bff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   card: {
     borderRadius: 12,

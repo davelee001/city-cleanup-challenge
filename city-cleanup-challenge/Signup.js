@@ -25,7 +25,7 @@ export default function Signup({ onSignup }) {
       const data = await response.json();
       if (response.ok && data.success) {
         setSuccess('Registration successful! You can now log in.');
-        if (onSignup) onSignup(username);
+        if (onSignup) onSignup(username, data.user?.role || 'user');
       } else {
         setError(data.message || 'Signup failed.');
       }

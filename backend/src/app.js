@@ -1,4 +1,104 @@
-	// Edit a post (only by owner)
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const db = require('./db');
+
+// Middleware to check if user is admin
+function requireAdmin(req, res, next) {
+	const { username } = req.body;
+	if (!username) {
+		return res.status(401).json({ success: false, message: 'Authentication required' });
+	}
+	
+	db.get('SELECT role FROM users WHERE username = ?', [username], (err, user) => {
+		if (err || !user || user.role !== 'admin') {
+			return res.status(403).json({ success: false, message: 'Admin access required' });
+		}
+		next();
+	});
+}
+
+function createApp() {
+	const app = express();
+	app.use(cors());
+	app.use(express.json());
+	app.use(morgan('dev'));
+
+	// User authentication endpoints
+	app.post('/signup', (req, res) => {
+		const { username, password } = req.body;
+		if (!username || !password) {
+			return res.status(400).json({ success: false, message: 'Username and password required' });
+		}
+		const role = 'user'; // Default role for new users
+		db.run(
+			'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+			[username, password, role],
+			function (err) {
+				if (err) {
+					return res.status(400).json({ success: false, message: 'Username already exists' });
+				}
+				res.json({ success: true, user: { username, role } });
+			}
+		);
+	});
+
+	app.post('/login', (req, res) => {
+		const { username, password } = req.body;
+		if (!username || !password) {
+			return res.status(400).json({ success: false, message: 'Username and password required' });
+		}
+		db.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, user) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			if (!user) {
+				return res.status(401).json({ success: false, message: 'Invalid credentials' });
+			}
+			res.json({ success: true, user: { username: user.username, role: user.role } });
+		});
+	});
+
+	// Posts endpoints
+	app.post('/posts', (req, res) => {
+		const { username, content } = req.body;
+		if (!username || !content) {
+			return res.status(400).json({ success: false, message: 'Username and content required' });
+		}
+		const createdAt = new Date().toISOString();
+		db.run(
+			'INSERT INTO posts (username, content, createdAt) VALUES (?, ?, ?)',
+			[username, content, createdAt],
+			function (err) {
+				if (err) {
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				// Track post creation activity
+				db.run(
+					'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
+					['post_created', username, JSON.stringify({ postId: this.lastID })],
+					() => {} // Ignore analytics errors
+				);
+				
+				db.get('SELECT * FROM posts WHERE id = ?', [this.lastID], (err2, post) => {
+					if (err2) {
+						return res.status(500).json({ success: false, message: 'Database error' });
+					}
+					return res.json({ success: true, post });
+				});
+			}
+		);
+	});
+
+	app.get('/posts', (req, res) => {
+		db.all('SELECT * FROM posts ORDER BY createdAt DESC', (err, posts) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			res.json({ success: true, posts });
+		});
+	});
+
 	app.put('/posts/:id', (req, res) => {
 		const { id } = req.params;
 		const { username, content } = req.body;
@@ -19,17 +119,11 @@
 				if (err2) {
 					return res.status(500).json({ success: false, message: 'Database error' });
 				}
-				db.get('SELECT * FROM posts WHERE id = ?', [id], (err3, updatedPost) => {
-					if (err3) {
-						return res.status(500).json({ success: false, message: 'Database error' });
-					}
-					res.json({ success: true, post: updatedPost });
-				});
+				res.json({ success: true });
 			});
 		});
 	});
 
-	// Delete a post (only by owner)
 	app.delete('/posts/:id', (req, res) => {
 		const { id } = req.params;
 		const { username } = req.body;
@@ -55,185 +149,27 @@
 		});
 	});
 
-	// Get user profile by username
-	app.get('/profile/:username', (req, res) => {
-		const { username } = req.params;
-		db.get('SELECT username FROM users WHERE username = ?', [username], (err, user) => {
-			if (err) {
-				return res.status(500).json({ success: false, message: 'Database error' });
-			}
-			if (!user) {
-				return res.status(404).json({ success: false, message: 'User not found' });
-			}
-			res.json({ success: true, user });
-		});
-	});
-
-	// Update user profile (username or password)
-	app.put('/profile/:username', (req, res) => {
-		const { username } = req.params;
-		const { newUsername, newPassword } = req.body;
-		if (!newUsername && !newPassword) {
-			return res.status(400).json({ success: false, message: 'No update fields provided' });
-		}
-		db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
-			if (err) {
-				return res.status(500).json({ success: false, message: 'Database error' });
-			}
-			if (!user) {
-				return res.status(404).json({ success: false, message: 'User not found' });
-			}
-			let query = 'UPDATE users SET ';
-			const params = [];
-			if (newUsername) {
-				query += 'username = ?';
-				params.push(newUsername);
-			}
-			if (newPassword) {
-				if (params.length) query += ', ';
-				query += 'password = ?';
-				params.push(newPassword);
-			}
-			query += ' WHERE username = ?';
-			params.push(username);
-			db.run(query, params, function (err2) {
-				if (err2) {
-					if (err2.code === 'SQLITE_CONSTRAINT') {
-						return res.status(409).json({ success: false, message: 'Username already exists' });
-					}
-					return res.status(500).json({ success: false, message: 'Database error' });
-				}
-				res.json({ success: true });
-			});
-		});
-	});
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-
-function createApp() {
-	const app = express();
-	app.use(cors());
-	app.use(express.json());
-	app.use(morgan('dev'));
-
-
-// SQLite database
-const db = require('./db');
-
-
-	// Create a new post
-	app.post('/posts', (req, res) => {
-		const { username, content } = req.body;
-		if (!username || !content) {
-			return res.status(400).json({ success: false, message: 'Username and content required' });
-		}
-		const createdAt = new Date().toISOString();
-		db.run(
-			'INSERT INTO posts (username, content, createdAt) VALUES (?, ?, ?)',
-			[username, content, createdAt],
-			function (err) {
-				if (err) {
-					return res.status(500).json({ success: false, message: 'Database error' });
-				}
-				db.get('SELECT * FROM posts WHERE id = ?', [this.lastID], (err2, post) => {
-					if (err2) {
-						return res.status(500).json({ success: false, message: 'Database error' });
-					}
-					return res.json({ success: true, post });
-				});
-			}
-		);
-	});
-
-	// Get all posts
-	app.get('/posts', (req, res) => {
-		db.all('SELECT * FROM posts ORDER BY createdAt DESC', [], (err, rows) => {
-			if (err) {
-				return res.status(500).json({ success: false, message: 'Database error' });
-			}
-			res.json({ success: true, posts: rows });
-		});
-	});
-
-
-
-	app.post('/signup', (req, res) => {
-		const { username, password } = req.body;
-		if (!username || !password) {
-			return res.status(400).json({ success: false, message: 'Username and password required' });
-		}
-		db.run(
-			'INSERT INTO users (username, password) VALUES (?, ?)',
-			[username, password],
-			function (err) {
-				if (err) {
-					if (err.code === 'SQLITE_CONSTRAINT') {
-						return res.status(409).json({ success: false, message: 'Username already exists' });
-					}
-					return res.status(500).json({ success: false, message: 'Database error' });
-				}
-				return res.json({ success: true, username });
-			}
-		);
-	});
-
-	app.post('/login', (req, res) => {
-		const { username, password } = req.body;
-		db.get(
-			'SELECT * FROM users WHERE username = ? AND password = ?',
-			[username, password],
-			(err, user) => {
-				if (err) {
-					return res.status(500).json({ success: false, message: 'Database error' });
-				}
-				if (user) {
-					return res.json({ success: true, username });
-				}
-				return res.status(401).json({ success: false, message: 'Invalid credentials' });
-			}
-		);
-	});
-
-
-	// Chatbot guidance endpoint
-	app.post('/chatbot', (req, res) => {
-		const { message } = req.body;
-		let reply = '';
-		if (!message) {
-			reply = 'Hi! I can help you with posts, profiles, and using the app. Try asking: "How do I make a post?"';
-		} else if (/how.*post|make.*post|create.*post/i.test(message)) {
-			reply = 'To make a post, go to the main screen and tap the "+" button. Fill in the details and submit!';
-		} else if (/edit.*post|change.*post|update.*post/i.test(message)) {
-			reply = 'To edit your post, go to the posts screen, find your post, and tap the edit button. Only your own posts can be edited.';
-		} else if (/delete.*post|remove.*post/i.test(message)) {
-			reply = 'To delete your post, go to the posts screen, find your post, and tap the delete button. Only your own posts can be deleted.';
-		} else if (/profile|change.*username|update.*profile|edit.*profile|change.*password/i.test(message)) {
-			reply = 'To update your profile, tap the Profile button after logging in. You can change your username or password there.';
-		} else if (/hello|hi|hey/i.test(message)) {
-			reply = 'Hello! Ask me how to make, edit, or delete posts, or how to update your profile.';
-		} else {
-			reply = 'I can help you with making, editing, or deleting posts, and updating your profile. Try asking: "How do I edit my post?"';
-		}
-		res.json({ reply });
-	});
-
-	// ===== EVENT MANAGEMENT ENDPOINTS =====
-
-	// Create a new cleanup event
+	// Events endpoints
 	app.post('/events', (req, res) => {
-		const { title, description, location, latitude, longitude, date, time, creator } = req.body;
-		if (!title || !description || !location || !latitude || !longitude || !date || !time || !creator) {
-			return res.status(400).json({ success: false, message: 'All event fields required' });
+		const { title, description, date, time, location, username } = req.body;
+		if (!title || !description || !date || !time || !location || !username) {
+			return res.status(400).json({ success: false, message: 'All fields required' });
 		}
 		const createdAt = new Date().toISOString();
 		db.run(
-			'INSERT INTO events (title, description, location, latitude, longitude, date, time, creator, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-			[title, description, location, latitude, longitude, date, time, creator, createdAt],
+			'INSERT INTO events (title, description, date, time, location, username, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			[title, description, date, time, location, username, createdAt],
 			function (err) {
 				if (err) {
 					return res.status(500).json({ success: false, message: 'Database error' });
 				}
+				// Track event creation activity
+				db.run(
+					'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
+					['event_created', username, JSON.stringify({ eventId: this.lastID, title })],
+					() => {} // Ignore analytics errors
+				);
+				
 				db.get('SELECT * FROM events WHERE id = ?', [this.lastID], (err2, event) => {
 					if (err2) {
 						return res.status(500).json({ success: false, message: 'Database error' });
@@ -244,36 +180,20 @@ const db = require('./db');
 		);
 	});
 
-	// Get all active events
 	app.get('/events', (req, res) => {
-		db.all('SELECT * FROM events WHERE status = "active" ORDER BY date ASC', [], (err, rows) => {
+		db.all('SELECT * FROM events ORDER BY date ASC', (err, events) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
 			}
-			res.json({ success: true, events: rows });
+			res.json({ success: true, events });
 		});
 	});
 
-	// Get a specific event by ID
-	app.get('/events/:id', (req, res) => {
-		const { id } = req.params;
-		db.get('SELECT * FROM events WHERE id = ?', [id], (err, event) => {
-			if (err) {
-				return res.status(500).json({ success: false, message: 'Database error' });
-			}
-			if (!event) {
-				return res.status(404).json({ success: false, message: 'Event not found' });
-			}
-			res.json({ success: true, event });
-		});
-	});
-
-	// Update an event (only by creator)
 	app.put('/events/:id', (req, res) => {
 		const { id } = req.params;
-		const { title, description, location, latitude, longitude, date, time, username } = req.body;
-		if (!username) {
-			return res.status(400).json({ success: false, message: 'Username required' });
+		const { title, description, date, time, location, username } = req.body;
+		if (!title || !description || !date || !time || !location || !username) {
+			return res.status(400).json({ success: false, message: 'All fields required' });
 		}
 		db.get('SELECT * FROM events WHERE id = ?', [id], (err, event) => {
 			if (err) {
@@ -282,28 +202,22 @@ const db = require('./db');
 			if (!event) {
 				return res.status(404).json({ success: false, message: 'Event not found' });
 			}
-			if (event.creator !== username) {
+			if (event.username !== username) {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
 			db.run(
-				'UPDATE events SET title = ?, description = ?, location = ?, latitude = ?, longitude = ?, date = ?, time = ? WHERE id = ?',
-				[title, description, location, latitude, longitude, date, time, id],
+				'UPDATE events SET title = ?, description = ?, date = ?, time = ?, location = ? WHERE id = ?',
+				[title, description, date, time, location, id],
 				function (err2) {
 					if (err2) {
 						return res.status(500).json({ success: false, message: 'Database error' });
 					}
-					db.get('SELECT * FROM events WHERE id = ?', [id], (err3, updatedEvent) => {
-						if (err3) {
-							return res.status(500).json({ success: false, message: 'Database error' });
-						}
-						res.json({ success: true, event: updatedEvent });
-					});
+					res.json({ success: true });
 				}
 			);
 		});
 	});
 
-	// Delete an event (only by creator)
 	app.delete('/events/:id', (req, res) => {
 		const { id } = req.params;
 		const { username } = req.body;
@@ -317,10 +231,10 @@ const db = require('./db');
 			if (!event) {
 				return res.status(404).json({ success: false, message: 'Event not found' });
 			}
-			if (event.creator !== username) {
+			if (event.username !== username) {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
-			db.run('UPDATE events SET status = "cancelled" WHERE id = ?', [id], function (err2) {
+			db.run('DELETE FROM events WHERE id = ?', [id], function (err2) {
 				if (err2) {
 					return res.status(500).json({ success: false, message: 'Database error' });
 				}
@@ -329,194 +243,177 @@ const db = require('./db');
 		});
 	});
 
-	// ===== CHECK-IN ENDPOINTS =====
-
-	// Check into an event
-	app.post('/events/:id/checkin', (req, res) => {
-		const { id } = req.params;
-		const { username, latitude, longitude } = req.body;
-		if (!username) {
-			return res.status(400).json({ success: false, message: 'Username required' });
-		}
-		
-		// Check if event exists and is active
-		db.get('SELECT * FROM events WHERE id = ? AND status = "active"', [id], (err, event) => {
+	// Admin endpoints
+	// Cleanup Plans Management
+	app.get('/admin/cleanup-plans', requireAdmin, (req, res) => {
+		db.all('SELECT * FROM cleanup_plans ORDER BY created_at DESC', (err, plans) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
 			}
-			if (!event) {
-				return res.status(404).json({ success: false, message: 'Event not found or inactive' });
-			}
-			
-			// Check if user already checked in
-			db.get('SELECT * FROM event_checkins WHERE eventId = ? AND username = ?', [id, username], (err2, existing) => {
-				if (err2) {
+			res.json({ success: true, plans });
+		});
+	});
+
+	app.post('/admin/cleanup-plans', requireAdmin, (req, res) => {
+		const { title, description, requirements, codes, username } = req.body;
+		if (!title || !description || !requirements || !codes) {
+			return res.status(400).json({ success: false, message: 'All fields required' });
+		}
+		const created_at = new Date().toISOString();
+		const codesJson = JSON.stringify(codes);
+		const requirementsJson = JSON.stringify(requirements);
+		
+		db.run(
+			'INSERT INTO cleanup_plans (title, description, requirements, codes, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+			[title, description, requirementsJson, codesJson, username, created_at],
+			function (err) {
+				if (err) {
 					return res.status(500).json({ success: false, message: 'Database error' });
 				}
-				if (existing) {
-					return res.status(409).json({ success: false, message: 'Already checked in to this event' });
-				}
-				
-				const checkinTime = new Date().toISOString();
+				// Track plan creation activity
 				db.run(
-					'INSERT INTO event_checkins (eventId, username, checkinTime, latitude, longitude) VALUES (?, ?, ?, ?, ?)',
-					[id, username, checkinTime, latitude, longitude],
-					function (err3) {
-						if (err3) {
-							return res.status(500).json({ success: false, message: 'Database error' });
-						}
-						res.json({ success: true, checkinId: this.lastID, event });
-					}
+					'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
+					['plan_created', username, JSON.stringify({ planId: this.lastID, title })],
+					() => {} // Ignore analytics errors
 				);
-			});
-		});
-	});
-
-	// Get check-ins for an event
-	app.get('/events/:id/checkins', (req, res) => {
-		const { id } = req.params;
-		db.all('SELECT * FROM event_checkins WHERE eventId = ? ORDER BY checkinTime DESC', [id], (err, checkins) => {
-			if (err) {
-				return res.status(500).json({ success: false, message: 'Database error' });
-			}
-			res.json({ success: true, checkins });
-		});
-	});
-
-	// Get user's check-ins
-	app.get('/users/:username/checkins', (req, res) => {
-		const { username } = req.params;
-		db.all(
-			`SELECT ec.*, e.title, e.description, e.location, e.date 
-			 FROM event_checkins ec 
-			 JOIN events e ON ec.eventId = e.id 
-			 WHERE ec.username = ? 
-			 ORDER BY ec.checkinTime DESC`,
-			[username],
-			(err, checkins) => {
-				if (err) {
-					return res.status(500).json({ success: false, message: 'Database error' });
-				}
-				res.json({ success: true, checkins });
+				
+				db.get('SELECT * FROM cleanup_plans WHERE id = ?', [this.lastID], (err2, plan) => {
+					if (err2) {
+						return res.status(500).json({ success: false, message: 'Database error' });
+					}
+					// Parse JSON fields for response
+					plan.requirements = JSON.parse(plan.requirements);
+					plan.codes = JSON.parse(plan.codes);
+					return res.json({ success: true, plan });
+				});
 			}
 		);
 	});
 
-	// ===== PROGRESS TRACKING ENDPOINTS =====
-
-	// Update cleanup progress for an event
-	app.post('/events/:id/progress', (req, res) => {
+	app.put('/admin/cleanup-plans/:id', requireAdmin, (req, res) => {
 		const { id } = req.params;
-		const { username, wasteCollected, wasteType, beforePhotoPath, afterPhotoPath, notes } = req.body;
-		if (!username) {
-			return res.status(400).json({ success: false, message: 'Username required' });
+		const { title, description, requirements, codes, username } = req.body;
+		if (!title || !description || !requirements || !codes) {
+			return res.status(400).json({ success: false, message: 'All fields required' });
+		}
+		const codesJson = JSON.stringify(codes);
+		const requirementsJson = JSON.stringify(requirements);
+		
+		db.run(
+			'UPDATE cleanup_plans SET title = ?, description = ?, requirements = ?, codes = ? WHERE id = ?',
+			[title, description, requirementsJson, codesJson, id],
+			function (err) {
+				if (err) {
+					return res.status(500).json({ success: false, message: 'Database error' });
+				}
+				res.json({ success: true });
+			}
+		);
+	});
+
+	app.delete('/admin/cleanup-plans/:id', requireAdmin, (req, res) => {
+		const { id } = req.params;
+		db.run('DELETE FROM cleanup_plans WHERE id = ?', [id], function (err) {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			res.json({ success: true });
+		});
+	});
+
+	// User Management
+	app.get('/admin/users', requireAdmin, (req, res) => {
+		db.all('SELECT id, username, role, created_at FROM users ORDER BY created_at DESC', (err, users) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			res.json({ success: true, users });
+		});
+	});
+
+	app.put('/admin/users/:id/role', requireAdmin, (req, res) => {
+		const { id } = req.params;
+		const { role } = req.body;
+		if (!role || !['user', 'admin'].includes(role)) {
+			return res.status(400).json({ success: false, message: 'Valid role required (user or admin)' });
 		}
 		
-		// Check if user is checked into this event
-		db.get('SELECT * FROM event_checkins WHERE eventId = ? AND username = ?', [id, username], (err, checkin) => {
+		db.run('UPDATE users SET role = ? WHERE id = ?', [role, id], function (err) {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
 			}
-			if (!checkin) {
-				return res.status(403).json({ success: false, message: 'Must check in to event before tracking progress' });
-			}
-			
-			const updatedAt = new Date().toISOString();
-			
-			// Check if progress already exists for this user and event
-			db.get('SELECT * FROM cleanup_progress WHERE eventId = ? AND username = ?', [id, username], (err2, existing) => {
-				if (err2) {
-					return res.status(500).json({ success: false, message: 'Database error' });
-				}
-				
-				if (existing) {
-					// Update existing progress
-					db.run(
-						'UPDATE cleanup_progress SET wasteCollected = ?, wasteType = ?, beforePhotoPath = ?, afterPhotoPath = ?, notes = ?, updatedAt = ? WHERE eventId = ? AND username = ?',
-						[wasteCollected, wasteType, beforePhotoPath, afterPhotoPath, notes, updatedAt, id, username],
-						function (err3) {
-							if (err3) {
-								return res.status(500).json({ success: false, message: 'Database error' });
-							}
-							db.get('SELECT * FROM cleanup_progress WHERE eventId = ? AND username = ?', [id, username], (err4, progress) => {
-								if (err4) {
-									return res.status(500).json({ success: false, message: 'Database error' });
-								}
-								res.json({ success: true, progress });
-							});
-						}
-					);
-				} else {
-					// Create new progress entry
-					db.run(
-						'INSERT INTO cleanup_progress (eventId, username, wasteCollected, wasteType, beforePhotoPath, afterPhotoPath, notes, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-						[id, username, wasteCollected, wasteType, beforePhotoPath, afterPhotoPath, notes, updatedAt],
-						function (err3) {
-							if (err3) {
-								return res.status(500).json({ success: false, message: 'Database error' });
-							}
-							db.get('SELECT * FROM cleanup_progress WHERE id = ?', [this.lastID], (err4, progress) => {
-								if (err4) {
-									return res.status(500).json({ success: false, message: 'Database error' });
-								}
-								res.json({ success: true, progress });
-							});
-						}
-					);
-				}
-			});
+			res.json({ success: true });
 		});
 	});
 
-	// Get progress for an event
-	app.get('/events/:id/progress', (req, res) => {
-		const { id } = req.params;
-		db.all(
-			`SELECT cp.*, e.title, e.location 
-			 FROM cleanup_progress cp 
-			 JOIN events e ON cp.eventId = e.id 
-			 WHERE cp.eventId = ? 
-			 ORDER BY cp.updatedAt DESC`,
-			[id],
-			(err, progress) => {
-				if (err) {
-					return res.status(500).json({ success: false, message: 'Database error' });
-				}
-				
-				// Calculate total waste collected
-				const totalWaste = progress.reduce((sum, p) => sum + (p.wasteCollected || 0), 0);
-				
-				res.json({ success: true, progress, totalWasteCollected: totalWaste });
+	// Usage Analytics
+	app.get('/admin/analytics', requireAdmin, (req, res) => {
+		const { startDate, endDate, activityType } = req.query;
+		let query = 'SELECT * FROM usage_analytics WHERE 1=1';
+		const params = [];
+		
+		if (startDate) {
+			query += ' AND timestamp >= ?';
+			params.push(startDate);
+		}
+		if (endDate) {
+			query += ' AND timestamp <= ?';
+			params.push(endDate);
+		}
+		if (activityType) {
+			query += ' AND activity_type = ?';
+			params.push(activityType);
+		}
+		
+		query += ' ORDER BY timestamp DESC';
+		
+		db.all(query, params, (err, analytics) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
 			}
-		);
+			res.json({ success: true, analytics });
+		});
 	});
 
-	// Get user's progress across all events
-	app.get('/users/:username/progress', (req, res) => {
-		const { username } = req.params;
-		db.all(
-			`SELECT cp.*, e.title, e.location, e.date 
-			 FROM cleanup_progress cp 
-			 JOIN events e ON cp.eventId = e.id 
-			 WHERE cp.username = ? 
-			 ORDER BY cp.updatedAt DESC`,
-			[username],
-			(err, progress) => {
-				if (err) {
-					return res.status(500).json({ success: false, message: 'Database error' });
+	app.get('/admin/analytics/summary', requireAdmin, (req, res) => {
+		const queries = [
+			'SELECT COUNT(*) as total_users FROM users',
+			'SELECT COUNT(*) as total_posts FROM posts',
+			'SELECT COUNT(*) as total_events FROM events',
+			'SELECT COUNT(*) as total_plans FROM cleanup_plans',
+			`SELECT COUNT(*) as active_users FROM (
+				SELECT DISTINCT user FROM usage_analytics 
+				WHERE timestamp >= datetime('now', '-7 days')
+			)`,
+			`SELECT activity_type, COUNT(*) as count FROM usage_analytics 
+			 WHERE timestamp >= datetime('now', '-30 days') 
+			 GROUP BY activity_type`,
+		];
+		
+		Promise.all(queries.map(query => 
+			new Promise((resolve, reject) => {
+				db.all(query, (err, result) => {
+					if (err) reject(err);
+					else resolve(result);
+				});
+			})
+		)).then(results => {
+			const [totalUsers, totalPosts, totalEvents, totalPlans, activeUsers, activityStats] = results;
+			
+			res.json({
+				success: true,
+				summary: {
+					totalUsers: totalUsers[0].total_users,
+					totalPosts: totalPosts[0].total_posts,
+					totalEvents: totalEvents[0].total_events,
+					totalPlans: totalPlans[0].total_plans,
+					activeUsers: activeUsers[0].active_users,
+					activityStats: activityStats
 				}
-				
-				// Calculate total waste collected by user
-				const totalWaste = progress.reduce((sum, p) => sum + (p.wasteCollected || 0), 0);
-				
-				res.json({ success: true, progress, totalWasteCollected: totalWaste });
-			}
-		);
-	});
-
-	// Health check route
-	app.get('/health', (req, res) => {
-		res.send('OK');
+			});
+		}).catch(err => {
+			res.status(500).json({ success: false, message: 'Database error' });
+		});
 	});
 
 	return app;

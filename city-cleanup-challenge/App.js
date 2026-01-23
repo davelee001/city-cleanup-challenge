@@ -10,9 +10,11 @@ import Events from './Events';
 import EventMap from './EventMap';
 import Progress from './Progress';
 import Dashboard from './Dashboard';
+import AdminPanel from './AdminPanel';
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState('user');
   const [showSignup, setShowSignup] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
   const [showPosts, setShowPosts] = useState(false);
@@ -21,15 +23,24 @@ export default function App() {
   const [showMap, setShowMap] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  
+  const handleLogin = (username, role = 'user') => {
+    setUser(username);
+    setUserRole(role);
+  };
   
   const handleLogout = () => {
     setUser(null);
+    setUserRole('user');
     setShowProfile(false);
     setShowPosts(false);
     setShowChatbot(false);
     setShowEvents(false);
     setShowMap(false);
     setShowProgress(false);
+    setShowDashboard(false);
+    setShowAdminPanel(false);
   };
   
   const handleUsernameChange = (newUsername) => {
@@ -43,6 +54,18 @@ export default function App() {
     setShowEvents(false);
     setShowMap(false);
     setShowProgress(false);
+    setShowDashboard(false);
+    setShowAdminPanel(false);
+  };
+
+  const handleShowAdminPanel = () => {
+    resetViews();
+    setShowAdminPanel(true);
+  };
+
+  const handleShowDashboard = () => {
+    resetViews();
+    setShowDashboard(true);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -56,7 +79,7 @@ export default function App() {
           </>
         ) : (
           <>
-            <Login onLogin={setUser} />
+            <Login onLogin={handleLogin} />
             <Text style={styles.switchText} onPress={() => setShowSignup(true)}>
               Don't have an account? Sign up
             </Text>
@@ -92,10 +115,26 @@ export default function App() {
           <Button title="Back to Home" onPress={() => setShowProgress(false)} />
           <Progress username={user} />
         </>
+      ) : showDashboard ? (
+        <>
+          <Button title="Back to Home" onPress={() => setShowDashboard(false)} />
+          <Dashboard 
+            username={user} 
+            userRole={userRole} 
+            onAdminPanel={handleShowAdminPanel} 
+          />
+        </>
+      ) : showAdminPanel ? (
+        <>
+          <AdminPanel 
+            username={user} 
+            onBack={() => setShowAdminPanel(false)}
+          />
+        </>
       ) : (
         <View>
           <Text style={styles.title}>City Cleanup Challenge</Text>
-          <Text style={styles.subtitle}>Welcome, {user}!</Text>
+          <Text style={styles.subtitle}>Welcome, {user}! {userRole === 'admin' && '👑 Admin'}</Text>
           <Text style={styles.description}>Join cleanup events in your area and make a difference!</Text>
           
           <View style={styles.mainButtons}>
@@ -103,6 +142,14 @@ export default function App() {
             <Button title="📊 My Progress" onPress={() => setShowProgress(true)} />
             <Button title="💬 Posts" onPress={() => setShowPosts(true)} />
             <Button title="🤖 Chatbot Guide" onPress={() => setShowChatbot(true)} />
+            <Button title="📈 Dashboard" onPress={handleShowDashboard} />
+            {userRole === 'admin' && (
+              <Button 
+                title="⚙️ Admin Panel" 
+                onPress={handleShowAdminPanel}
+                color="#dc3545"
+              />
+            )}
             <Button title="👤 Profile" onPress={() => setShowProfile(true)} />
           </View>
         </View>
