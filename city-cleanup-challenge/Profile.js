@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Profile({ username, onLogout, onUsernameChange }) {
   const [profile, setProfile] = useState(null);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [avatar, setAvatar] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -17,6 +19,7 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
         if (data.success) {
           setProfile(data.user);
           setNewUsername(data.user.username);
+          setAvatar(data.user.avatar);
         } else {
           setError(data.message || 'Failed to load profile.');
         }
@@ -36,7 +39,7 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
       const res = await fetch(`http://localhost:3000/profile/${username}` , {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newUsername, newPassword })
+        body: JSON.stringify({ newUsername, newPassword, avatar })
       });
       const data = await res.json();
       if (data.success) {
@@ -51,10 +54,29 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
     setLoading(false);
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
+  };
+
   if (loading && !profile) return <ActivityIndicator style={{ margin: 20 }} />;
 
   return (
     <View style={styles.container}>
+      <View style={styles.avatarContainer}>
+        <Image source={{ uri: avatar || 'https://via.placeholder.com/150' }} style={styles.avatar} />
+        <TouchableOpacity onPress={pickImage}>
+          <Text style={styles.changeAvatarText}>Change Avatar</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.title}>Profile</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {success ? <Text style={styles.success}>{success}</Text> : null}
@@ -83,10 +105,23 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
+  container: { flex: 1, padding: 24, backgroundColor: '#f5f5f5' },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatar: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+  },
+  changeAvatarText: {
+    color: '#007bff',
+    marginTop: 10,
+  },
+  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12, textAlign: 'center' },
   label: { fontWeight: 'bold', marginTop: 12 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 10, marginTop: 4 },
-  error: { color: 'red', marginBottom: 8 },
-  success: { color: 'green', marginBottom: 8 }
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 10, marginTop: 4, backgroundColor: '#fff' },
+  error: { color: 'red', marginBottom: 8, textAlign: 'center' },
+  success: { color: 'green', marginBottom: 8, textAlign: 'center' }
 });
