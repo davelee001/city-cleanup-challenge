@@ -10,8 +10,16 @@ db.serialize(() => {
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     role TEXT DEFAULT 'user',
-    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-    lastLogin TEXT
+    avatar TEXT,
+    subscription_id INTEGER,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    price REAL NOT NULL,
+    features TEXT NOT NULL
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS posts (
