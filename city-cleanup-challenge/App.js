@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { SafeAreaView, View, Text, StyleSheet, Button } from 'react-native';
+import { SafeAreaView, View, Text, StyleSheet, Button, TouchableOpacity } from 'react-native';
 import Login from './Login';
 import Signup from './Signup';
 import Chatbot from './Chatbot';
@@ -11,6 +10,7 @@ import EventMap from './EventMap';
 import Progress from './Progress';
 import Dashboard from './Dashboard';
 import AdminPanel from './AdminPanel';
+import SubscriptionDashboard from './SubscriptionDashboard';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -24,6 +24,7 @@ export default function App() {
   const [showProgress, setShowProgress] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
   
   const handleLogin = (username, role = 'user') => {
     setUser(username);
@@ -33,14 +34,7 @@ export default function App() {
   const handleLogout = () => {
     setUser(null);
     setUserRole('user');
-    setShowProfile(false);
-    setShowPosts(false);
-    setShowChatbot(false);
-    setShowEvents(false);
-    setShowMap(false);
-    setShowProgress(false);
-    setShowDashboard(false);
-    setShowAdminPanel(false);
+    resetViews();
   };
   
   const handleUsernameChange = (newUsername) => {
@@ -56,6 +50,7 @@ export default function App() {
     setShowProgress(false);
     setShowDashboard(false);
     setShowAdminPanel(false);
+    setShowSubscription(false);
   };
 
   const handleShowAdminPanel = () => {
@@ -67,23 +62,19 @@ export default function App() {
     resetViews();
     setShowDashboard(true);
   };
+
+  const handleShowSubscription = () => {
+    resetViews();
+    setShowSubscription(true);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {!user ? (
         showSignup ? (
-          <>
-            <Signup onSignup={() => setShowSignup(false)} />
-            <Text style={styles.switchText} onPress={() => setShowSignup(false)}>
-              Already have an account? Log in
-            </Text>
-          </>
+          <Signup onSignup={() => setShowSignup(false)} onSwitchToLogin={() => setShowSignup(false)} />
         ) : (
-          <>
-            <Login onLogin={handleLogin} />
-            <Text style={styles.switchText} onPress={() => setShowSignup(true)}>
-              Don't have an account? Sign up
-            </Text>
-          </>
+          <Login onLogin={handleLogin} onSwitchToSignup={() => setShowSignup(true)} />
         )
       ) : showProfile ? (
         <>
@@ -126,31 +117,47 @@ export default function App() {
         </>
       ) : showAdminPanel ? (
         <>
-          <AdminPanel 
-            username={user} 
-            onBack={() => setShowAdminPanel(false)}
-          />
+          <Button title="Back to Home" onPress={() => setShowAdminPanel(false)} />
+          <AdminPanel username={user} />
+        </>
+      ) : showSubscription ? (
+        <>
+          <Button title="Back to Home" onPress={() => setShowSubscription(false)} />
+          <SubscriptionDashboard />
         </>
       ) : (
-        <View>
-          <Text style={styles.title}>City Cleanup Challenge</Text>
-          <Text style={styles.subtitle}>Welcome, {user}! {userRole === 'admin' && '👑 Admin'}</Text>
-          <Text style={styles.description}>Join cleanup events in your area and make a difference!</Text>
-          
-          <View style={styles.mainButtons}>
-            <Button title="🗺️ Events & Map" onPress={() => setShowEvents(true)} />
-            <Button title="📊 My Progress" onPress={() => setShowProgress(true)} />
-            <Button title="💬 Posts" onPress={() => setShowPosts(true)} />
-            <Button title="🤖 Chatbot Guide" onPress={() => setShowChatbot(true)} />
-            <Button title="📈 Dashboard" onPress={handleShowDashboard} />
+        <View style={styles.homeContainer}>
+          <Text style={styles.welcome}>Welcome, {user}!</Text>
+          <View style={styles.grid}>
+            <TouchableOpacity style={styles.gridButton} onPress={() => setShowProfile(true)}>
+              <Text style={styles.gridText}>Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={() => setShowPosts(true)}>
+              <Text style={styles.gridText}>Posts</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={() => setShowEvents(true)}>
+              <Text style={styles.gridText}>Events</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={() => setShowMap(true)}>
+              <Text style={styles.gridText}>Map</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={() => setShowProgress(true)}>
+              <Text style={styles.gridText}>My Progress</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={handleShowDashboard}>
+              <Text style={styles.gridText}>Dashboard</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={handleShowSubscription}>
+              <Text style={styles.gridText}>Subscription</Text>
+            </TouchableOpacity>
             {userRole === 'admin' && (
-              <Button 
-                title="⚙️ Admin Panel" 
-                onPress={handleShowAdminPanel}
-                color="#dc3545"
-              />
+              <TouchableOpacity style={styles.gridButton} onPress={handleShowAdminPanel}>
+                <Text style={styles.gridText}>Admin Panel</Text>
+              </TouchableOpacity>
             )}
-            <Button title="👤 Profile" onPress={() => setShowProfile(true)} />
+          </View>
+          <View style={styles.footer}>
+            <Button title="Logout" onPress={handleLogout} color="#d9534f" />
           </View>
         </View>
       )}
@@ -161,44 +168,42 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  homeContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 40,
   },
-  title: {
-    fontSize: 28,
+  welcome: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-    textAlign: 'center',
+    marginBottom: 20,
   },
-  subtitle: {
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  gridButton: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+    margin: 10,
+    width: 150,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  gridText: {
     fontSize: 18,
-    color: '#555',
-    marginBottom: 8,
-    textAlign: 'center',
+    fontWeight: 'bold',
   },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  mainButtons: {
-    width: '100%',
-    gap: 12,
-  },
-  link: {
-    fontSize: 16,
-    color: '#007bff',
-    textAlign: 'center',
-  },
-  switchText: {
-    color: '#007bff',
-    marginTop: 16,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-    fontSize: 16,
+  footer: {
+    marginTop: 20,
   },
 });
