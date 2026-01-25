@@ -158,7 +158,7 @@ function createApp() {
 		);
 	});
 
-	app.get('/posts', (req, res) => {
+	apiRouter.get('/posts', (req, res) => {
 		db.all('SELECT * FROM posts ORDER BY createdAt DESC', (err, posts) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
