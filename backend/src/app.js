@@ -24,8 +24,20 @@ function createApp() {
 	app.use(express.json());
 	app.use(morgan('dev'));
 
+	// Health check endpoint
+	app.get('/health', (req, res) => {
+		db.get('SELECT name FROM sqlite_master WHERE type="table"', (err) => {
+			if (err) {
+				return res.status(500).json({ status: 'error', message: 'Database connection failed' });
+			}
+			res.json({ status: 'ok', message: 'Backend is running and database is connected' });
+		});
+	});
+
+	const apiRouter = express.Router();
+
 	// User authentication endpoints
-	app.post('/signup', (req, res) => {
+	apiRouter.post('/signup', (req, res) => {
 		const { username, password } = req.body;
 		if (!username || !password) {
 			return res.status(400).json({ success: false, message: 'Username and password required' });
@@ -415,6 +427,8 @@ function createApp() {
 			res.status(500).json({ success: false, message: 'Database error' });
 		});
 	});
+
+	app.use('/api/v1', apiRouter);
 
 	return app;
 }
