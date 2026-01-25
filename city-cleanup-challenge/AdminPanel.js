@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator, Switch } from 'react-native';
 import Toast from 'react-hot-toast';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 const AdminPanel = ({ username, onBack }) => {
   const [activeTab, setActiveTab] = useState('analytics');
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/admin/analytics?username=${username}`);
+      const response = await fetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setAnalytics(data.analytics);
@@ -51,7 +53,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/plans?adminView=true&username=${username}`);
+      const response = await fetch(`${API_BASE_URL}/admin/cleanup-plans?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setPlans(data.plans);
@@ -67,7 +69,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/admin/users?username=${username}`);
+      const response = await fetch(`${API_BASE_URL}/admin/users?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setUsers(data.users);
@@ -83,7 +85,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchActivity = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/admin/activity?username=${username}&limit=50`);
+      const response = await fetch(`${API_BASE_URL}/admin/analytics?username=${username}&limit=50`);
       const data = await response.json();
       if (data.success) {
         setActivities(data.activities);
@@ -104,7 +106,7 @@ const AdminPanel = ({ username, onBack }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/admin/plans', {
+      const response = await fetch(`${API_BASE_URL}/admin/cleanup-plans`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -140,7 +142,7 @@ const AdminPanel = ({ username, onBack }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`http://localhost:3000/admin/plans/${planId}`, {
+              const response = await fetch(`${API_BASE_URL}/admin/cleanup-plans/${planId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username })
@@ -172,7 +174,7 @@ const AdminPanel = ({ username, onBack }) => {
           text: 'Confirm',
           onPress: async () => {
             try {
-              const response = await fetch(`http://localhost:3000/admin/users/${userId}/role`, {
+              const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role: newRole, username })
@@ -382,7 +384,7 @@ const AdminPanel = ({ username, onBack }) => {
             </View>
           </View>
         ))
-      )}
+      }
     </ScrollView>
   );
 
