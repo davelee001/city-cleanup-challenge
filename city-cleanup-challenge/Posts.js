@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 export default function Posts({ username }) {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
@@ -11,7 +13,7 @@ export default function Posts({ username }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3000/posts');
+      const res = await fetch(`${API_BASE_URL}/posts`);
       const data = await res.json();
       if (data.success) setPosts(data.posts);
       else setError('Failed to load posts.');
@@ -30,7 +32,7 @@ export default function Posts({ username }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3000/posts', {
+      const res = await fetch(`${API_BASE_URL}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, content })
