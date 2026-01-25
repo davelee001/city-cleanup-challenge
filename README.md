@@ -2,8 +2,9 @@
 
 A comprehensive location-based cleanup event platform with React Native (Expo) frontend and Node.js Express backend. Join cleanup events, track your environmental impact, and help make your city cleaner!
 
-## Recent Enhancements (v2.0)
+## Recent Enhancements (v2.1)
 
+🚀 **API Versioning** — All backend endpoints are now versioned under `/api/v1` for better scalability and future-proofing.
 🎨 **Modernized UI** — Enhanced user authentication screens with a fresh, modern look.
 👤 **Enhanced Profile Management** — Users can now upload a profile avatar for personalization.
 💳 **Subscription Management** — New dashboard for viewing and managing subscription tiers.
@@ -16,7 +17,8 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 🔐 **Enhanced Security** — Role-based authentication with secure admin endpoints
 ✅ **GitHub Integration** — Proper commit attribution and contribution tracking setup
 
-### Latest Updates (January 24, 2026)
+### Latest Updates (January 25, 2026)
+- ✅ **API Versioning** — Implemented `/api/v1` for all backend routes and updated frontend clients.
 - ✅ **Individual Commits** — Split recent work into separate, feature-specific commits.
 - ✅ **Modernized Auth UI** — Refreshed login and signup screens for a better user experience.
 - ✅ **Profile Avatars** — Users can now upload and display a profile picture.
@@ -27,7 +29,7 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 - ✅ **Role-Based Authentication** — Secure user/admin role system with middleware protection  
 - ✅ **Analytics Dashboard** — Real-time usage tracking and system monitoring capabilities
 - ✅ **Git Configuration Fixed** — Proper author attribution for GitHub contribution chart
-- ✅ **Documentation Enhanced** — Comprehensive README with v2.0 feature coverage
+- ✅ **Documentation Enhanced** — Comprehensive README with v2.1 feature coverage
 
 ## Features
 
