@@ -2,6 +2,63 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const db = require('./db');
+const emitter = require('./events');
+
+// --- Event Listeners ---
+
+// Listener for user signup event to handle analytics
+emitter.on('user:signup', (user) => {
+  db.run(
+    'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
+    ['user_signup', user.username, JSON.stringify({ userId: user.id })],
+    (err) => {
+      if (err) {
+        // Emit a system error event for logging or monitoring
+        emitter.emit('error', new Error(`Failed to record user_signup activity for ${user.username}: ${err.message}`));
+      }
+    }
+  );
+});
+
+// Listener for new post event to handle analytics
+emitter.on('post:created', (post) => {
+    db.run(
+        'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
+        ['post_created', post.username, JSON.stringify({ postId: post.id })],
+        (err) => {
+            if (err) {
+                emitter.emit('error', new Error(`Failed to record post_created activity for ${post.username}: ${err.message}`));
+            }
+        }
+    );
+});
+
+// Listener for new event creation to handle analytics
+emitter.on('event:created', (event) => {
+    db.run(
+        'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
+        ['event_created', event.username, JSON.stringify({ eventId: event.id, title: event.title })],
+        (err) => {
+            if (err) {
+                emitter.emit('error', new Error(`Failed to record event_created activity for ${event.username}: ${err.message}`));
+            }
+        }
+    );
+});
+
+// Listener for new plan creation to handle analytics
+emitter.on('plan:created', (plan) => {
+    db.run(
+        'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
+        ['plan_created', plan.created_by, JSON.stringify({ planId: plan.id, title: plan.title })],
+        (err) => {
+            if (err) {
+                emitter.emit('error', new Error(`Failed to record plan_created activity for ${plan.created_by}: ${err.message}`));
+            }
+        }
+    );
+});
+
 
 // Middleware to check if user is admin
 function requireAdmin(req, res, next) {
@@ -50,7 +107,10 @@ function createApp() {
 				if (err) {
 					return res.status(400).json({ success: false, message: 'Username already exists' });
 				}
-				res.json({ success: true, user: { username, role } });
+                const newUser = { id: this.lastID, username, role };
+                // Emit an event for the new user signup
+                emitter.emit('user:signup', newUser);
+				res.json({ success: true, user: newUser });
 			}
 		);
 	});
@@ -85,17 +145,13 @@ function createApp() {
 				if (err) {
 					return res.status(500).json({ success: false, message: 'Database error' });
 				}
-				// Track post creation activity
-				db.run(
-					'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
-					['post_created', username, JSON.stringify({ postId: this.lastID })],
-					() => {} // Ignore analytics errors
-				);
 				
 				db.get('SELECT * FROM posts WHERE id = ?', [this.lastID], (err2, post) => {
 					if (err2) {
 						return res.status(500).json({ success: false, message: 'Database error' });
 					}
+                    // Emit an event for the new post
+                    emitter.emit('post:created', post);
 					return res.json({ success: true, post });
 				});
 			}
@@ -175,24 +231,19 @@ function createApp() {
 				if (err) {
 					return res.status(500).json({ success: false, message: 'Database error' });
 				}
-				// Track event creation activity
-				db.run(
-					'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
-					['event_created', username, JSON.stringify({ eventId: this.lastID, title })],
-					() => {} // Ignore analytics errors
-				);
 				
 				db.get('SELECT * FROM events WHERE id = ?', [this.lastID], (err2, event) => {
 					if (err2) {
 						return res.status(500).json({ success: false, message: 'Database error' });
 					}
+                    emitter.emit('event:created', event);
 					return res.json({ success: true, event });
 				});
 			}
 		);
 	});
 
-	app.get('/events', (req, res) => {
+	apiRouter.get('/events', (req, res) => {
 		db.all('SELECT * FROM events ORDER BY date ASC', (err, events) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
@@ -282,12 +333,6 @@ function createApp() {
 				if (err) {
 					return res.status(500).json({ success: false, message: 'Database error' });
 				}
-				// Track plan creation activity
-				db.run(
-					'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
-					['plan_created', username, JSON.stringify({ planId: this.lastID, title })],
-					() => {} // Ignore analytics errors
-				);
 				
 				db.get('SELECT * FROM cleanup_plans WHERE id = ?', [this.lastID], (err2, plan) => {
 					if (err2) {
@@ -296,13 +341,14 @@ function createApp() {
 					// Parse JSON fields for response
 					plan.requirements = JSON.parse(plan.requirements);
 					plan.codes = JSON.parse(plan.codes);
+                    emitter.emit('plan:created', plan);
 					return res.json({ success: true, plan });
 				});
 			}
 		);
 	});
 
-	app.put('/admin/cleanup-plans/:id', requireAdmin, (req, res) => {
+	apiRouter.put('/admin/cleanup-plans/:id', requireAdmin, (req, res) => {
 		const { id } = req.params;
 		const { title, description, requirements, codes, username } = req.body;
 		if (!title || !description || !requirements || !codes) {
