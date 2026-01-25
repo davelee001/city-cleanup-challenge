@@ -7,6 +7,24 @@ import LoadingState from './components/LoadingState';
 import SearchFilter from './components/SearchFilter';
 import DataExport from './components/DataExport';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
+// Mock data for oil fields
+const initialOilFields = [
+  {
+    id: 1,
+    name: 'Oil Field A',
+    location: { lat: 24.7136, lng: 46.6753 },
+    data: [],
+  },
+  {
+    id: 2,
+    name: 'Oil Field B',
+    location: { lat: 24.7136, lng: 46.6753 },
+    data: [],
+  },
+];
+
 const Dashboard = ({ username, userRole, onAdminPanel }) => {
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,6 +38,8 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
     totalUsers: 0,
     totalWaste: 0
   });
+  const [oilFields, setOilFields] = useState(initialOilFields);
+  const [error, setError] = useState('');
 
   const theme = darkMode ? styles.darkTheme : styles.lightTheme;
   const isAdmin = userRole === 'admin';
@@ -52,8 +72,9 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
   const fetchAdminAnalytics = async () => {
     if (!username || !isAdmin) return;
     
+    setError('');
     try {
-      const response = await fetch(`http://localhost:3000/admin/analytics?username=${username}`);
+      const response = await fetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setAdminAnalytics(data.analytics);
@@ -67,8 +88,8 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
     try {
       // Simulate API calls for system stats
       const statsPromises = [
-        fetch('http://localhost:3000/events').then(r => r.json()),
-        fetch(`http://localhost:3000/admin/analytics?username=${username}`).then(r => r.json())
+        fetch(`${API_BASE_URL}/events`).then(r => r.json()),
+        fetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`).then(r => r.json())
       ];
       
       const [eventsData, analyticsData] = await Promise.all(statsPromises);
