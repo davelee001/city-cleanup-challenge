@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 export default function Chatbot() {
   const [messages, setMessages] = useState([
     { from: 'bot', text: 'Hi! I am your guide. Ask me how to make a post!' }
@@ -14,7 +16,8 @@ export default function Chatbot() {
     setMessages([...messages, userMessage]);
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/chatbot', {
+      // Get bot response
+      const res = await fetch(`${API_BASE_URL}/chatbot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })
