@@ -4,6 +4,10 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 
 ## Recent Enhancements (v2.0)
 
+🎨 **Modernized UI** — Enhanced user authentication screens with a fresh, modern look.
+👤 **Enhanced Profile Management** — Users can now upload a profile avatar for personalization.
+💳 **Subscription Management** — New dashboard for viewing and managing subscription tiers.
+🏠 **Redesigned Home Screen** — New grid-based layout for easier and more intuitive navigation.
 🚀 **Admin Panel & Management System** — Complete administrative interface with role-based access control
 📊 **Advanced Analytics Dashboard** — Real-time system metrics with comprehensive usage tracking  
 🎯 **Plan Management System** — Create and manage cleanup plans with unique identification codes
@@ -13,6 +17,12 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 ✅ **GitHub Integration** — Proper commit attribution and contribution tracking setup
 
 ### Latest Updates (January 24, 2026)
+- ✅ **Individual Commits** — Split recent work into separate, feature-specific commits.
+- ✅ **Modernized Auth UI** — Refreshed login and signup screens for a better user experience.
+- ✅ **Profile Avatars** — Users can now upload and display a profile picture.
+- ✅ **Subscription Dashboard** — New screen to display available subscription plans.
+- ✅ **Grid Navigation** — Home screen now uses a modern grid-based layout.
+- ✅ **Database Schema Updates** — Added support for user avatars and subscriptions.
 - ✅ **Admin System Complete** — Full admin panel implementation with database integration
 - ✅ **Role-Based Authentication** — Secure user/admin role system with middleware protection  
 - ✅ **Analytics Dashboard** — Real-time usage tracking and system monitoring capabilities
@@ -97,7 +107,8 @@ Pop-Location
 - **My Progress** — Track your environmental impact
 - **Posts** — Community discussions and sharing
 - **Chatbot Guide** — Get help and guidance
-- **Profile** — Manage account settings
+- **Profile** — Manage account settings and avatar
+- **Subscription Dashboard** — View and manage subscription plans
 - **Dashboard** — Advanced analytics and data visualization
 - **Admin Panel** — System administration (admin users only)
 
@@ -157,7 +168,8 @@ Pop-Location
 ## Database Schema
 
 ### Core Tables
-- **users** — User accounts with role-based authentication (user/admin)
+- **users** — User accounts with role-based authentication (user/admin), profile avatar, and subscription status.
+- **subscriptions** — Defines subscription tiers and links them to users.
 - **events** — Cleanup events with GPS coordinates
 - **event_checkins** — User check-ins with location verification
 - **cleanup_progress** — Waste collection tracking
@@ -316,12 +328,16 @@ The comprehensive admin panel provides powerful management and analytics capabil
 - Follow established code patterns and conventions
 
 ### Recent Development Updates
-- ✅ **Admin Panel Implementation** — Complete administrative interface added
-- ✅ **Role-Based Authentication** — User and admin roles with secure endpoints  
-- ✅ **Plan Management System** — Cleanup plan creation with unique codes
-- ✅ **Usage Analytics** — Comprehensive activity tracking and reporting
-- ✅ **Enhanced Documentation** — Updated README with v2.0 feature coverage
-- ✅ **Database Schema Updates** — New tables for admin functions and analyticsreporting
+- ✅ **Granular Commits** — Broke down large commit into feature-specific commits for better history tracking (Jan 24, 2026)
+- ✅ **Enhanced User Features** — Implemented modern auth UI, profile avatars, and subscription dashboard (Jan 24, 2026)
+- ✅ **Admin Panel Implementation** — Complete administrative interface added (Jan 24, 2026)
+- ✅ **Role-Based Authentication** — User and admin roles with secure endpoints (Jan 24, 2026)
+
+### Contribution Summary
+- **Total Commits Today**: 3 commits on January 24, 2026
+- **Major Features Added**: Admin system, role management, analytics dashboard
+- **Author**: davelee001 (david.leekaleer@student.utamu.ac.ug)
+- **Repository**: https://github.com/davelee001/city-cleanup-challengereporting
 - Audit trail for security and compliance
 
 ## Contributing
