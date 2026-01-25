@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 export default function Profile({ username, onLogout, onUsernameChange }) {
   const [profile, setProfile] = useState(null);
   const [newUsername, setNewUsername] = useState('');
@@ -13,7 +15,7 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:3000/profile/${username}`)
+    fetch(`${API_BASE_URL}/profile/${username}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -36,7 +38,7 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
     setSuccess('');
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/profile/${username}` , {
+      const res = await fetch(`${API_BASE_URL}/profile/${username}` , {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newUsername, newPassword, avatar })
