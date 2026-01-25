@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } fr
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 export default function EventMap({ username }) {
   const [events, setEvents] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
@@ -12,8 +14,7 @@ export default function EventMap({ username }) {
 
   useEffect(() => {
     getUserLocation();
-    fetchEvents();
-    fetchUserCheckins();
+    fetchEventsAndCheckins();
   }, []);
 
   const getUserLocation = async () => {
@@ -30,42 +31,38 @@ export default function EventMap({ username }) {
     }
   };
 
-  const fetchEvents = async () => {
+  const fetchEventsAndCheckins = async () => {
     try {
-      const res = await fetch('http://localhost:3000/events');
-      const data = await res.json();
-      if (data.success) {
-        setEvents(data.events);
+      const [eventsRes, checkinsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/events`),
+        fetch(`${API_BASE_URL}/users/${username}/checkins`)
+      ]);
+      const eventsData = await eventsRes.json();
+      if (eventsData.success) {
+        setEvents(eventsData.events);
       } else {
         setError('Failed to load events');
       }
-    } catch {
+
+      const checkinsData = await checkinsRes.json();
+      if (checkinsData.success) {
+        const checkedInEventIds = new Set(checkinsData.checkins.map(checkin => checkin.eventId));
+        setCheckedInEvents(checkedInEventIds);
+      }
+    } catch (err) {
+      console.log('Failed to fetch events or checkins:', err);
       setError('Network error');
     }
     setLoading(false);
   };
 
-  const fetchUserCheckins = async () => {
-    try {
-      const res = await fetch(`http://localhost:3000/users/${username}/checkins`);
-      const data = await res.json();
-      if (data.success) {
-        const checkedInEventIds = new Set(data.checkins.map(checkin => checkin.eventId));
-        setCheckedInEvents(checkedInEventIds);
-      }
-    } catch (err) {
-      console.log('Failed to fetch user checkins:', err);
-    }
-  };
-
   const handleCheckIn = async (eventId) => {
     if (!userLocation) {
-      Alert.alert('Error', 'Location is required for check-in');
+      setError('Could not determine your location.');
       return;
     }
-
     try {
-      const res = await fetch(`http://localhost:3000/events/${eventId}/checkin`, {
+      const res = await fetch(`${API_BASE_URL}/events/${eventId}/checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
