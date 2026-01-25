@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 export default function Events({ username, onShowMap }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -41,7 +43,7 @@ export default function Events({ username, onShowMap }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3000/events');
+      const res = await fetch(`${API_BASE_URL}/events`);
       const data = await res.json();
       if (data.success) {
         setEvents(data.events);
@@ -56,7 +58,7 @@ export default function Events({ username, onShowMap }) {
 
   const fetchUserCheckins = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/users/${username}/checkins`);
+      const res = await fetch(`${API_BASE_URL}/users/${username}/checkins`);
       const data = await res.json();
       if (data.success) {
         const checkedInEventIds = new Set(data.checkins.map(checkin => checkin.eventId));
@@ -80,7 +82,7 @@ export default function Events({ username, onShowMap }) {
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/events', {
+      const res = await fetch(`${API_BASE_URL}/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -112,7 +114,7 @@ export default function Events({ username, onShowMap }) {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/events/${eventId}/checkin`, {
+      const res = await fetch(`${API_BASE_URL}/events/${eventId}/checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
