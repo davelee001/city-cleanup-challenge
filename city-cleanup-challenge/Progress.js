@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 export default function Progress({ username }) {
   const [userProgress, setUserProgress] = useState([]);
   const [checkedInEvents, setCheckedInEvents] = useState([]);
@@ -22,7 +24,7 @@ export default function Progress({ username }) {
   const fetchUserProgress = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/users/${username}/progress`);
+      const res = await fetch(`${API_BASE_URL}/users/${username}/progress`);
       const data = await res.json();
       if (data.success) {
         setUserProgress(data.progress);
@@ -38,7 +40,7 @@ export default function Progress({ username }) {
 
   const fetchCheckedInEvents = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/users/${username}/checkins`);
+      const res = await fetch(`${API_BASE_URL}/users/${username}/checkins`);
       const data = await res.json();
       if (data.success) {
         setCheckedInEvents(data.checkins);
@@ -56,7 +58,7 @@ export default function Progress({ username }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/events/${eventId}/progress`, {
+      const res = await fetch(`${API_BASE_URL}/events/${eventId}/progress`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
