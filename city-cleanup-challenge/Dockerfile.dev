@@ -1,0 +1,23 @@
+# Development Dockerfile for Expo
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install Expo CLI globally
+RUN npm install -g expo-cli
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy application code
+COPY . .
+
+# Expose Expo ports
+EXPOSE 19000 19001 19002 19006
+
+# Start Expo
+CMD ["npx", "expo", "start", "--web"]

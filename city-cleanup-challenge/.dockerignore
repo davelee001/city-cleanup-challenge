@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.expo
+.expo-shared
+*.log
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+README.md
+*.md
+android
+ios
