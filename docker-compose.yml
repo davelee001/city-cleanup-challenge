@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: city-cleanup-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_PATH=/app/data/city-cleanup.db
+      - CORS_ORIGIN=http://localhost:19006
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - backend-data:/app/data
+    networks:
+      - city-cleanup-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "scripts/health-check.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Web Service
+  frontend:
+    build:
+      context: ./city-cleanup-challenge
+      dockerfile: Dockerfile
+    container_name: city-cleanup-frontend
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://localhost:3001
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - city-cleanup-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development Frontend (Expo)
+  frontend-dev:
+    build:
+      context: ./city-cleanup-challenge
+      dockerfile: Dockerfile.dev
+    container_name: city-cleanup-frontend-dev
+    ports:
+      - "19006:19006"
+      - "19000:19000"
+      - "19001:19001"
+    environment:
+      - NODE_ENV=development
+      - REACT_NATIVE_PACKAGER_HOSTNAME=localhost
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+    volumes:
+      - ./city-cleanup-challenge:/app
+      - /app/node_modules
+    networks:
+      - city-cleanup-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    profiles:
+      - dev
+
+  # PostgreSQL Database (optional upgrade from SQLite)
+  postgres:
+    image: postgres:15-alpine
+    container_name: city-cleanup-postgres
+    environment:
+      - POSTGRES_DB=city_cleanup
+      - POSTGRES_USER=cleanup_user
+      - POSTGRES_PASSWORD=cleanup_pass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - city-cleanup-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cleanup_user -d city_cleanup"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - postgres
+
+  # Redis Cache (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: city-cleanup-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - city-cleanup-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - cache
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: city-cleanup-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - city-cleanup-network
+    restart: unless-stopped
+    profiles:
+      - proxy
+
+networks:
+  city-cleanup-network:
+    driver: bridge
+
+volumes:
+  backend-data:
+    driver: local
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
