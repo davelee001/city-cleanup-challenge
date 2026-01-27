@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: city-cleanup
+data:
+  NODE_ENV: "production"
+  PORT: "3001"
+  DATABASE_PATH: "/app/data/city-cleanup.db"
+  CORS_ORIGIN: "https://city-cleanup.example.com"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: city-cleanup
+data:
+  NODE_ENV: "production"
+  REACT_APP_API_URL: "https://api.city-cleanup.example.com"
