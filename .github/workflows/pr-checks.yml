@@ -1,0 +1,70 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend && npm ci
+          cd ../city-cleanup-challenge && npm ci
+
+      - name: Run linters
+        run: |
+          cd backend && npx eslint . --ext .js,.jsx || true
+          cd ../city-cleanup-challenge && npx eslint . --ext .js,.jsx || true
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install and test backend
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm test -- --passWithNoTests
+
+  build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: backend:pr-${{ github.event.pull_request.number }}
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./city-cleanup-challenge
+          file: ./city-cleanup-challenge/Dockerfile
+          push: false
+          tags: frontend:pr-${{ github.event.pull_request.number }}
