@@ -1,0 +1,92 @@
+# Prometheus Alert Rules
+
+groups:
+  - name: city_cleanup_alerts
+    interval: 30s
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          rate(city_cleanup_http_request_errors_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second for {{ $labels.route }}"
+
+      # API Response Time
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95, rate(city_cleanup_http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.route }}"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          rate(process_cpu_seconds_total[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}%"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          process_resident_memory_bytes / 1024 / 1024 > 512
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}MB"
+
+      # Service Down
+      - alert: ServiceDown
+        expr: up{job="city-cleanup-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute"
+
+      # Database Connection Issues
+      - alert: DatabaseConnectionIssues
+        expr: |
+          rate(city_cleanup_database_query_duration_seconds_count[5m]) == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection issues"
+          description: "No database queries executed in the last 5 minutes"
+
+      # High Request Rate
+      - alert: HighRequestRate
+        expr: |
+          rate(city_cleanup_http_requests_total[1m]) > 1000
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "High request rate detected"
+          description: "Request rate is {{ $value }} requests per second"
+
+      # Low Event Creation Rate
+      - alert: LowEventCreationRate
+        expr: |
+          rate(city_cleanup_events_total{status="created"}[1h]) < 0.01
+        for: 2h
+        labels:
+          severity: info
+        annotations:
+          summary: "Low event creation rate"
+          description: "Less than 1 event created per hour"
