@@ -90,30 +90,54 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 
 ## Quick Start
 
-### Backend Setup
+### Using Docker (Recommended)
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Start with monitoring
+docker-compose --profile monitoring up -d
+
+# Access the application
+# Frontend: http://localhost
+# Backend API: http://localhost:3001
+# Grafana: http://localhost:3000 (admin/admin)
+# Prometheus: http://localhost:9090
+```
+
+### Manual Setup
+
+#### Backend Setup
 
 Prerequisites: Node.js 18+
 
-```powershell
-Push-Location "D:\PROJECTS\city-cleanup-challenge\backend"
-copy .env.example .env
+```bash
+cd backend
+cp .env.example .env
 npm install
 npm run dev
+
 # In another terminal, check health
 npm run health
-Pop-Location
 ```
 
-### Frontend Setup (Expo)
+#### Frontend Setup (Expo)
 
-```powershell
-Push-Location "D:\PROJECTS\city-cleanup-challenge\city-cleanup-challenge"
+```bash
+cd city-cleanup-challenge
 npm install
 npx expo start
-Pop-Location
 ```
 
 **Note**: Location permissions will be requested on first use for GPS functionality.
+
+### Quick Reference
+
+📚 [DevOps Infrastructure Guide](docs/DEVOPS_INFRASTRUCTURE.md)  
+📊 [Monitoring Setup](docs/MONITORING.md)  
+🔐 [Azure Key Vault Setup](docs/AZURE_KEYVAULT_SETUP.md)  
+🚀 [Quick Start Guide](QUICKSTART.md)
 
 ## App Features
 
@@ -208,13 +232,33 @@ Pop-Location
 
 ## Testing
 
-```powershell
-Push-Location "D:\PROJECTS\city-cleanup-challenge\backend"
+### Run All Tests
+
+```bash
+# Backend unit tests
+cd backend
 npm test
-Pop-Location
+
+# Backend integration tests
+npm run test:integration
+
+# E2E tests with Playwright
+npx playwright test
+
+# Run with UI
+npx playwright test --ui
+
+# Generate coverage report
+npm run test:coverage
 ```
 
-Tests cover authentication, event management, check-ins, and API functionality.
+### Test Coverage
+
+- ✅ Unit tests for core services
+- ✅ Integration tests for API endpoints
+- ✅ End-to-end tests for user workflows
+- ✅ Database operation tests
+- ✅ Authentication and authorization tests
 
 ## App Workflow
 
@@ -333,33 +377,122 @@ The comprehensive admin panel provides powerful management and analytics capabil
 - Activity tracking and analytics logging
 - Admin panel APIs with security middleware
 
-### Admin & Analytics
-- Real-time system metrics and monitoring
-- Comprehensive user activity tracking
-### Development Workflow
-- Use feature branches and PRs for all changes
-- Commit messages: `type(scope): subject` (e.g., `feat(admin): add plan management`, `fix(auth): role validation`)
-- Test your changes before submitting (backend has Jest test suite)
-- Follow established code patterns and conventions
+### DevOps & Infrastructure
+- **Docker**: Containerized services for backend and frontend
+- **Docker Compose**: Local development and production orchestration
+- **Kubernetes**: Production deployment with autoscaling and health checks
+- **GitHub Actions**: Automated CI/CD pipeline with testing and deployment
+- **Azure Container Registry**: Docker image storage
+- **Azure Key Vault**: Secure secrets management
 
-### Recent Development Updates
-- ✅ **Granular Commits** — Broke down large commit into feature-specific commits for better history tracking (Jan 24, 2026)
-- ✅ **Enhanced User Features** — Implemented modern auth UI, profile avatars, and subscription dashboard (Jan 24, 2026)
-- ✅ **Admin Panel Implementation** — Complete administrative interface added (Jan 24, 2026)
-- ✅ **Role-Based Authentication** — User and admin roles with secure endpoints (Jan 24, 2026)
+### Monitoring & Observability
+- **Prometheus**: Metrics collection and alerting
+- **Grafana**: Real-time dashboards and visualization
+- **Loki**: Centralized log aggregation
+- **Promtail**: Log shipping and processing
+- **Sentry**: Error tracking and performance monitoring
+- **Application Insights**: APM and distributed tracing
+- **Alertmanager**: Multi-channel alert routing
+- **Winston**: Structured logging service
 
-### Contribution Summary
-- **Total Commits Today**: 3 commits on January 24, 2026
-- **Major Features Added**: Admin system, role management, analytics dashboard
-- **Author**: davelee001 (david.leekaleer@student.utamu.ac.ug)
-- **Repository**: https://github.com/davelee001/city-cleanup-challengereporting
-- Audit trail for security and compliance
+### Testing
+- **Jest**: Unit and integration testing
+- **Playwright**: End-to-end browser testing
+- **Supertest**: API endpoint testing
+- **Code Coverage**: Automated coverage reports
+## Monitoring & Observability
+
+Access monitoring dashboards:
+
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **Prometheus**: http://localhost:9090
+- **Alertmanager**: http://localhost:9093
+
+### Available Metrics
+
+- HTTP request rate, latency, and errors
+- Database query performance
+- Business metrics (events, check-ins, users)
+- System metrics (CPU, memory, disk)
+
+### Logs
+
+View aggregated logs in Grafana using Loki datasource:
+```bash
+# View backend logs
+docker-compose logs -f backend
+
+# View all logs with Loki
+# Access Grafana → Explore → Select Loki datasource
+```
+
+### Error Tracking
+
+Configure Sentry for production error tracking in `backend/.env`:
+```env
+SENTRY_DSN=your_sentry_dsn
+SENTRY_ENVIRONMENT=production
+```
+
+📖 See [MONITORING.md](docs/MONITORING.md) for complete monitoring setup and troubleshooting.
+
+## Deployment
+
+### Kubernetes Deployment
+
+```bash
+# Create namespace and apply manifests
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/
+
+# Configure Azure Key Vault (optional)
+# See docs/AZURE_KEYVAULT_SETUP.md
+
+# Monitor deployment
+kubectl get pods -n city-cleanup
+kubectl logs -f deployment/backend -n city-cleanup
+```
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for automated deployment:
+
+- **Code Quality**: ESLint checks on every commit
+- **Testing**: Unit, integration, and E2E tests
+- **Security**: Trivy container scanning
+- **Deployment**: Automated deployment to Azure Kubernetes Service
+- **Notifications**: Slack alerts for build status
+
+📚 See [DEVOPS_INFRASTRUCTURE.md](docs/DEVOPS_INFRASTRUCTURE.md) for complete deployment guide.
 
 ## Contributing
 
-- Use feature branches and PRs
-- Commit messages: `type(scope): subject` (e.g., `feat(frontend): add event filtering`)
-- Test your changes before submitting
+### Development Workflow
+- Use feature branches and PRs for all changes
+- Commit messages: `type(scope): subject` (e.g., `feat(monitoring): add Prometheus metrics`, `fix(auth): role validation`)
+- Test your changes before submitting (run `npm test` in backend/)
+- Follow established code patterns and conventions
+
+### Running Tests Locally
+```bash
+# Backend tests
+cd backend
+npm test                    # Unit tests
+npm run test:integration    # Integration tests
+npm run test:coverage      # Coverage report
+
+# E2E tests
+npx playwright test
+npx playwright test --ui   # Interactive mode
+```
+
+### Code Quality Standards
+- ESLint for code linting
+- Jest for testing
+- 80%+ test coverage target
+- Security scanning with Trivy
+
+📋 See [CONTRIBUTION_TEST.md](CONTRIBUTION_TEST.md) for detailed contribution guidelines.
 
 ## License
 
