@@ -1,0 +1,77 @@
+# Alertmanager Configuration
+
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@citycleanup.com'
+  smtp_auth_username: '${SMTP_USER}'
+  smtp_auth_password: '${SMTP_PASS}'
+
+# The root route with all parameters which are inherited by the child routes
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  
+  routes:
+    - match:
+        severity: critical
+      receiver: 'critical'
+      continue: true
+    
+    - match:
+        severity: warning
+      receiver: 'warning'
+    
+    - match:
+        severity: info
+      receiver: 'info'
+
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'team@citycleanup.com'
+        headers:
+          subject: '[City Cleanup] Alert: {{ .GroupLabels.alertname }}'
+    webhook_configs:
+      - url: 'http://backend:3001/api/webhooks/alerts'
+        send_resolved: true
+
+  - name: 'critical'
+    email_configs:
+      - to: 'oncall@citycleanup.com'
+        headers:
+          subject: '[CRITICAL] City Cleanup Alert: {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts-critical'
+        title: 'Critical Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    webhook_configs:
+      - url: 'http://backend:3001/api/webhooks/alerts'
+        send_resolved: true
+
+  - name: 'warning'
+    email_configs:
+      - to: 'team@citycleanup.com'
+        headers:
+          subject: '[WARNING] City Cleanup Alert: {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts'
+        title: 'Warning: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+  - name: 'info'
+    webhook_configs:
+      - url: 'http://backend:3001/api/webhooks/alerts'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']
