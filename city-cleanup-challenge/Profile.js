@@ -1,37 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import ImageUploader from './components/ImageUploader';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+const API_BASE_URL = 'http://localhost:3001/api/v1';
 
 export default function Profile({ username, onLogout, onUsernameChange }) {
   const [profile, setProfile] = useState(null);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [avatar, setAvatar] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/profile/${username}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setProfile(data.user);
-          setNewUsername(data.user.username);
-          setAvatar(data.user.avatar);
-        } else {
-          setError(data.message || 'Failed to load profile.');
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Network error.');
-        setLoading(false);
-      });
+    // Load profile details and current avatar
+    Promise.all([
+      fetch(`${API_BASE_URL}/profile/${username}`),
+      fetch(`${API_BASE_URL}/user/${username}/avatar`)
+    ])
+    .then(([profileRes, avatarRes]) => Promise.all([profileRes.json(), avatarRes.json()]))
+    .then(([profileData, avatarData]) => {
+      if (profileData.success) {
+        setProfile(profileData.user);
+        setNewUsername(profileData.user.username || username);
+      }
+      if (avatarData.success) {
+        setAvatarUrl(avatarData.avatarUrl);
+      }
+      setLoading(false);
+    })
+    .catch(() => {
+      setError('Failed to load profile.');
+      setLoading(false);
+    });
   }, [username]);
+
+  const handleAvatarUploaded = (result) => {
+    if (result.success && result.avatarUrl) {
+      setAvatarUrl(result.avatarUrl);
+      setSuccess('Avatar updated successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    }
+  };
 
   const handleUpdate = async () => {
     setError('');
@@ -41,7 +53,7 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
       const res = await fetch(`${API_BASE_URL}/profile/${username}` , {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newUsername, newPassword, avatar })
+        body: JSON.stringify({ newUsername, newPassword })
       });
       const data = await res.json();
       if (data.success) {
@@ -56,32 +68,26 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
     setLoading(false);
   };
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
-    }
-  };
-
   if (loading && !profile) return <ActivityIndicator style={{ margin: 20 }} />;
 
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <Image source={{ uri: avatar || 'https://via.placeholder.com/150' }} style={styles.avatar} />
-        <TouchableOpacity onPress={pickImage}>
-          <Text style={styles.changeAvatarText}>Change Avatar</Text>
-        </TouchableOpacity>
+        <Text style={styles.avatarLabel}>Profile Picture</Text>
+        <ImageUploader
+          uploadType="avatar"
+          username={username}
+          currentImageUrl={avatarUrl}
+          onImageUploaded={handleAvatarUploaded}
+          placeholder="Upload Avatar"
+          style={styles.avatarUploader}
+        />
       </View>
-      <Text style={styles.title}>Profile</Text>
+      
+      <Text style={styles.title}>Profile Settings</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {success ? <Text style={styles.success}>{success}</Text> : null}
+      
       <Text style={styles.label}>Username:</Text>
       <TextInput
         style={styles.input}
@@ -107,23 +113,62 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#f5f5f5' },
+  container: { 
+    flex: 1, 
+    padding: 24, 
+    backgroundColor: '#f5f5f5' 
+  },
   avatarContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  avatar: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+  avatarLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
   },
-  changeAvatarText: {
-    color: '#007bff',
-    marginTop: 10,
+  avatarUploader: {
+    marginBottom: 8,
   },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12, textAlign: 'center' },
-  label: { fontWeight: 'bold', marginTop: 12 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 10, marginTop: 4, backgroundColor: '#fff' },
-  error: { color: 'red', marginBottom: 8, textAlign: 'center' },
-  success: { color: 'green', marginBottom: 8, textAlign: 'center' }
+  title: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    marginBottom: 16, 
+    textAlign: 'center',
+    color: '#2e8b57'
+  },
+  label: { 
+    fontWeight: 'bold', 
+    marginTop: 12,
+    color: '#555'
+  },
+  input: { 
+    borderWidth: 1, 
+    borderColor: '#ccc', 
+    borderRadius: 4, 
+    padding: 10, 
+    marginTop: 4, 
+    backgroundColor: '#fff' 
+  },
+  error: { 
+    color: 'red', 
+    marginBottom: 8, 
+    textAlign: 'center',
+    fontSize: 14
+  },
+  success: { 
+    color: 'green', 
+    marginBottom: 8, 
+    textAlign: 'center',
+    fontSize: 14
+  }
 });
