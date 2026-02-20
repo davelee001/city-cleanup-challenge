@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import ProgressPhotoUploader from './components/ProgressPhotoUploader';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+const API_BASE_URL = 'http://localhost:3001/api/v1';
 
 export default function Progress({ username }) {
   const [userProgress, setUserProgress] = useState([]);
@@ -9,6 +10,7 @@ export default function Progress({ username }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showProgressForm, setShowProgressForm] = useState(null);
+  const [showPhotoUploader, setShowPhotoUploader] = useState(null);
   const [progressData, setProgressData] = useState({
     wasteCollected: '',
     wasteType: '',
@@ -155,10 +157,38 @@ export default function Progress({ username }) {
                   </View>
                 </View>
               ) : (
-                <Button
-                  title="Track Progress"
-                  onPress={() => setShowProgressForm(checkin.eventId)}
-                />
+                <View style={styles.actionButtons}>
+                  <Button
+                    title="Track Progress"
+                    onPress={() => setShowProgressForm(checkin.eventId)}
+                  />
+                  <TouchableOpacity 
+                    style={styles.photoButton}
+                    onPress={() => setShowPhotoUploader(checkin.eventId)}
+                  >
+                    <Text style={styles.photoButtonText}>📷 Add Photos</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              {/* Photo Uploader Modal */}
+              {showPhotoUploader === checkin.eventId && (
+                <View style={styles.photoUploaderWrapper}>
+                  <ProgressPhotoUploader
+                    username={username}
+                    eventId={checkin.eventId}
+                    onProgressUpdated={(result) => {
+                      setShowPhotoUploader(null);
+                      fetchUserProgress(); // Refresh data
+                      Alert.alert('Success', 'Progress and photos uploaded successfully!');
+                    }}
+                  />
+                  <Button 
+                    title="Close" 
+                    onPress={() => setShowPhotoUploader(null)}
+                    color="#6c757d"
+                  />
+                </View>
               )}
             </View>
           ))}
@@ -244,6 +274,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff'
   },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  actionButtons: { 
+    flexDirection: 'column',
+    gap: 8,
+  },
+  photoButton: {
+    backgroundColor: '#20c997',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  photoButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  photoUploaderWrapper: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
   progressList: { flex: 1 },
   progressCard: { 
     backgroundColor: '#e8f5e8', 
