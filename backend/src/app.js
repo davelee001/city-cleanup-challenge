@@ -1,8 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const path = require('path');
+const fs = require('fs');
 const db = require('./db');
 const emitter = require('./events');
+const { upload, imageProcessor, cleanupTempFiles, getImageUrl } = require('./services/imageUpload');
 
 // --- Event Listeners ---
 
@@ -471,6 +474,260 @@ function createApp() {
 			});
 		}).catch(err => {
 			res.status(500).json({ success: false, message: 'Database error' });
+		});
+	});
+
+	// === IMAGE UPLOAD ENDPOINTS ===
+
+	// Serve static image files
+	app.use('/api/v1/images', express.static(path.join(__dirname, '../uploads')));
+
+	// Upload avatar endpoint
+	apiRouter.post('/upload/avatar', upload.single('avatar'), async (req, res) => {
+		try {
+			if (!req.file) {
+				return res.status(400).json({ success: false, message: 'No file uploaded' });
+			}
+
+			const { username } = req.body;
+			if (!username) {
+				cleanupTempFiles([req.file.path]);
+				return res.status(400).json({ success: false, message: 'Username required' });
+			}
+
+			// Process the avatar image
+			const outputPath = path.join(path.dirname(req.file.path), `processed-${req.file.filename}`);
+			const processResult = await imageProcessor.processAvatar(req.file.path, outputPath);
+
+			if (!processResult.success) {
+				cleanupTempFiles([req.file.path]);
+				return res.status(500).json({ success: false, message: 'Failed to process image' });
+			}
+
+			// Update user avatar in database
+			const relativePath = outputPath.replace(/.*uploads\//, '');
+			db.run('UPDATE users SET avatar = ? WHERE username = ?', [relativePath, username], function(err) {
+				// Cleanup temp files
+				cleanupTempFiles([req.file.path]);
+
+				if (err) {
+					cleanupTempFiles([outputPath]);
+					return res.status(500).json({ success: false, message: 'Failed to update avatar' });
+				}
+
+				const imageUrl = getImageUrl(relativePath);
+				res.json({ 
+					success: true, 
+					message: 'Avatar uploaded successfully',
+					avatarUrl: imageUrl,
+					path: relativePath
+				});
+			});
+
+		} catch (error) {
+			if (req.file) {
+				cleanupTempFiles([req.file.path]);
+			}
+			res.status(500).json({ success: false, message: error.message });
+		}
+	});
+
+	// Upload event photos (before/after cleanup)
+	apiRouter.post('/upload/progress/:eventId', upload.fields([
+		{ name: 'beforePhoto', maxCount: 1 },
+		{ name: 'afterPhoto', maxCount: 1 }
+	]), async (req, res) => {
+		try {
+			const { eventId } = req.params;
+			const { username, wasteCollected, wasteType, notes } = req.body;
+
+			if (!username || !eventId) {
+				return res.status(400).json({ success: false, message: 'Username and event ID required' });
+			}
+
+			const processedPhotos = {};
+			const tempFiles = [];
+
+			// Process uploaded photos
+			if (req.files.beforePhoto) {
+				const beforeFile = req.files.beforePhoto[0];
+				tempFiles.push(beforeFile.path);
+				
+				const outputPath = path.join(path.dirname(beforeFile.path), `before-${beforeFile.filename}`);
+				const result = await imageProcessor.processPhoto(beforeFile.path, outputPath);
+				
+				if (result.success) {
+					processedPhotos.beforePhotoPath = outputPath.replace(/.*uploads\//, '');
+				}
+			}
+
+			if (req.files.afterPhoto) {
+				const afterFile = req.files.afterPhoto[0];
+				tempFiles.push(afterFile.path);
+				
+				const outputPath = path.join(path.dirname(afterFile.path), `after-${afterFile.filename}`);
+				const result = await imageProcessor.processPhoto(afterFile.path, outputPath);
+				
+				if (result.success) {
+					processedPhotos.afterPhotoPath = outputPath.replace(/.*uploads\//, '');
+				}
+			}
+
+			// Update or insert progress record
+			const updateQuery = `
+				INSERT OR REPLACE INTO cleanup_progress 
+				(eventId, username, wasteCollected, wasteType, beforePhotoPath, afterPhotoPath, notes, updatedAt)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			`;
+
+			const updatedAt = new Date().toISOString();
+			
+			db.run(updateQuery, [
+				eventId, 
+				username, 
+				wasteCollected || 0, 
+				wasteType || '', 
+				processedPhotos.beforePhotoPath || null,
+				processedPhotos.afterPhotoPath || null,
+				notes || '',
+				updatedAt
+			], function(err) {
+				// Cleanup temp files
+				cleanupTempFiles(tempFiles);
+
+				if (err) {
+					return res.status(500).json({ success: false, message: 'Failed to save progress' });
+				}
+
+				// Prepare response with image URLs
+				const response = {
+					success: true,
+					message: 'Progress updated successfully',
+					progressId: this.lastID || this.changes,
+					photos: {}
+				};
+
+				if (processedPhotos.beforePhotoPath) {
+					response.photos.beforePhoto = getImageUrl(processedPhotos.beforePhotoPath);
+				}
+				if (processedPhotos.afterPhotoPath) {
+					response.photos.afterPhoto = getImageUrl(processedPhotos.afterPhotoPath);
+				}
+
+				res.json(response);
+			});
+
+		} catch (error) {
+			// Cleanup any uploaded files on error
+			if (req.files) {
+				const tempFiles = [];
+				if (req.files.beforePhoto) tempFiles.push(req.files.beforePhoto[0].path);
+				if (req.files.afterPhoto) tempFiles.push(req.files.afterPhoto[0].path);
+				cleanupTempFiles(tempFiles);
+			}
+			res.status(500).json({ success: false, message: error.message });
+		}
+	});
+
+	// Upload general event photos
+	apiRouter.post('/upload/event/:eventId', upload.array('photos', 5), async (req, res) => {
+		try {
+			const { eventId } = req.params;
+			const { username } = req.body;
+
+			if (!username || !eventId || !req.files || req.files.length === 0) {
+				return res.status(400).json({ success: false, message: 'Username, event ID, and at least one photo required' });
+			}
+
+			const processedPhotos = [];
+			const tempFiles = req.files.map(file => file.path);
+
+			// Process each uploaded photo
+			for (const file of req.files) {
+				const outputPath = path.join(path.dirname(file.path), `event-${file.filename}`);
+				const result = await imageProcessor.processPhoto(file.path, outputPath);
+				
+				if (result.success) {
+					const relativePath = outputPath.replace(/.*uploads\//, '');
+					processedPhotos.push({
+						originalName: file.originalname,
+						path: relativePath,
+						url: getImageUrl(relativePath),
+						size: file.size
+					});
+				}
+			}
+
+			// Cleanup temp files
+			cleanupTempFiles(tempFiles);
+
+			res.json({
+				success: true,
+				message: `${processedPhotos.length} photos uploaded successfully`,
+				photos: processedPhotos
+			});
+
+		} catch (error) {
+			if (req.files) {
+				cleanupTempFiles(req.files.map(file => file.path));
+			}
+			res.status(500).json({ success: false, message: error.message });
+		}
+	});
+
+	// Get user avatar
+	apiRouter.get('/user/:username/avatar', (req, res) => {
+		const { username } = req.params;
+		
+		db.get('SELECT avatar FROM users WHERE username = ?', [username], (err, user) => {
+			if (err || !user) {
+				return res.status(404).json({ success: false, message: 'User not found' });
+			}
+			
+			if (!user.avatar) {
+				return res.status(404).json({ success: false, message: 'No avatar set' });
+			}
+
+			res.json({
+				success: true,
+				avatarUrl: getImageUrl(user.avatar)
+			});
+		});
+	});
+
+	// Get cleanup progress photos for an event
+	apiRouter.get('/progress/:eventId/photos', (req, res) => {
+		const { eventId } = req.params;
+		
+		const query = `
+			SELECT username, beforePhotoPath, afterPhotoPath, wasteCollected, 
+				   wasteType, notes, updatedAt
+			FROM cleanup_progress 
+			WHERE eventId = ? AND (beforePhotoPath IS NOT NULL OR afterPhotoPath IS NOT NULL)
+		`;
+		
+		db.all(query, [eventId], (err, progressRecords) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			
+			const photosWithUrls = progressRecords.map(record => ({
+				username: record.username,
+				wasteCollected: record.wasteCollected,
+				wasteType: record.wasteType,
+				notes: record.notes,
+				updatedAt: record.updatedAt,
+				photos: {
+					before: record.beforePhotoPath ? getImageUrl(record.beforePhotoPath) : null,
+					after: record.afterPhotoPath ? getImageUrl(record.afterPhotoPath) : null
+				}
+			}));
+			
+			res.json({
+				success: true,
+				eventId: eventId,
+				progressPhotos: photosWithUrls
+			});
 		});
 	});
 
