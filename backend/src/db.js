@@ -2,6 +2,9 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
+// Import enhanced features migration
+const { runMigration: runEnhancedFeaturesMigration } = require('./migrations/enhance-image-features');
+
 const db = new sqlite3.Database(path.join(__dirname, '../city-cleanup.db'));
 
 db.serialize(() => {
@@ -114,6 +117,16 @@ db.serialize(() => {
       );
     }
   });
+
+  // Run enhanced features migration
+  setTimeout(async () => {
+    try {
+      await runEnhancedFeaturesMigration(db);
+      console.log('Enhanced image features migration completed successfully');
+    } catch (error) {
+      console.error('Failed to run enhanced features migration:', error);
+    }
+  }, 1000); // Wait 1 second for basic tables to be created
 });
 
 module.exports = db;
