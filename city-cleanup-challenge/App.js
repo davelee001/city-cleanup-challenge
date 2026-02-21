@@ -11,6 +11,7 @@ import Progress from './Progress';
 import Dashboard from './Dashboard';
 import AdminPanel from './AdminPanel';
 import SubscriptionDashboard from './SubscriptionDashboard';
+import GamificationDashboard from './components/GamificationDashboard';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -25,6 +26,7 @@ export default function App() {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
+  const [showGamification, setShowGamification] = useState(false);
   
   const handleLogin = (username, role = 'user') => {
     setUser(username);
@@ -51,6 +53,7 @@ export default function App() {
     setShowDashboard(false);
     setShowAdminPanel(false);
     setShowSubscription(false);
+    setShowGamification(false);
   };
 
   const handleShowAdminPanel = () => {
@@ -66,6 +69,11 @@ export default function App() {
   const handleShowSubscription = () => {
     resetViews();
     setShowSubscription(true);
+  };
+
+  const handleShowGamification = () => {
+    resetViews();
+    setShowGamification(true);
   };
 
   return (
@@ -125,6 +133,11 @@ export default function App() {
           <Button title="Back to Home" onPress={() => setShowSubscription(false)} />
           <SubscriptionDashboard />
         </>
+      ) : showGamification ? (
+        <GamificationDashboard 
+          username={user} 
+          onClose={() => setShowGamification(false)} 
+        />
       ) : (
         <View style={styles.homeContainer}>
           <Text style={styles.welcome}>Welcome, {user}!</Text>
@@ -149,6 +162,9 @@ export default function App() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.gridButton} onPress={handleShowSubscription}>
               <Text style={styles.gridText}>Subscription</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={handleShowGamification}>
+              <Text style={styles.gridText}>🏆 Achievements</Text>
             </TouchableOpacity>
             {userRole === 'admin' && (
               <TouchableOpacity style={styles.gridButton} onPress={handleShowAdminPanel}>
