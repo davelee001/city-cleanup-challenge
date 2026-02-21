@@ -6,6 +6,14 @@ const fs = require('fs');
 const db = require('./db');
 const emitter = require('./events');
 const { upload, imageProcessor, cleanupTempFiles, getImageUrl } = require('./services/imageUpload');
+const { 
+  upload: enhancedUpload, 
+  imageProcessor: enhancedImageProcessor,
+  gpsMetadataProcessor,
+  aiImpactAnalyzer,
+  visualProgressTracker,
+  useCloudStorage
+} = require('./services/enhancedImageUpload');
 
 // --- Event Listeners ---
 
@@ -729,6 +737,377 @@ function createApp() {
 				progressPhotos: photosWithUrls
 			});
 		});
+	});
+
+	// === ENHANCED IMAGE UPLOAD ENDPOINTS WITH GPS & AI ANALYSIS ===
+
+	// Enhanced progress photo upload with GPS metadata and AI impact analysis
+	apiRouter.post('/enhanced/upload/progress/:eventId', enhancedUpload.fields([
+		{ name: 'beforePhoto', maxCount: 1 },
+		{ name: 'afterPhoto', maxCount: 1 }
+	]), async (req, res) => {
+		try {
+			const { eventId } = req.params;
+			const { username, wasteCollected, wasteType, notes, latitude, longitude } = req.body;
+
+			if (!username || !eventId) {
+				return res.status(400).json({ success: false, message: 'Username and event ID required' });
+			}
+
+			// Get event location for validation
+			const event = await new Promise((resolve, reject) => {
+				db.get('SELECT latitude, longitude, location FROM events WHERE id = ?', [eventId], (err, row) => {
+					if (err) reject(err);
+					else resolve(row);
+				});
+			});
+
+			const processedPhotos = {};
+			const analysisResults = {};
+			const tempFiles = [];
+			let gpsData = null;
+
+			// Create GPS data if provided
+			if (latitude && longitude) {
+				gpsData = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
+			}
+
+			// Process before photo with GPS and analysis
+			if (req.files && req.files.beforePhoto) {
+				const beforeFile = req.files.beforePhoto[0];
+				tempFiles.push(useCloudStorage ? null : beforeFile.path);
+				
+				const outputPath = useCloudStorage 
+					? beforeFile.key || beforeFile.location 
+					: path.join(path.dirname(beforeFile.path), `enhanced-before-${beforeFile.filename}`);
+				
+				const result = await enhancedImageProcessor.processCleanupPhoto(
+					useCloudStorage ? beforeFile.location : beforeFile.path, 
+					useCloudStorage ? outputPath : outputPath,
+					{ 
+						gpsData: gpsData,
+						performAnalysis: true,
+						preserveGPS: true 
+					}
+				);
+				
+				if (result.success) {
+					processedPhotos.beforePhotoPath = useCloudStorage ? outputPath : outputPath.replace(/.*uploads\//, '');
+					processedPhotos.beforeGPS = result.gpsData;
+					analysisResults.beforeAnalysis = result.analysis;
+				}
+			}
+
+			// Process after photo with GPS and analysis
+			if (req.files && req.files.afterPhoto) {
+				const afterFile = req.files.afterPhoto[0];
+				tempFiles.push(useCloudStorage ? null : afterFile.path);
+				
+				const outputPath = useCloudStorage 
+					? afterFile.key || afterFile.location
+					: path.join(path.dirname(afterFile.path), `enhanced-after-${afterFile.filename}`);
+				
+				const result = await enhancedImageProcessor.processCleanupPhoto(
+					useCloudStorage ? afterFile.location : afterFile.path, 
+					useCloudStorage ? outputPath : outputPath,
+					{ 
+						gpsData: gpsData,
+						performAnalysis: true,
+						preserveGPS: true 
+					}
+				);
+				
+				if (result.success) {
+					processedPhotos.afterPhotoPath = useCloudStorage ? outputPath : outputPath.replace(/.*uploads\//, '');
+					processedPhotos.afterGPS = result.gpsData;
+					analysisResults.afterAnalysis = result.analysis;
+				}
+			}
+
+			// Perform comparative analysis if both photos exist
+			let impactAnalysis = null;
+			if (processedPhotos.beforePhotoPath && processedPhotos.afterPhotoPath) {
+				const beforePath = useCloudStorage ? req.files.beforePhoto[0].location : req.files.beforePhoto[0].path;
+				const afterPath = useCloudStorage ? req.files.afterPhoto[0].location : req.files.afterPhoto[0].path;
+				
+				const comparisonResult = await visualProgressTracker.comparePhotos(
+					beforePath, 
+					afterPath, 
+					event && event.latitude ? { latitude: event.latitude, longitude: event.longitude } : null
+				);
+				
+				if (comparisonResult.success) {
+					impactAnalysis = comparisonResult.comparison;
+					// Generate visual progress report
+					const progressReport = visualProgressTracker.generateProgressReport(impactAnalysis);
+					impactAnalysis.progressReport = progressReport;
+				}
+			}
+
+			// Update database with enhanced data
+			const updateQuery = `
+				INSERT OR REPLACE INTO cleanup_progress 
+				(eventId, username, wasteCollected, wasteType, beforePhotoPath, afterPhotoPath, notes, updatedAt, 
+				 beforePhotoGPS, afterPhotoGPS, impactAnalysis)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`;
+
+			const updatedAt = new Date().toISOString();
+			
+			db.run(updateQuery, [
+				eventId, 
+				username, 
+				wasteCollected || 0, 
+				wasteType || '', 
+				processedPhotos.beforePhotoPath || null,
+				processedPhotos.afterPhotoPath || null,
+				notes || '',
+				updatedAt,
+				JSON.stringify(processedPhotos.beforeGPS || null),
+				JSON.stringify(processedPhotos.afterGPS || null),
+				JSON.stringify(impactAnalysis || null)
+			], function(err) {
+				// Cleanup temp files for local storage
+				if (!useCloudStorage) {
+					cleanupTempFiles(tempFiles.filter(f => f !== null));
+				}
+
+				if (err) {
+					return res.status(500).json({ success: false, message: 'Failed to save enhanced progress' });
+				}
+
+				// Prepare enhanced response
+				const response = {
+					success: true,
+					message: 'Enhanced progress uploaded with GPS and AI analysis',
+					progressId: this.lastID || this.changes,
+					photos: {},
+					gpsData: {
+						before: processedPhotos.beforeGPS,
+						after: processedPhotos.afterGPS
+					},
+					analysis: analysisResults,
+					impactAnalysis: impactAnalysis
+				};
+
+				if (processedPhotos.beforePhotoPath) {
+					response.photos.beforePhoto = getImageUrl(processedPhotos.beforePhotoPath);
+				}
+				if (processedPhotos.afterPhotoPath) {
+					response.photos.afterPhoto = getImageUrl(processedPhotos.afterPhotoPath);
+				}
+
+				res.json(response);
+			});
+
+		} catch (error) {
+			// Cleanup any uploaded files on error
+			if (req.files && !useCloudStorage) {
+				const tempFiles = [];
+				if (req.files.beforePhoto) tempFiles.push(req.files.beforePhoto[0].path);
+				if (req.files.afterPhoto) tempFiles.push(req.files.afterPhoto[0].path);
+				cleanupTempFiles(tempFiles);
+			}
+			res.status(500).json({ 
+				success: false, 
+				message: error.message,
+				stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+			});
+		}
+	});
+
+	// Enhanced avatar upload with GPS metadata
+	apiRouter.post('/enhanced/upload/avatar', enhancedUpload.single('avatar'), async (req, res) => {
+		try {
+			if (!req.file) {
+				return res.status(400).json({ success: false, message: 'No file uploaded' });
+			}
+
+			const { username, latitude, longitude } = req.body;
+			if (!username) {
+				if (!useCloudStorage) cleanupTempFiles([req.file.path]);
+				return res.status(400).json({ success: false, message: 'Username required' });
+			}
+
+			// Create GPS data if provided
+			let gpsData = null;
+			if (latitude && longitude) {
+				gpsData = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
+			}
+
+			// Process the avatar image with GPS
+			const outputPath = useCloudStorage 
+				? req.file.key || req.file.location
+				: path.join(path.dirname(req.file.path), `enhanced-avatar-${req.file.filename}`);
+			
+			const processResult = await enhancedImageProcessor.processAvatar(
+				useCloudStorage ? req.file.location : req.file.path, 
+				outputPath, 
+				gpsData
+			);
+
+			if (!processResult.success) {
+				if (!useCloudStorage) cleanupTempFiles([req.file.path]);
+				return res.status(500).json({ success: false, message: 'Failed to process image' });
+			}
+
+			// Update user avatar in database with GPS metadata
+			const relativePath = useCloudStorage ? outputPath : outputPath.replace(/.*uploads\//, '');
+			const avatarData = {
+				path: relativePath,
+				gps: gpsData,
+				uploadedAt: new Date().toISOString()
+			};
+
+			db.run('UPDATE users SET avatar = ? WHERE username = ?', [JSON.stringify(avatarData), username], function(err) {
+				// Cleanup temp files for local storage
+				if (!useCloudStorage) {
+					cleanupTempFiles([req.file.path]);
+				}
+
+				if (err) {
+					if (!useCloudStorage) cleanupTempFiles([outputPath]);
+					return res.status(500).json({ success: false, message: 'Failed to update avatar' });
+				}
+
+				const imageUrl = getImageUrl(relativePath);
+				res.json({ 
+					success: true, 
+					message: 'Enhanced avatar uploaded successfully with GPS metadata',
+					avatarUrl: imageUrl,
+					path: relativePath,
+					gpsData: gpsData
+				});
+			});
+
+		} catch (error) {
+			if (req.file && !useCloudStorage) {
+				cleanupTempFiles([req.file.path]);
+			}
+			res.status(500).json({ 
+				success: false, 
+				message: error.message,
+				stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+			});
+		}
+	});
+
+	// Get enhanced progress analysis for an event
+	apiRouter.get('/enhanced/progress/:eventId/analysis', (req, res) => {
+		const { eventId } = req.params;
+		
+		const query = `
+			SELECT username, beforePhotoPath, afterPhotoPath, beforePhotoGPS, afterPhotoGPS, 
+				   impactAnalysis, wasteCollected, wasteType, notes, updatedAt
+			FROM cleanup_progress 
+			WHERE eventId = ? AND impactAnalysis IS NOT NULL
+		`;
+		
+		db.all(query, [eventId], (err, progressRecords) => {
+			if (err) {
+				return res.status(500).json({ success: false, message: 'Database error' });
+			}
+			
+			const enhancedProgress = progressRecords.map(record => ({
+				username: record.username,
+				wasteCollected: record.wasteCollected,
+				wasteType: record.wasteType,
+				notes: record.notes,
+				updatedAt: record.updatedAt,
+				photos: {
+					before: record.beforePhotoPath ? getImageUrl(record.beforePhotoPath) : null,
+					after: record.afterPhotoPath ? getImageUrl(record.afterPhotoPath) : null
+				},
+				gpsData: {
+					before: record.beforePhotoGPS ? JSON.parse(record.beforePhotoGPS) : null,
+					after: record.afterPhotoGPS ? JSON.parse(record.afterPhotoGPS) : null
+				},
+				impactAnalysis: record.impactAnalysis ? JSON.parse(record.impactAnalysis) : null
+			}));
+			
+			// Calculate aggregate statistics
+			const aggregateStats = {
+				totalParticipants: enhancedProgress.length,
+				averageImpactScore: 0,
+				totalValidatedPhotos: 0,
+				locationAccuracy: 0
+			};
+
+			if (enhancedProgress.length > 0) {
+				const validAnalysis = enhancedProgress.filter(p => p.impactAnalysis && p.impactAnalysis.impactAnalysis);
+				
+				if (validAnalysis.length > 0) {
+					aggregateStats.averageImpactScore = validAnalysis.reduce((sum, p) => 
+						sum + p.impactAnalysis.impactAnalysis.score, 0) / validAnalysis.length;
+				}
+
+				aggregateStats.totalValidatedPhotos = enhancedProgress.filter(p => 
+					p.impactAnalysis && p.impactAnalysis.locationValidation && p.impactAnalysis.locationValidation.valid).length;
+				
+				aggregateStats.locationAccuracy = aggregateStats.totalValidatedPhotos / enhancedProgress.length;
+			}
+			
+			res.json({
+				success: true,
+				eventId: eventId,
+				enhancedProgress: enhancedProgress,
+				aggregateStats: aggregateStats
+			});
+		});
+	});
+
+	// AI Impact analysis endpoint for existing photos
+	apiRouter.post('/enhanced/analyze-impact', async (req, res) => {
+		try {
+			const { beforePhotoUrl, afterPhotoUrl, eventId } = req.body;
+
+			if (!beforePhotoUrl || !afterPhotoUrl) {
+				return res.status(400).json({ success: false, message: 'Before and after photo URLs required' });
+			}
+
+			// Get event location if eventId provided
+			let eventLocation = null;
+			if (eventId) {
+				const event = await new Promise((resolve, reject) => {
+					db.get('SELECT latitude, longitude FROM events WHERE id = ?', [eventId], (err, row) => {
+						if (err) reject(err);
+						else resolve(row);
+					});
+				});
+				eventLocation = event;
+			}
+
+			// Convert URLs to file paths (assuming local storage for now)
+			const beforePath = beforePhotoUrl.replace('/api/v1/images/', '');
+			const afterPath = afterPhotoUrl.replace('/api/v1/images/', '');
+			const fullBeforePath = path.join(__dirname, '../../uploads', beforePath);
+			const fullAfterPath = path.join(__dirname, '../../uploads', afterPath);
+
+			// Perform analysis
+			const analysisResult = await visualProgressTracker.comparePhotos(
+				fullBeforePath, 
+				fullAfterPath, 
+				eventLocation
+			);
+
+			if (analysisResult.success) {
+				const progressReport = visualProgressTracker.generateProgressReport(analysisResult.comparison);
+				analysisResult.comparison.progressReport = progressReport;
+			}
+
+			res.json({
+				success: analysisResult.success,
+				analysis: analysisResult.comparison || null,
+				error: analysisResult.error || null
+			});
+
+		} catch (error) {
+			res.status(500).json({ 
+				success: false, 
+				message: error.message,
+				stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+			});
+		}
 	});
 
 	app.use('/api/v1', apiRouter);
