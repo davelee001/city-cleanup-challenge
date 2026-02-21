@@ -2,6 +2,24 @@
 
 A comprehensive location-based cleanup event platform with React Native (Expo) frontend and Node.js Express backend. Join cleanup events, track your environmental impact, and help make your city cleaner!
 
+## Latest Enhancements (v2.4 - February 2026)
+
+📷 **Complete Image Upload System** — Comprehensive photo documentation for cleanup events
+🖼️ **Before/After Photo Tracking** — Visual proof of environmental impact with GPS metadata
+👤 **Profile Avatar Upload** — Personalized user profiles with custom avatars
+📊 **Visual Progress Documentation** — Photo-enhanced cleanup progress tracking
+🔧 **Multer Integration** — Professional-grade file upload handling with security
+🎨 **Enhanced UI Components** — New reusable image upload components
+
+### New Image Upload Features (February 20, 2026)
+- ✅ **Image Upload Service** — Complete backend service for handling file uploads with validation
+- ✅ **Avatar Upload System** — Users can upload and manage profile pictures  
+- ✅ **Progress Photo Documentation** — Before/after photo upload for cleanup events
+- ✅ **Reusable Upload Components** — Modular React components for various upload types
+- ✅ **Image Processing Pipeline** — Automatic image optimization and thumbnail generation
+- ✅ **Secure File Storage** — Organized directory structure with file validation
+- ✅ **REST API Endpoints** — Complete API coverage for image upload operations
+
 ## Recent Enhancements (v2.3)
 
 🚀 **Complete DevOps Infrastructure** — Docker, Kubernetes, CI/CD with GitHub Actions
@@ -54,15 +72,19 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 
 ### Impact Tracking
 - **Progress Logging**: Track waste collected (weight, type, notes)
+- **Photo Documentation**: Upload before/after photos for visual impact proof
 - **Personal Impact**: View your total environmental impact across all events
 - **Event Statistics**: See collective progress for each cleanup event
 - **Achievement History**: Historical view of all your cleanup contributions
+- **Visual Progress Gallery**: Browse photos from all your cleanup activities
 
 ### Social Features
 - **Event Creation**: Create and manage your own cleanup events
 - **Community Posts**: Share experiences and motivate others
-- **User Profiles**: Manage your account and track personal progress
+- **User Profiles**: Manage your account with custom avatar uploads
+- **Photo Sharing**: Upload and view cleanup photos from the community
 - **Chatbot Guide**: Get help with app features and cleanup tips
+- **Visual Impact Stories**: Before/after photo galleries for events
 
 ### Admin Panel & Management
 - **Role-Based Access**: Admin and user roles with permission controls
@@ -138,11 +160,11 @@ npx expo start
 📊 [Monitoring Setup](docs/MONITORING.md)  
 🔐 [Azure Key Vault Setup](docs/AZURE_KEYVAULT_SETUP.md)  
 🚀 [Quick Start Guide](QUICKSTART.md)
-
-## App Features
-
-### Main Navigation
-- **Events & Map** — Browse and manage cleanup events
+ with photo documentation
+- **My Progress** — Track your environmental impact with before/after photos
+- **Posts** — Community discussions and sharing with image uploads
+- **Chatbot Guide** — Get help and guidance
+- **Profile** — Manage account settings and upload customnup events
 - **My Progress** — Track your environmental impact
 - **Posts** — Community discussions and sharing
 - **Chatbot Guide** — Get help and guidance
@@ -152,6 +174,8 @@ npx expo start
 - **Admin Panel** — System administration (admin users only)
 
 ### Event Management
+- Upload before/after photos for visual documentation
+- View photo galleries from community cleanup efforts
 - Create events with GPS coordinates
 - Set date, time, and location details
 - Check into events with location verification
@@ -171,6 +195,14 @@ npx expo start
 - `GET /events/:id/checkins` — View event check-ins
 - `GET /users/:username/checkins` — User's check-in history
 
+
+### Image Upload & Media
+- `POST /api/v1/upload/avatar` — Upload user profile avatar with validation
+- `POST /api/v1/upload/progress/:eventId` — Upload before/after cleanup photos
+- `POST /api/v1/upload/event/:eventId` — Upload general event photos
+- `GET /api/v1/user/:username/avatar` — Get user's current avatar
+- `GET /api/v1/progress/:eventId/photos` — Get cleanup progress photos
+- `GET /api/v1/images/*` — Serve uploaded images (static files)
 ### Progress Tracking
 - `POST /events/:id/progress` — Log cleanup progress and waste collected
 - `GET /events/:id/progress` — View event progress with totals
@@ -201,6 +233,36 @@ npx expo start
 - `DELETE /admin/plans/:id` — Delete cleanup plans (admin only)
 
 ### Additional Features
+
+## Image Upload System (v2.4)
+
+### Technical Architecture
+- **Backend Service**: `backend/src/services/imageUpload.js` — Complete file handling with multer integration
+- **Frontend Components**:
+  - `ImageUploader.js` — Reusable component for avatar and photo uploads
+  - `ProgressPhotoUploader.js` — Specialized component for before/after cleanup documentation
+
+### File Management
+- **Storage Structure**: Organized directories (`uploads/avatars/`, `uploads/events/`, `uploads/progress/`)
+- **File Validation**: Image-only uploads (JPEG, PNG, GIF, WebP) with size limits  
+- **Security**: Unique filename generation with timestamp and UUID
+- **Processing**: Image optimization pipeline (ready for Sharp integration)
+
+### Upload Types
+- **Avatar Upload**: Profile pictures with automatic resizing and optimization  
+- **Event Photos**: General event documentation and community sharing
+- **Progress Documentation**: Before/after photos linked to cleanup progress records
+
+### Database Integration
+- **cleanup_progress** table includes `beforePhotoPath` and `afterPhotoPath` columns
+- **users** table includes `avatar` column for profile pictures
+- **Photo metadata** stored with progress tracking for comprehensive documentation
+
+### API Features
+- **File serving**: Static image access via `/api/v1/images/*` endpoints
+- **Metadata extraction**: File size, format, and creation date tracking
+- **Error handling**: Comprehensive validation and cleanup on upload failures
+- **Scalable design**: Ready for cloud storage integration (AWS S3, Azure Blob, etc.)
 - `POST /chatbot` — Get guidance from chatbot
 - `GET /health` — Backend health check
 
