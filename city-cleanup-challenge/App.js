@@ -12,6 +12,7 @@ import Dashboard from './Dashboard';
 import AdminPanel from './AdminPanel';
 import SubscriptionDashboard from './SubscriptionDashboard';
 import GamificationDashboard from './components/GamificationDashboard';
+import SocialDashboard from './components/SocialDashboard';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -27,6 +28,7 @@ export default function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [showGamification, setShowGamification] = useState(false);
+  const [showSocial, setShowSocial] = useState(false);
   
   const handleLogin = (username, role = 'user') => {
     setUser(username);
@@ -54,6 +56,7 @@ export default function App() {
     setShowAdminPanel(false);
     setShowSubscription(false);
     setShowGamification(false);
+    setShowSocial(false);
   };
 
   const handleShowAdminPanel = () => {
@@ -74,6 +77,11 @@ export default function App() {
   const handleShowGamification = () => {
     resetViews();
     setShowGamification(true);
+  };
+
+  const handleShowSocial = () => {
+    resetViews();
+    setShowSocial(true);
   };
 
   return (
@@ -138,6 +146,12 @@ export default function App() {
           username={user} 
           onClose={() => setShowGamification(false)} 
         />
+      ) : showSocial ? (
+        <SocialDashboard 
+          username={user} 
+          onClose={() => setShowSocial(false)}
+          navigation={{ goBack: () => setShowSocial(false) }}
+        />
       ) : (
         <View style={styles.homeContainer}>
           <Text style={styles.welcome}>Welcome, {user}!</Text>
@@ -165,6 +179,9 @@ export default function App() {
             </TouchableOpacity>
             <TouchableOpacity style={styles.gridButton} onPress={handleShowGamification}>
               <Text style={styles.gridText}>🏆 Achievements</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridButton} onPress={handleShowSocial}>
+              <Text style={styles.gridText}>👥 Social</Text>
             </TouchableOpacity>
             {userRole === 'admin' && (
               <TouchableOpacity style={styles.gridButton} onPress={handleShowAdminPanel}>
