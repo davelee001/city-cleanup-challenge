@@ -2,7 +2,32 @@
 
 A comprehensive location-based cleanup event platform with React Native (Expo) frontend and Node.js Express backend. Join cleanup events, track your environmental impact, and help make your city cleaner!
 
-## 🚀 Latest Enhancements (v2.5 - February 21, 2026)
+## 🚀 Latest Enhancements (v2.6 - February 24, 2026)
+
+🎮 **Gamification & Incentive System** — Comprehensive point-based engagement with achievements, leaderboards, and environmental impact tracking
+🏆 **Achievement System** — 21 unique achievements across 6 categories rewarding participation, impact, and leadership
+📊 **Multi-Type Leaderboards** — Compete in points, waste collection, streaks, events, and environmental impact rankings
+🔥 **Streak Tracking** — Daily activity streaks with bonus multipliers and achievement rewards
+🌱 **Level Progression** — 10-level system from "Eco Beginner" to "Planet Savior" with visual progression
+📈 **Environmental Impact Scoring** — Real-time CO₂, water, and energy savings calculations
+🎯 **Automated Point Awarding** — Event-driven points for signup, events, photos, progress with smart bonuses
+📱 **Interactive Dashboard** — Beautiful 3-tab interface with real-time stats and achievement galleries
+⚡ **Real-Time Integration** — Seamless gamification woven throughout existing features
+🔐 **Comprehensive APIs** — Full REST endpoints with authentication, caching, and admin controls
+
+### Gamification Features (February 24, 2026)
+- ✅ **Points System** — Event participation (50-150pts), photo uploads (25-40pts), event creation (100pts), environmental impact bonuses
+- ✅ **Achievement Categories** — Participation, Impact, Leadership, Documentation, Streak, and Special achievements
+- ✅ **Level System** — 10 progression levels with themed titles and XP requirements (100 to 10,000+ points)
+- ✅ **Leaderboards** — Points, Events, Waste, Environmental Impact, Streak, Achievements, and Level rankings
+- ✅ **Environmental Tracking** — Real impact calculations: 2.5kg CO₂, 50L water, 3.7kWh energy saved per kg waste
+- ✅ **Streak Bonuses** — Daily activity tracking with 7-day, 30-day, and 90-day milestone achievements
+- ✅ **Smart Integration** — Automatic point awards for all existing actions (signup, events, photos, progress)
+- ✅ **Interactive Dashboard** — Overview, Leaderboard, and Achievements tabs with live data and detailed modals
+- ✅ **Database Schema** — 11 comprehensive tables supporting all gamification features with caching
+- ✅ **Testing & Migration** — Automated setup scripts and comprehensive API testing suite
+
+## Previous Enhancements (v2.5 - February 21, 2026)
 
 🧠 **AI-Powered Impact Analysis** — Smart algorithms analyze cleanup effectiveness and provide impact scores
 🌍 **GPS Metadata Processing** — Automatic location embedding in photos with real-time validation
@@ -12,16 +37,6 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 🔍 **Quality Assessment** — AI-driven image quality analysis (brightness, contrast, sharpness, waste detection)
 🗄️ **Advanced Database Schema** — Enhanced metadata tables for GPS, AI analysis, and detailed tracking
 ⚙️ **Comprehensive Configuration** — Feature flags, security controls, and performance optimization
-
-### Enhanced Image Processing Features (February 21, 2026)
-- ✅ **GPS Metadata System** — Real-time location capture with privacy controls and validation
-- ✅ **AI Impact Analysis** — Intelligent scoring based on visual improvements and waste reduction
-- ✅ **Cloud Storage Support** — AWS S3 integration with configurable storage modes
-- ✅ **Visual Comparison Engine** — Advanced before/after analysis with progress reports
-- ✅ **Enhanced Frontend Components** — Toggle modes for basic vs enhanced upload experiences
-- ✅ **Smart Image Processing** — Sharp integration for optimization, resizing, and format conversion
-- ✅ **Database Migration System** — Comprehensive schema updates for enhanced metadata storage
-- ✅ **Security & Privacy Controls** — GPS anonymization, file validation, and secure processing
 
 ## Previous Enhancements (v2.4 - February 2026)
 
@@ -106,6 +121,9 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 - **Photo Sharing**: Upload and view cleanup photos from the community
 - **Chatbot Guide**: Get help with app features and cleanup tips
 - **Visual Impact Stories**: Before/after photo galleries for events
+- **🏆 Achievements Dashboard**: View earned achievements and track progress toward new ones
+- **📊 Personal Statistics**: Comprehensive gamification stats with environmental impact metrics
+- **🔥 Streak Challenges**: Daily activity tracking with bonus point multipliers and milestone rewards
 
 ### Admin Panel & Management
 - **Role-Based Access**: Admin and user roles with permission controls
@@ -215,14 +233,11 @@ npx expo start
 🔐 [Azure Key Vault Setup](docs/AZURE_KEYVAULT_SETUP.md)  
 🚀 [Quick Start Guide](QUICKSTART.md)
  with photo documentation
-- **My Progress** — Track your environmental impact with before/after photos
+- **My Progress** — Track your environmental impact with before/after photos and gamification points
+- **🏆 Achievements** — View earned achievements, leaderboards, and track your cleanup level progression  
 - **Posts** — Community discussions and sharing with image uploads
 - **Chatbot Guide** — Get help and guidance
-- **Profile** — Manage account settings and upload customnup events
-- **My Progress** — Track your environmental impact
-- **Posts** — Community discussions and sharing
-- **Chatbot Guide** — Get help and guidance
-- **Profile** — Manage account settings and avatar
+- **Profile** — Manage account settings and upload custom avatar
 - **Subscription Dashboard** — View and manage subscription plans
 - **Dashboard** — Advanced analytics and data visualization
 - **Admin Panel** — System administration (admin users only)
@@ -264,6 +279,24 @@ npx expo start
 - `GET /api/v1/enhanced/progress/:eventId/analysis` — Retrieve AI analysis results and statistics
 - `POST /api/v1/enhanced/analyze-impact` — Compare existing photos for impact analysis
 - `GET /api/v1/enhanced/config` — Get current enhanced features configuration
+
+### Gamification System (v2.6)
+- `GET /api/v1/gamification/dashboard/:username` — Comprehensive dashboard with stats, achievements, and environmental impact
+- `POST /api/v1/gamification/points/award` — Award points for user actions with bonuses and level progression
+- `GET /api/v1/gamification/points/:username/history` — Detailed points history with source tracking
+- `GET /api/v1/gamification/achievements/:username` — User achievements with category filtering
+- `GET /api/v1/gamification/achievements/available` — Master list of all available achievements
+- `GET /api/v1/gamification/leaderboard` — Multi-type leaderboards with pagination and timeframe filtering
+- `GET /api/v1/gamification/streak/:username` — Streak information with bonus calculations
+- `POST /api/v1/gamification/streak/update` — Update user activity streak with achievement checks
+- `GET /api/v1/gamification/badges/:username` — User badge collection with visibility controls
+- `GET /api/v1/gamification/impact/:username` — Environmental impact statistics with timeframe options
+- `GET /api/v1/gamification/challenges` — Active seasonal challenges with participation tracking
+- `POST /api/v1/gamification/challenges/:challengeId/join` — Join seasonal challenges
+- `POST /api/v1/gamification/challenges/:challengeId/progress` — Update challenge progress
+- `GET /api/v1/gamification/level/:username` — Current user level and progression status
+- `POST /api/v1/gamification/achievements/award` — Manual achievement awarding (admin only)
+- `POST /api/v1/gamification/challenges/create` — Create custom seasonal challenges (admin only)
 ### Progress Tracking
 - `POST /events/:id/progress` — Log cleanup progress and waste collected
 - `GET /events/:id/progress` — View event progress with totals
@@ -295,7 +328,139 @@ npx expo start
 
 ### Additional Features
 
-## 🧠 Enhanced Image Processing System (v2.5)
+## 🎮 Comprehensive Gamification System (v2.6)
+
+### Points & Rewards System
+- **Event Participation**: 50-150 points based on involvement level and event impact
+- **Photo Documentation**: 25-40 points for cleanup photos with GPS and AI analysis bonuses
+- **Event Organization**: 100 points for creating and managing cleanup events
+- **Environmental Impact**: Bonus points calculated from actual waste collected and CO₂ savings
+- **Content Creation**: 15 points for community posts and environmental storytelling
+- **First-Time Bonuses**: Discovery rewards up to 50 points for trying new features
+- **Streak Multipliers**: Daily activity bonuses with increasing rewards (7, 30, 90+ day milestones)
+
+### Achievement System (21 Unique Achievements)
+
+#### **🌱 Participation Category**
+- **First Cleanup** (100pts): Attend your first cleanup event
+- **Regular Cleaner** (200pts): Attend 5 cleanup events  
+- **Cleanup Veteran** (500pts): Attend 25 cleanup events
+- **Cleanup Master** (1000pts): Attend 100 cleanup events
+
+#### **♻️ Environmental Impact Category**  
+- **Small Impact** (150pts): Collect 10kg of waste
+- **Growing Impact** (400pts): Collect 50kg of waste
+- **Major Impact** (750pts): Collect 100kg of waste
+- **Environmental Hero** (2000pts): Collect 500kg of waste
+
+#### **👥 Leadership Category**
+- **Event Organizer** (200pts): Create your first cleanup event
+- **Community Leader** (750pts): Create 10 cleanup events
+- **Change Maker** (1500pts): Create 25 cleanup events
+
+#### **📸 Documentation Category**
+- **Cleanup Photographer** (300pts): Upload 25 cleanup photos
+- **Environmental Storyteller** (600pts): Upload 100 photos with impact documentation
+- **Environmental Archivist** (1200pts): Upload 500 photos across multiple events
+
+#### **🔥 Streak Category**
+- **Weekly Warrior** (250pts): Maintain 7-day activity streak
+- **Monthly Champion** (500pts): Maintain 30-day activity streak  
+- **Quarterly Legend** (1000pts): Maintain 90-day activity streak
+
+#### **⭐ Special Category**
+- **Early Bird** (100pts): Join event within first hour of creation
+- **Team Player** (200pts): Participate with 10+ people in one event
+- **Eco Warrior** (800pts): Save 100kg CO₂ equivalent through cleanup activities
+
+### Level Progression System (10 Levels)
+
+1. **🌱 Eco Beginner** (0-100 points): Just starting your environmental journey
+2. **🍃 Green Helper** (100-300 points): Making your first environmental contributions  
+3. **🌍 Earth Defender** (300-600 points): Actively protecting the environment
+4. **⚡ Climate Champion** (600-1000 points): Fighting climate change through action
+5. **⭐ Sustainability Star** (1000-1500 points): Leading sustainable practices
+6. **🦸 Environmental Hero** (1500-2500 points): Heroic environmental contributions
+7. **🛡️ Green Guardian** (2500-4000 points): Protecting the planet with dedication
+8. **👑 Eco Master** (4000-6000 points): Mastering environmental stewardship
+9. **🌏 Planet Protector** (6000-10000 points): Elite environmental protection
+10. **🚀 Planet Savior** (10000+ points): Ultimate environmental champion
+
+### Multi-Type Leaderboards
+
+#### **📊 Leaderboard Categories**
+- **🏆 Points Leaderboard**: Total gamification points across all activities
+- **📅 Events Leaderboard**: Most cleanup events attended and organized
+- **♻️ Waste Leaderboard**: Most waste collected (kg) with environmental impact
+- **🌍 Environmental Impact**: Highest CO₂, water, and energy savings combined
+- **🔥 Streak Leaderboard**: Longest and current activity streaks
+- **🏅 Achievements Leaderboard**: Most achievements earned across categories
+- **🎯 Level Leaderboard**: Highest user levels with progression tracking
+
+#### **⏰ Time-Based Rankings**
+- **Today**: Daily competition with real-time updates
+- **This Week**: Weekly challenges and community goals
+- **This Month**: Monthly environmental impact campaigns
+- **This Quarter**: Seasonal cleanup initiatives
+- **This Year**: Annual environmental contribution tracking
+- **All-Time**: Lifetime achievement and impact rankings
+
+### Environmental Impact Tracking
+
+#### **🌍 Real Impact Calculations**
+- **CO₂ Saved**: 2.5kg CO₂ reduction per kg waste collected
+- **💧 Water Conservation**: 50 liters preserved per kg waste collected
+- **⚡ Energy Savings**: 3.7 kWh saved per kg waste collected
+- **🏭 Carbon Value Scoring**: Comprehensive environmental impact assessment
+- **📊 Impact Aggregation**: Community-wide environmental benefit tracking
+
+### Streak System & Daily Engagement
+
+#### **🔥 Streak Mechanics**
+- **Daily Activity Tracking**: Automatic detection of cleanup-related actions
+- **Streak Bonuses**: Increasing point multipliers for consecutive days
+- **Milestone Rewards**: Special achievements at 7, 30, and 90+ day streaks
+- **Recovery Options**: Streak freeze capabilities for special circumstances
+- **Community Streaks**: Group challenges for sustained engagement
+
+### 📱 Interactive Gamification Dashboard
+
+#### **📊 Overview Tab**
+- **Level Progress Bar**: Visual XP progression with next level requirements
+- **Real-Time Statistics**: Points, streak, waste collected, achievements earned
+- **Environmental Impact Visualization**: CO₂, water, energy savings with beautiful charts
+- **Recent Achievements**: Latest accomplishments with detailed achievement cards
+- **Weekly Summary**: Progress tracking with trend analysis
+
+#### **🏆 Leaderboard Tab**  
+- **Multi-Category Rankings**: Switch between different leaderboard types
+- **User Position Highlighting**: Your rank prominently displayed with percentile
+- **Top Performers**: Community leaders with achievement highlighting
+- **Filtering Options**: Time-based and category-specific leaderboard views
+- **Real-Time Updates**: Live ranking changes as activities occur
+
+#### **🏅 Achievements Tab**
+- **Achievement Gallery**: Beautiful grid layout with earned achievements
+- **Category Organization**: Achievements grouped by type for easy browsing
+- **Progress Tracking**: Visual indicators for partially completed achievements
+- **Achievement Details**: Detailed modals with unlock requirements and rewards
+- **Completion Statistics**: Achievement completion rate and rarity information
+
+### 🔄 Automated Integration
+
+#### **Event-Driven Point Awarding**
+- **Seamless Background Processing**: Points awarded automatically for all actions
+- **Smart Bonus Detection**: GPS, AI analysis, and first-time action bonuses
+- **Real-Time Streak Updates**: Activity streaks maintained automatically
+- **Achievement Unlocking**: Automatic achievement detection and notification
+- **Environmental Impact Calculation**: Real-time CO₂, water, energy savings computation
+
+#### **🎯 Gamification APIs**
+- **Comprehensive REST Endpoints**: Full API coverage for all gamification features
+- **Real-Time Dashboard Data**: Live statistics and achievement updates
+- **Leaderboard Management**: Cached rankings with performance optimization
+- **Achievement System**: Complete achievement tracking and awarding
+- **Administrative Tools**: Admin endpoints for manual adjustments and management
 
 ### Technical Architecture
 - **Enhanced Backend Service**: `backend/src/services/enhancedImageUpload.js` — AI-powered processing with GPS & cloud integration
@@ -356,7 +521,21 @@ npx expo start
 ### ⚙️ Configuration & Deployment
 - **Feature Flags**: Granular control over GPS, AI, and cloud storage features
 - **Environment Configuration**: Comprehensive settings for development, staging, and production
-- **Dependencies Management**: Added exifr, piexifjs, geolib, aws-sdk, sharp for enhanced processing
+- **Dependencies Management**: Added exifr, piexifjs, geolib, aws-sdk, sharp fo
+
+### Gamification Tables (v2.6)
+- **user_points** — Point tracking with bonuses, sources, and metadata for all gamification actions
+- **user_achievements** — Achievement system with 21 achievements across 6 categories (participation, impact, leadership, documentation, streak, special)
+- **user_streaks** — Daily activity streak tracking with longest streak records and bonus calculations
+- **user_actions** — First-time action tracking for discovery bonuses and unique reward systems
+- **environmental_impact** — CO₂, water, and energy savings calculations linked to events and progress
+- **leaderboard_cache** — Performance-optimized cached leaderboard data for multiple ranking types
+- **user_badges** — Badge collection system with categories, rarity, and display order management
+- **seasonal_challenges** — Time-limited challenges with participation tracking and custom rewards
+- **challenge_participation** — User participation in seasonal challenges with progress monitoring
+- **user_levels** — Level progression system from "Eco Beginner" (Level 1) to "Planet Savior" (Level 10)
+- **user_goals** — Daily/weekly goal system for sustained engagement and improvement tracking
+- **achievements_master** — Master achievement definitions with icons, categories, and point rewardsr enhanced processing
 - **Performance Tuning**: Configurable processing limits, timeouts, and resource allocation
 - **Security Settings**: GPS privacy controls, file restrictions, and access management
 - `POST /chatbot` — Get guidance from chatbot
@@ -408,11 +587,17 @@ npx playwright test --ui
 
 # Generate coverage report
 npm run test:coverage
-```
-
-### Test Coverage
-
-- ✅ Unit tests for core services
+``` with the enhanced gamification system:
+- **Points & Achievements** — Gamified tracking across 21 achievements in 6 categories
+- **Level Progression** — 10-level system from "Eco Beginner" to "Planet Savior" based on environmental contributions
+- **Waste Collected** — Total weight in kg across all events with real-time environmental impact calculations
+- **CO₂ Savings** — Track carbon footprint reduction (2.5kg CO₂ saved per kg waste collected)
+- **Water Conservation** — Monitor water savings (50L preserved per kg waste collected)  
+- **Energy Impact** — Energy conservation tracking (3.7kWh saved per kg waste collected)
+- **Event Participation** — Number of cleanup events attended with participation streak tracking
+- **Community Impact** — Collective progress by location with leaderboard rankings
+- **Personal Growth** — Your cleanup journey over time with comprehensive gamification dashboard
+- **Streak Bonuses** — Daily activity rewards with 7-day, 30-day, and 90-day milestone achievements
 - ✅ Integration tests for API endpoints
 - ✅ End-to-end tests for user workflows
 - ✅ Database operation tests
@@ -506,6 +691,16 @@ The comprehensive admin panel provides powerful management and analytics capabil
 - **Audit Trail**: Complete activity history with timestamps and details
 - **Filtering Options**: Search by user, action type, date ranges
 - **Security Monitoring**: Track IP addresses and user agents for security
+
+### Gamification System (v2.6)
+- **GamificationService**: Comprehensive points, achievements, and level progression engine
+- **LeaderboardService**: Multi-type leaderboards with intelligent caching and real-time ranking
+- **GamificationIntegration**: Event-driven automatic point awarding for all user actions
+- **Authentication Middleware**: Secure API access with role-based permissions and rate limiting
+- **Database Migration Scripts**: Automated setup for 11 gamification tables with default data
+- **Testing Suite**: Comprehensive API validation with automated testing scripts
+- **Environmental Impact Calculator**: Real-time CO₂, water, and energy savings tracking
+- **Achievement System**: 21 unique achievements across 6 categories with progressive difficulty
 
 ### Admin Access & Security
 - **Default Admin**: Created automatically (`admin` / `admin123`)
