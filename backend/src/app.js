@@ -14,6 +14,8 @@ const {
   visualProgressTracker,
   useCloudStorage
 } = require('./services/enhancedImageUpload');
+const { initializeGamificationAPI } = require('./routes/gamification');
+const GamificationIntegration = require('./services/gamificationIntegration');
 
 // --- Event Listeners ---
 
@@ -91,6 +93,9 @@ function createApp() {
 	app.use(cors());
 	app.use(express.json());
 	app.use(morgan('dev'));
+
+	// Initialize gamification integration
+	const gamificationIntegration = new GamificationIntegration(db, emitter);
 
 	// Health check endpoint
 	app.get('/health', (req, res) => {
@@ -607,6 +612,15 @@ function createApp() {
 					return res.status(500).json({ success: false, message: 'Failed to save progress' });
 				}
 
+				// Award gamification points for progress update
+				gamificationIntegration.awardProgressUpdate(username, eventId, {
+					wasteCollected: wasteCollected || 0,
+					hasPhotos: !!(processedPhotos.beforePhotoPath || processedPhotos.afterPhotoPath),
+					notes: notes || ''
+				}).catch(gamificationError => {
+					console.error('Error awarding progress points:', gamificationError);
+				});
+
 				// Prepare response with image URLs
 				const response = {
 					success: true,
@@ -876,6 +890,29 @@ function createApp() {
 					return res.status(500).json({ success: false, message: 'Failed to save enhanced progress' });
 				}
 
+				// Award gamification points for enhanced progress update
+				gamificationIntegration.awardProgressUpdate(username, eventId, {
+					wasteCollected: wasteCollected || 0,
+					hasPhotos: !!(processedPhotos.beforePhotoPath || processedPhotos.afterPhotoPath),
+					hasGPS: !!(processedPhotos.beforeGPS || processedPhotos.afterGPS),
+					hasAI: !!impactAnalysis,
+					notes: notes || ''
+				}).catch(gamificationError => {
+					console.error('Error awarding enhanced progress points:', gamificationError);
+				});
+
+				// Award additional points for photos with GPS and AI analysis
+				if (processedPhotos.beforePhotoPath || processedPhotos.afterPhotoPath) {
+					gamificationIntegration.awardPhotoUpload(username, eventId, {
+						hasGPS: !!(processedPhotos.beforeGPS || processedPhotos.afterGPS),
+						aiAnalysis: impactAnalysis,
+						photoType: 'progress',
+						location: processedPhotos.beforeGPS || processedPhotos.afterGPS
+					}).catch(gamificationError => {
+						console.error('Error awarding photo upload points:', gamificationError);
+					});
+				}
+
 				// Prepare enhanced response
 				const response = {
 					success: true,
@@ -1111,6 +1148,14 @@ function createApp() {
 	});
 
 	app.use('/api/v1', apiRouter);
+
+	// Initialize and mount gamification API routes
+	const gamificationRouter = initializeGamificationAPI(db);
+	app.use('/api/v1/gamification', gamificationRouter);
+
+	// Initialize and mount social features API routes
+	const socialRouter = require('./routes/social');
+	app.use('/api/v1/social', socialRouter);
 
 	return app;
 }
