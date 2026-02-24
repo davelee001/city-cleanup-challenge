@@ -50,7 +50,7 @@ const authenticateUser = (req, res, next) => {
 
     // Verify user exists and get their role
     db.get(
-        'SELECT username, role, created_at FROM users WHERE username = ?',
+        'SELECT id, username, email, role, created_at FROM users WHERE username = ?',
         [username],
         (err, user) => {
             if (err) {
@@ -70,7 +70,9 @@ const authenticateUser = (req, res, next) => {
 
             // Add user to request object for downstream middleware
             req.user = {
+                id: user.id,
                 username: user.username,
+                email: user.email,
                 role: user.role || 'user',
                 createdAt: user.created_at,
                 isAuthenticated: true
@@ -166,14 +168,16 @@ const optionalAuth = (req, res, next) => {
     const db = req.app.get('db') || require('../db');
 
     db.get(
-        'SELECT username, role, created_at FROM users WHERE username = ?',
+        'SELECT id, username, email, role, created_at FROM users WHERE username = ?',
         [username],
         (err, user) => {
             if (err || !user) {
                 req.user = null;
             } else {
                 req.user = {
+                    id: user.id,
                     username: user.username,
+                    email: user.email,
                     role: user.role || 'user',
                     createdAt: user.created_at,
                     isAuthenticated: true
