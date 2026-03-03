@@ -46,6 +46,13 @@ const SocialDashboard = () => {
                         {renderChallengesTab()}
                     </View>
                 );
+            case 'friends':
+                return (
+                    <View style={styles.tabContent}>
+                        <Text style={styles.tabTitle}>Friends</Text>
+                        {renderFriendsTab()}
+                    </View>
+                );
             default:
                 return (
                     <View style={styles.tabContent}>
@@ -71,6 +78,32 @@ const SocialDashboard = () => {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Challenge Invitations</Text>
                 <Text style={styles.placeholder}>No pending invitations</Text>
+            </View>
+        </View>
+    );
+
+    // Render Friends tab content
+    const renderFriendsTab = () => (
+        <View>
+            <View style={styles.searchContainer}>
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search friends or add new..."
+                    placeholderTextColor="#999"
+                />
+                <TouchableOpacity style={styles.addButton}>
+                    <Text style={styles.addButtonText}>Add</Text>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Friend Requests</Text>
+                <Text style={styles.placeholder}>No pending friend requests</Text>
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>My Friends</Text>
+                <Text style={styles.placeholder}>No friends yet</Text>
             </View>
         </View>
     );
@@ -102,6 +135,15 @@ const SocialDashboard = () => {
                 >
                     <Text style={[styles.tabText, activeTab === 'challenges' && styles.activeTabText]}>
                         Challenges
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'friends' && styles.activeTab]}
+                    onPress={() => setActiveTab('friends')}
+                >
+                    <Text style={[styles.tabText, activeTab === 'friends' && styles.activeTabText]}>
+                        Friends
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -173,6 +215,33 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     createButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    searchInput: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 16,
+        backgroundColor: '#fff',
+    },
+    addButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        marginLeft: 10,
+    },
+    addButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
