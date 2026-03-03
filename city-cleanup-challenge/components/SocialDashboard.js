@@ -1,5 +1,138 @@
 import React, { useState, useEffect } from 'react';
 import {
+    View, Text, StyleSheet, ScrollView, TouchableOpacity, 
+    TextInput, Alert, RefreshControl
+} from 'react-native';
+
+const SocialDashboard = () => {
+    const [activeTab, setActiveTab] = useState('feed');
+    const [refreshing, setRefreshing] = useState(false);
+    const [socialData, setSocialData] = useState({
+        posts: [],
+        teams: [],
+        challenges: [],
+        friends: []
+    });
+
+    // Basic refresh handler
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        // Simulate refresh
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 1000);
+    }, []);
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'feed':
+                return (
+                    <View style={styles.tabContent}>
+                        <Text style={styles.tabTitle}>Social Feed</Text>
+                        <Text style={styles.placeholder}>Feed content will be displayed here</Text>
+                    </View>
+                );
+            case 'teams':
+                return (
+                    <View style={styles.tabContent}>
+                        <Text style={styles.tabTitle}>My Teams</Text>
+                        <Text style={styles.placeholder}>Teams content will be displayed here</Text>
+                    </View>
+                );
+            default:
+                return (
+                    <View style={styles.tabContent}>
+                        <Text style={styles.tabTitle}>Social Features</Text>
+                        <Text style={styles.placeholder}>Select a tab to view content</Text>
+                    </View>
+                );
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.tabBar}>
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'feed' && styles.activeTab]}
+                    onPress={() => setActiveTab('feed')}
+                >
+                    <Text style={[styles.tabText, activeTab === 'feed' && styles.activeTabText]}>
+                        Feed
+                    </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'teams' && styles.activeTab]}
+                    onPress={() => setActiveTab('teams')}
+                >
+                    <Text style={[styles.tabText, activeTab === 'teams' && styles.activeTabText]}>
+                        Teams
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
+            <ScrollView
+                style={styles.content}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            >
+                {renderTabContent()}
+            </ScrollView>
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    tabBar: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    tab: {
+        flex: 1,
+        paddingVertical: 15,
+        alignItems: 'center',
+    },
+    activeTab: {
+        borderBottomWidth: 2,
+        borderBottomColor: '#4CAF50',
+    },
+    tabText: {
+        fontSize: 16,
+        color: '#666',
+        fontWeight: '500',
+    },
+    activeTabText: {
+        color: '#4CAF50',
+        fontWeight: '600',
+    },
+    content: {
+        flex: 1,
+    },
+    tabContent: {
+        padding: 20,
+    },
+    tabTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    placeholder: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginTop: 50,
+    },
+});
+
+export default SocialDashboard;
+import {
   View,
   Text,
   StyleSheet,
@@ -27,27 +160,33 @@ const SocialDashboard = ({ navigation, route }) => {
     feed: [],
     teams: [],
     challenges: [],
+    friendChallenges: [],
     recognition: [],
     stats: {},
-    notifications: []
+    notifications: [],
+    spotlights: []
   });
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState('post');
 
-  // Form states for modals
+  // Enhanced form states
   const [postForm, setPostForm] = useState({
     content: '',
     privacy_level: 'public',
-    media_urls: []
+    media_urls: [],
+    mentions: [],
+    poll_options: null
   });
   const [teamForm, setTeamForm] = useState({
     name: '',
     description: '',
     team_type: 'public',
     max_members: 50,
-    team_color: '#4CAF50'
+    team_color: '#4CAF50',
+    cleanup_focus: 'general',
+    collaboration_tools: []
   });
   const [challengeForm, setChallengeForm] = useState({
     title: '',
@@ -61,6 +200,29 @@ const SocialDashboard = ({ navigation, route }) => {
     end_date: '',
     difficulty_level: 'medium'
   });
+  const [friendChallengeForm, setFriendChallengeForm] = useState({
+    title: '',
+    description: '',
+    challenge_type: 'competitive',
+    target_metric: 'waste_kg',
+    target_value: '',
+    duration_days: 7,
+    selected_friends: [],
+    prize_description: ''
+  });
+  const [kudosForm, setKudosForm] = useState({
+    recipient_id: '',
+    kudos_type: 'general',
+    category: 'helpful',
+    message: '',
+    visibility: 'public'
+  });
+  
+  // Enhanced UI states
+  const [showReactionPicker, setShowReactionPicker] = useState(null);
+  const [selectedReaction, setSelectedReaction] = useState('like');
+  const [activeFilter, setActiveFilter] = useState('all'); // for feed filtering
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -83,8 +245,8 @@ const SocialDashboard = ({ navigation, route }) => {
     
     setLoading(true);
     try {
-      // Load social feed
-      const feedResponse = await fetch('http://localhost:3000/api/social/feed?feed_type=public&limit=20', {
+      // Enhanced social feed with personalized content
+      const feedResponse = await fetch(`http://localhost:3000/api/social/feed?feed_type=personal&limit=20&sort_by=${activeFilter}`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const feedData = await feedResponse.json();
@@ -101,29 +263,46 @@ const SocialDashboard = ({ navigation, route }) => {
       });
       const challengesData = await challengesResponse.json();
 
+      // Load friend challenges
+      const friendChallengesResponse = await fetch('http://localhost:3000/api/social/user-active-challenges', {
+        headers: { 'Authorization': `Bearer ${user.username}` }
+      });
+      const friendChallengesData = await friendChallengesResponse.json();
+
       // Load community recognition
-      const recognitionResponse = await fetch('http://localhost:3000/api/social/recognition');
+      const recognitionResponse = await fetch(`http://localhost:3000/api/social/recognition-summary/${user.id}`, {
+        headers: { 'Authorization': `Bearer ${user.username}` }
+      });
       const recognitionData = await recognitionResponse.json();
 
+      // Load community spotlights
+      const spotlightsResponse = await fetch('http://localhost:3000/api/social/spotlights?limit=5');
+      const spotlightsData = await spotlightsResponse.json();
+
       // Load notifications
-      const notificationsResponse = await fetch('http://localhost:3000/api/social/notifications', {
+      const notificationsResponse = await fetch('http://localhost:3000/api/social/notifications?limit=20', {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const notificationsData = await notificationsResponse.json();
 
-      // Load social stats
-      const statsResponse = await fetch('http://localhost:3000/api/social/stats', {
+      // Load enhanced social stats
+      const statsResponse = await fetch(`http://localhost:3000/api/social/user-stats/${user.id}`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const statsData = await statsResponse.json();
 
       setSocialData({
-        feed: feedData.success ? feedData.data : [],
-        teams: teamsData.success ? teamsData.data : [],
-        challenges: challengesData.success ? challengesData.data : [],
-        recognition: recognitionData.success ? recognitionData.data : [],
-        stats: statsData.success ? statsData.data : {},
-        notifications: notificationsData.success ? notificationsData.data : []
+        feed: feedData.success ? feedData.posts : [],
+        teams: teamsData.success ? teamsData.teams : [],
+        challenges: challengesData.success ? challengesData.challenges : [],
+        friendChallenges: friendChallengesData.success ? {
+          friend_challenges: friendChallengesData.friend_challenges || [],
+          group_challenges: friendChallengesData.group_challenges || []
+        } : { friend_challenges: [], group_challenges: [] },
+        recognition: recognitionData.success ? recognitionData.summary : {},
+        spotlights: spotlightsData.success ? spotlightsData.spotlights : [],
+        stats: statsData.success ? statsData.stats : {},
+        notifications: notificationsData.success ? notificationsData.notifications : []
       });
     } catch (error) {
       console.error('Error loading social data:', error);
@@ -139,7 +318,7 @@ const SocialDashboard = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  const handleLikePost = async (postId) => {
+  const handleLikePost = async (postId, reactionType = 'like') => {
     try {
       const response = await fetch(`http://localhost:3000/api/social/posts/${postId}/like`, {
         method: 'POST',
@@ -147,11 +326,133 @@ const SocialDashboard = ({ navigation, route }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${user.username}`
         },
-        body: JSON.stringify({ reaction_type: 'like' })
+        body: JSON.stringify({ reaction_type: reactionType })
       });
 
       const result = await response.json();
       if (result.success) {
+        await loadSocialData(); // Refresh data to show updated reactions
+      }
+    } catch (error) {
+      console.error('Error liking post:', error);
+      Alert.alert('Error', 'Failed to like post');
+    }
+  };
+
+  const handleCreateFriendChallenge = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/social/friend-challenges', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.username}`
+        },
+        body: JSON.stringify({
+          ...friendChallengeForm,
+          target_value: parseFloat(friendChallengeForm.target_value)
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setModalVisible(false);
+        setFriendChallengeForm({
+          title: '', description: '', challenge_type: 'competitive',
+          target_metric: 'waste_kg', target_value: '', duration_days: 7,
+          selected_friends: [], prize_description: ''
+        });
+        await loadSocialData();
+        Alert.alert('Success', 'Friend challenge created and invitations sent!');
+      } else {
+        Alert.alert('Error', result.message || 'Failed to create friend challenge');
+      }
+    } catch (error) {
+      console.error('Error creating friend challenge:', error);
+      Alert.alert('Error', 'Failed to create friend challenge');
+    }
+  };
+
+  const handleGiveKudos = async (recipientId) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/social/kudos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.username}`
+        },
+        body: JSON.stringify({
+          recipient_id: recipientId,
+          ...kudosForm
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setKudosForm({
+          recipient_id: '', kudos_type: 'general', category: 'helpful',
+          message: '', visibility: 'public'
+        });
+        await loadSocialData();
+        Alert.alert('Success', `Kudos given successfully! ${result.points_awarded} points awarded.`);
+      } else {
+        Alert.alert('Error', result.message || 'Failed to give kudos');
+      }
+    } catch (error) {
+      console.error('Error giving kudos:', error);
+      Alert.alert('Error', 'Failed to give kudos');
+    }
+  };
+
+  const handleJoinFriendChallenge = async (challengeId, response) => {
+    try {
+      const apiResponse = await fetch(`http://localhost:3000/api/social/friend-challenges/${challengeId}/respond`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.username}`
+        },
+        body: JSON.stringify({ response })
+      });
+
+      const result = await apiResponse.json();
+      if (result.success) {
+        await loadSocialData();
+        Alert.alert('Success', result.message);
+      } else {
+        Alert.alert('Error', result.message || 'Failed to respond to challenge');
+      }
+    } catch (error) {
+      console.error('Error responding to challenge:', error);
+      Alert.alert('Error', 'Failed to respond to challenge');
+    }
+  };
+
+  const handleSharePost = async (postId, shareType = 'share', customMessage = '') => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/social/posts/${postId}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.username}`
+        },
+        body: JSON.stringify({
+          share_type: shareType,
+          custom_message: customMessage
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await loadSocialData();
+        Alert.alert('Success', 'Post shared successfully!');
+      } else {
+        Alert.alert('Error', result.message || 'Failed to share post');
+      }
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      Alert.alert('Error', 'Failed to share post');
+    }
+  };
         // Refresh feed to show updated like count
         loadSocialData();
       }
@@ -365,7 +666,7 @@ const SocialDashboard = ({ navigation, route }) => {
       <View style={styles.postActions}>
         <TouchableOpacity 
           style={[styles.actionButton, item.user_reaction ? styles.activeAction : null]}
-          onPress={() => handleLikePost(item.id)}
+          onPress={() => handleLikePost(item.id, item.user_reaction ? 'unlike' : 'like')}
         >
           <Ionicons 
             name={item.user_reaction ? "heart" : "heart-outline"} 
@@ -586,6 +887,136 @@ const SocialDashboard = ({ navigation, route }) => {
             }
             showsVerticalScrollIndicator={false}
           />
+        );
+      case 'friendChallenges':
+        return (
+          <ScrollView
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Friend Challenges Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Friend Challenges</Text>
+              {socialData.friendChallenges && socialData.friendChallenges.length > 0 ? (
+                <View>
+                  {socialData.friendChallenges.map((item) => (
+                    <View key={item.id} style={styles.challengeCard}>
+                      <View style={styles.challengeHeader}>
+                        <Text style={styles.challengeTitle}>{item.title}</Text>
+                        <Text style={[styles.challengeStatus, 
+                          item.status === 'active' ? styles.statusActive :
+                          item.status === 'completed' ? styles.statusCompleted : styles.statusPending
+                        ]}>
+                          {item.status}
+                        </Text>
+                      </View>
+                      
+                      <Text style={styles.challengeDescription}>{item.description}</Text>
+                      
+                      <View style={styles.challengeMetrics}>
+                        <Text style={styles.challengeMetric}>
+                          Target: {item.target_value} {item.target_metric.replace('_', ' ')}
+                        </Text>
+                        <Text style={styles.challengeMetric}>
+                          Duration: {item.duration_days} days
+                        </Text>
+                      </View>
+
+                      {item.participants && item.participants.length > 0 && (
+                        <View style={styles.participantsList}>
+                          <Text style={styles.participantsTitle}>Participants:</Text>
+                          {item.participants.map(participant => (
+                            <View key={participant.user_id} style={styles.participantCard}>
+                              <Text style={styles.participantName}>{participant.username}</Text>
+                              <Text style={styles.participantProgress}>
+                                Progress: {participant.current_value}/{item.target_value}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+
+                      {item.status === 'pending' && item.user_id !== user.id && (
+                        <View style={styles.challengeActions}>
+                          <TouchableOpacity
+                            style={[styles.actionButton, styles.acceptButton]}
+                            onPress={() => handleJoinFriendChallenge(item.id, 'accepted')}
+                          >
+                            <Text style={styles.actionButtonText}>Accept</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[styles.actionButton, styles.declineButton]}
+                            onPress={() => handleJoinFriendChallenge(item.id, 'declined')}
+                          >
+                            <Text style={styles.actionButtonText}>Decline</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.noDataText}>No friend challenges yet. Create one to challenge your friends!</Text>
+              )}
+            </View>
+
+            {/* Community Recognition Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Community Recognition</Text>
+              
+              {/* Recent Kudos */}
+              {socialData.recentKudos && socialData.recentKudos.length > 0 && (
+                <View style={styles.subsection}>
+                  <Text style={styles.subsectionTitle}>Recent Kudos</Text>
+                  <FlatList
+                    data={socialData.recentKudos}
+                    keyExtractor={item => item.id.toString()}
+                    renderItem={({ item }) => (
+                      <View style={styles.kudosCard}>
+                        <View style={styles.kudosHeader}>
+                          <Text style={styles.kudosGiver}>
+                            {item.giver_username} gave kudos to {item.recipient_username}
+                          </Text>
+                          <Text style={styles.kudosType}>{item.kudos_type}</Text>
+                        </View>
+                        <Text style={styles.kudosMessage}>{item.message}</Text>
+                        <Text style={styles.kudosCategory}>Category: {item.category}</Text>
+                      </View>
+                    )}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+              )}
+
+              {/* Community Badges */}
+              {socialData.communityBadges && socialData.communityBadges.length > 0 && (
+                <View style={styles.subsection}>
+                  <Text style={styles.subsectionTitle}>Community Badges</Text>
+                  <FlatList
+                    data={socialData.communityBadges}
+                    keyExtractor={item => item.id.toString()}
+                    renderItem={({ item }) => (
+                      <View style={styles.badgeCard}>
+                        <Text style={styles.badgeTitle}>{item.badge_name}</Text>
+                        <Text style={styles.badgeRecipient}>
+                          Awarded to: {item.recipient_username}
+                        </Text>
+                        <Text style={styles.badgeDescription}>{item.description}</Text>
+                        <Text style={styles.badgeDate}>
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    )}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+              )}
+            </View>
+          </ScrollView>
         );
       case 'recognition':
         return (
@@ -812,6 +1243,108 @@ const SocialDashboard = ({ navigation, route }) => {
       );
     }
 
+    if (modalType === 'friendChallenge') {
+      return (
+        <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styles.modalCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Create Friend Challenge</Text>
+              <TouchableOpacity onPress={handleCreateFriendChallenge}>
+                <Text style={styles.modalSubmit}>Create</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalContent}>
+              <TextInput
+                style={styles.inputField}
+                placeholder="Challenge Title"
+                value={friendChallengeForm.title}
+                onChangeText={(text) => setFriendChallengeForm({ ...friendChallengeForm, title: text })}
+              />
+              <TextInput
+                style={[styles.inputField, styles.textArea]}
+                placeholder="Challenge Description"
+                multiline
+                numberOfLines={4}
+                value={friendChallengeForm.description}
+                onChangeText={(text) => setFriendChallengeForm({ ...friendChallengeForm, description: text })}
+              />
+
+              <View style={styles.challengeOptions}>
+                <View style={styles.optionGroup}>
+                  <Text style={styles.selectorLabel}>Challenge Type:</Text>
+                  <View style={styles.typeOptions}>
+                    {['competitive', 'collaborative', 'learning'].map((option) => (
+                      <TouchableOpacity
+                        key={option}
+                        style={[
+                          styles.typeOption,
+                          friendChallengeForm.challenge_type === option && styles.selectedOption
+            else if (activeTab === 'friendChallenges') {
+            setModalType('friendChallenge');
+          }             ]}
+                        onPress={() => setFriendChallengeForm({ ...friendChallengeForm, challenge_type: option })}
+                      >
+                        <Text style={styles.typeOptionText}>
+                          {option.charAt(0).toUpperCase() + option.slice(1)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.optionGroup}>
+                  <Text style={styles.selectorLabel}>Target Metric:</Text>
+                  <View style={styles.metricOptions}>
+                    {['waste_kg', 'participation_days', 'photos_uploaded', 'events_attended'].map((option) => (
+                      <TouchableOpacity
+                        key={option}
+                        style={[
+                          styles.metricOption,
+                          friendChallengeForm.target_metric === option && styles.selectedOption
+                        ]}
+                        onPress={() => setFriendChallengeForm({ ...friendChallengeForm, target_metric: option })}
+                      >
+                        <Text style={styles.metricOptionText}>
+                          {option.replace('_', ' ').charAt(0).toUpperCase() + option.replace('_', ' ').slice(1)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+
+              <TextInput
+                style={styles.inputField}
+                placeholder="Target Value"
+                value={friendChallengeForm.target_value}
+                onChangeText={(text) => setFriendChallengeForm({ ...friendChallengeForm, target_value: text })}
+                keyboardType="numeric"
+              />
+
+              <TextInput
+                style={styles.inputField}
+                placeholder="Duration (days)"
+                value={friendChallengeForm.duration_days.toString()}
+                onChangeText={(text) => setFriendChallengeForm({ ...friendChallengeForm, duration_days: parseInt(text) || 7 })}
+                keyboardType="numeric"
+              />
+
+              <TextInput
+                style={styles.inputField}
+                placeholder="Prize Description (optional)"
+                value={friendChallengeForm.prize_description}
+                onChangeText={(text) => setFriendChallengeForm({ ...friendChallengeForm, prize_description: text })}
+              />
+            </ScrollView>
+          </View>
+        </Modal>
+      );
+    }
+
     return null;
   };
 
@@ -845,6 +1378,7 @@ const SocialDashboard = ({ navigation, route }) => {
           { key: 'feed', label: 'Feed', icon: 'newspaper-outline' },
           { key: 'teams', label: 'Teams', icon: 'people-outline' },
           { key: 'challenges', label: 'Challenges', icon: 'trophy-outline' },
+          { key: 'friendChallenges', label: 'Friends', icon: 'heart-outline' },
           { key: 'recognition', label: 'Recognition', icon: 'star-outline' }
         ].map((tab) => (
           <TouchableOpacity
@@ -1176,7 +1710,206 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   challengeJoinButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    
+  // Friend Challenge Styles
+  section: {
+    margin: 15,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 15,
+  },
+  subsection: {
+    marginBottom: 15,
+  },
+  subsectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#555',
+    marginBottom: 10,
+  },
+  challengeActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  acceptButton: {
+    backgroundColor: '#4CAF50',
+  },
+  declineButton: {
+    backgroundColor: '#FF6B6B',
+  },
+  statusActive: {
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+  statusCompleted: {
+    color: '#2196F3',
+    fontWeight: 'bold',
+  },
+  statusPending: {
+    color: '#FF9800',
+    fontWeight: 'bold',
+  },
+  participantsList: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+  },
+  participantsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 5,
+  },
+  participantCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 5,
+  },
+  participantName: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  participantProgress: {
+    fontSize: 12,
+    color: '#666',
+  },
+  challengeStatus: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  challengeMetrics: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  challengeMetric: {
+    fontSize: 12,
+    color: '#666',
+  },
+  noDataText: {
+    textAlign: 'center',
+    color: '#999',
+    fontStyle: 'italic',
+    padding: 20,
+  },
+  // Community Recognition Styles
+  kudosCard: {
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    padding: 12,
+    marginRight: 15,
+    minWidth: 250,
+    borderLeft: 4, borderLeftColor: '#ffc107',
+  },
+  kudosHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  kudosGiver: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+  },
+  kudosType: {
+    fontSize: 10,
+    color: '#ffc107',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  kudosMessage: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 5,
+  },
+  kudosCategory: {
+    fontSize: 10,
+    color: '#666',
+    textTransform: 'capitalize',
+  },
+  badgeCard: {
+    backgroundColor: '#e8f5e8',
+    borderRadius: 8,
+    padding: 12,
+    marginRight: 15,
+    minWidth: 200,
+    borderLeft: 4,
+    borderLeftColor: '#4CAF50',
+  },
+  badgeTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 5,
+  },
+  badgeRecipient: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 3,
+  },
+  badgeDescription: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 5,
+  },
+  badgeDate: {
+    fontSize: 10,
+    color: '#999',
+  },
+  // Form Options Styles
+  typeOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  typeOption: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  typeOptionText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  metricOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  metricOption: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  metricOptionText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  challengeOptions: {
+    marginVertical: 15,
+  },
+  optionGroup: {
+    marginBottom: 15,
+  },backgroundColor: 'rgba(255,255,255,0.2)',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
