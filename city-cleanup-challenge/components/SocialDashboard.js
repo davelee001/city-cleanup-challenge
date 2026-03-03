@@ -39,6 +39,13 @@ const SocialDashboard = () => {
                         <Text style={styles.placeholder}>Teams content will be displayed here</Text>
                     </View>
                 );
+            case 'challenges':
+                return (
+                    <View style={styles.tabContent}>
+                        <Text style={styles.tabTitle}>Friend Challenges</Text>
+                        {renderChallengesTab()}
+                    </View>
+                );
             default:
                 return (
                     <View style={styles.tabContent}>
@@ -48,6 +55,25 @@ const SocialDashboard = () => {
                 );
         }
     };
+
+    // Render Challenges tab content
+    const renderChallengesTab = () => (
+        <View>
+            <TouchableOpacity style={styles.createButton}>
+                <Text style={styles.createButtonText}>+ Create New Challenge</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Active Challenges</Text>
+                <Text style={styles.placeholder}>No active challenges</Text>
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Challenge Invitations</Text>
+                <Text style={styles.placeholder}>No pending invitations</Text>
+            </View>
+        </View>
+    );
 
     return (
         <View style={styles.container}>
@@ -67,6 +93,15 @@ const SocialDashboard = () => {
                 >
                     <Text style={[styles.tabText, activeTab === 'teams' && styles.activeTabText]}>
                         Teams
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'challenges' && styles.activeTab]}
+                    onPress={() => setActiveTab('challenges')}
+                >
+                    <Text style={[styles.tabText, activeTab === 'challenges' && styles.activeTabText]}>
+                        Challenges
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -128,6 +163,28 @@ const styles = StyleSheet.create({
         color: '#666',
         textAlign: 'center',
         marginTop: 50,
+    },
+    createButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    createButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    section: {
+        marginBottom: 25,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 10,
     },
 });
 
