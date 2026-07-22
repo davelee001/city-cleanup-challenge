@@ -15,3 +15,5 @@ contract SimpleStorage {
         return value;
     }
 }
+
+// commit-4: metadata
