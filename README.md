@@ -1012,6 +1012,60 @@ SENTRY_ENVIRONMENT=production
 
 📖 See [MONITORING.md](docs/MONITORING.md) for complete monitoring setup and troubleshooting.
 
+## Deployment Readiness Checklist
+
+> **Current status:** Pre-deployment. Complete every high-priority item before deploying to a public environment.
+
+### High Priority - Deployment Blockers
+
+- [ ] Convert `backend/src/services/socialService.js` from UTF-16LE to UTF-8 so Node.js can parse it.
+- [ ] Replace hard-coded `localhost` frontend API URLs with environment-based configuration.
+- [ ] Update frontend social endpoints from `/api/social` to `/api/v1/social`.
+- [ ] Change Kubernetes backend health probes from `/api/health` to `/health`.
+- [ ] Hash passwords with Argon2 or bcrypt and migrate existing accounts.
+- [ ] Remove the default `admin / admin123` account.
+- [ ] Implement proper JWT creation, verification, expiration, and authorization.
+- [ ] Protect all state-changing API endpoints with authentication and ownership checks.
+- [ ] Choose a production database architecture: one SQLite replica temporarily, or a complete PostgreSQL migration.
+- [ ] Run and verify every database migration in staging.
+- [ ] Replace placeholder domains, CORS origins, certificate email addresses, and Kubernetes secrets.
+- [ ] Store production credentials in Azure Key Vault or Kubernetes Secrets and connect them to the backend.
+- [ ] Validate every required production environment variable during backend startup.
+- [ ] Inject frontend configuration during the static build or through a runtime configuration file.
+- [ ] Complete clean dependency installs and build both Docker images from a clean checkout.
+- [ ] Make lint, integration, and end-to-end test failures fail CI.
+- [ ] Correct end-to-end API paths and complete a successful staging smoke test.
+
+### Medium Priority - Required Before Public Release
+
+- [ ] Upgrade Node.js 18 to a supported LTS release and verify Expo compatibility.
+- [ ] Pin production container image versions or digests instead of deploying `latest`.
+- [ ] Run dependency and container scans and resolve all critical and high-severity vulnerabilities.
+- [ ] Remove tracked `node_modules` files and continue committing synchronized lockfiles.
+- [ ] Stop tracking real production environment files and rotate any previously committed credentials.
+- [ ] Add explicit frontend build, lint, component-test, and integration-test scripts.
+- [ ] Add authentication, authorization, upload, validation, rate-limit, and migration tests.
+- [ ] Establish and enforce a meaningful coverage threshold.
+- [ ] Upgrade retired GitHub Actions, including `actions/upload-artifact@v3` and `github/codeql-action@v2`.
+- [ ] Authenticate the security-scan job with Azure Container Registry.
+- [ ] Protect `main` and require approval before production deployment.
+- [ ] Configure and test database and uploaded-image backup restoration.
+- [ ] Test rolling updates, graceful shutdown, autoscaling, TLS, CORS, uploads, and rate limiting.
+- [ ] Load-test API traffic, database writes, image processing, and uploads.
+- [ ] Document and test rollback procedures while retaining a known-good image.
+
+### Operational and Product Readiness
+
+- [ ] Verify AKS, ACR, ingress-nginx, cert-manager, Metrics Server, managed identity, CSI secrets, and storage.
+- [ ] Configure Sentry or Application Insights, Prometheus alerts, and real Alertmanager receivers.
+- [ ] Replace default monitoring credentials and restrict monitoring services from public access.
+- [ ] Add audit logs for authentication, administrative, moderation, and destructive actions.
+- [ ] Complete or hide unfinished social-dashboard sections.
+- [ ] Complete blockchain tests and secure contract deployment keys if blockchain features are included.
+- [ ] Test maps, GPS permissions, uploads, email, notifications, analytics, offline mode, and PWA behavior.
+- [ ] Define privacy, GPS/photo retention, deletion, incident-response, and production support policies.
+- [ ] Add terms of service, a privacy policy, support contact, release notes, and an appropriate license.
+
 ## Deployment
 
 ### Kubernetes Deployment
