@@ -16,3 +16,5 @@ module.exports = {
     }
   }
 };
+
+// commit-3: minor metadata for separate commit
