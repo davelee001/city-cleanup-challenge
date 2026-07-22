@@ -17,4 +17,5 @@
     "@celo/contractkit": "^1.10.1",
     "dotenv": "^16.0.0"
   }
+  ,"x-note": "commit-2"
 }
