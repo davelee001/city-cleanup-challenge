@@ -30,8 +30,12 @@ const config = {
 
   // JWT
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-secret-key',
-    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+    accessSecret: process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'development-access-secret',
+    refreshSecret: process.env.JWT_REFRESH_SECRET || process.env.SESSION_SECRET || 'development-refresh-secret',
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '15m',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    issuer: process.env.JWT_ISSUER || 'city-cleanup-api',
+    audience: process.env.JWT_AUDIENCE || 'city-cleanup-app',
   },
 
   // Session
@@ -92,12 +96,24 @@ const config = {
 
 // Validation
 const requiredEnvVars = config.env === 'production'
-  ? ['NODE_ENV', 'DATABASE_PATH', 'CORS_ORIGIN', 'JWT_SECRET', 'SESSION_SECRET']
+  ? ['NODE_ENV', 'DATABASE_PATH', 'CORS_ORIGIN', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET']
   : [];
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingVars.length > 0) {
   console.error('Missing required environment variables:', missingVars);
+  process.exit(1);
+}
+
+if (
+  config.env === 'production'
+  && (
+    config.jwt.accessSecret.length < 32
+    || config.jwt.refreshSecret.length < 32
+    || config.jwt.accessSecret === config.jwt.refreshSecret
+  )
+) {
+  console.error('JWT access and refresh secrets must be different and at least 32 characters in production');
   process.exit(1);
 }
 
