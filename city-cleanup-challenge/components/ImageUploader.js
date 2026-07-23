@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet, ActivityIndicator } from 'react-native';
+import { API_BASE_URL } from '../apiConfig';
 
 const ImageUploader = ({ 
   onImageUploaded, 
@@ -47,7 +48,7 @@ const ImageUploader = ({
 
     const endpoint = getUploadEndpoint();
     
-    const response = await fetch(`http://localhost:3001/api/v1${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       body: formData,
       headers: {
