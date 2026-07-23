@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator, Switch } from 'react-native';
 import Toast from 'react-hot-toast';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 const AdminPanel = ({ username, onBack }) => {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -384,7 +384,7 @@ const AdminPanel = ({ username, onBack }) => {
             </View>
           </View>
         ))
-      }
+      )}
     </ScrollView>
   );
 
