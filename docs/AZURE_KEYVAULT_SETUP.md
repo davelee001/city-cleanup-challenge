@@ -1,5 +1,9 @@
 # Azure Key Vault Setup Guide
 
+> Production secret manifests are intentionally not committed. Provision
+> Kubernetes secrets from Azure Key Vault during environment setup, and never
+> add real secret values to this repository.
+
 ## Prerequisites
 
 1. Azure Subscription
