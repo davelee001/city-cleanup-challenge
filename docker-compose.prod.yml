@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -11,7 +9,9 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - DATABASE_PATH=/app/data/city-cleanup.db
-      - AZURE_KEY_VAULT_URL=${AZURE_KEY_VAULT_URL}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
     volumes:
       - backend-data:/app/data
     networks:
