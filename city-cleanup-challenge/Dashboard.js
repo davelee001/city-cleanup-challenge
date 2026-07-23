@@ -7,7 +7,7 @@ import LoadingState from './components/LoadingState';
 import SearchFilter from './components/SearchFilter';
 import DataExport from './components/DataExport';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 // Mock data for oil fields
 const initialOilFields = [
@@ -74,7 +74,7 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
     
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`);
+      const response = await apiFetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setAdminAnalytics(data.analytics);
@@ -88,8 +88,8 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
     try {
       // Simulate API calls for system stats
       const statsPromises = [
-        fetch(`${API_BASE_URL}/events`).then(r => r.json()),
-        fetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`).then(r => r.json())
+        apiFetch(`${API_BASE_URL}/events`).then(r => r.json()),
+        apiFetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`).then(r => r.json())
       ];
       
       const [eventsData, analyticsData] = await Promise.all(statsPromises);
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowcolor: '#F5F8FF',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowcolor: '#F5F8FF',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -383,10 +383,10 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   lightTheme: {
-    container: { backgroundColor: '#f5f5f5' },
-    header: { backgroundColor: '#fff', borderBottomColor: '#e0e0e0' },
-    card: { backgroundColor: '#fff', borderColor: '#e0e0e0' },
-    text: { color: '#000' },
+    container: { backgroundColor: '#07182D' },
+    header: { backgroundColor: '#10243E', borderBottomColor: '#e0e0e0' },
+    card: { backgroundColor: '#10243E', borderColor: '#244B70' },
+    text: { color: '#F5F8FF' },
   },
   darkTheme: {
     container: { backgroundColor: '#1e1e1e' },
