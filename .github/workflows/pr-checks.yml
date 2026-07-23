@@ -14,7 +14,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -24,8 +24,8 @@ jobs:
 
       - name: Run linters
         run: |
-          cd backend && npx eslint . --ext .js,.jsx || true
-          cd ../city-cleanup-challenge && npx eslint . --ext .js,.jsx || true
+          cd backend && npm run lint
+          cd ../city-cleanup-challenge && npm run lint
 
   test:
     name: Run Tests
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Install and test backend
         working-directory: ./backend
