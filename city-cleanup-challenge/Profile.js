@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import ImageUploader from './components/ImageUploader';
 
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 export default function Profile({ username, onLogout, onUsernameChange }) {
   const [profile, setProfile] = useState(null);
