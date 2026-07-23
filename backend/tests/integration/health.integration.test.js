@@ -1,33 +1,36 @@
 const request = require('supertest');
-const app = require('../../src/app');
+const { createApp } = require('../../src/app');
+
+const app = createApp();
 
 describe('Health Check Tests', () => {
-  describe('GET /api/health', () => {
+  describe('GET /health', () => {
     it('should return health status', async () => {
       const response = await request(app)
-        .get('/api/health')
+        .get('/health')
         .expect(200);
 
       expect(response.body).toHaveProperty('status');
-      expect(response.body.status).toBe('healthy');
+      expect(response.body.status).toBe('ok');
     });
 
     it('should include timestamp', async () => {
       const response = await request(app)
-        .get('/api/health')
+        .get('/health')
         .expect(200);
 
       expect(response.body).toHaveProperty('timestamp');
     });
   });
 
-  describe('GET /api/ready', () => {
+  describe('GET /ready', () => {
     it('should return readiness status', async () => {
       const response = await request(app)
-        .get('/api/ready');
+        .get('/ready');
 
-      expect([200, 503]).toContain(response.status);
+      expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status');
+      expect(response.body.status).toBe('ready');
     });
   });
 });
