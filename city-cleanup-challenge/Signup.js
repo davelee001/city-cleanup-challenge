@@ -288,13 +288,13 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#8DBDFF',
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '600',
     letterSpacing: 1.5,
   },
   title: {
     color: '#F5F8FF',
-    fontSize: 38,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '600',
     textAlign: 'center',
     letterSpacing: -0.8,
   },
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: '#F5F8FF',
     fontSize: 25,
-    fontWeight: '800',
+    fontWeight: '600',
   },
   cardSubtitle: {
     color: '#93A9C0',
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   label: {
     color: '#D9E6F5',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 7,
   },
   input: {
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '600',
   },
   loginRow: {
     flexDirection: 'row',
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   loginLink: {
     color: '#69B4FF',
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '600',
   },
   privacyNote: {
     color: '#7890AA',
