@@ -21,6 +21,42 @@ db.serialize(() => {
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
 
+  // Keep existing SQLite databases compatible with the current signup profile.
+  db.all('PRAGMA table_info(users)', (err, columns) => {
+    if (err) {
+      console.error('Error reading users table schema:', err);
+      return;
+    }
+
+    const existingColumns = new Set(columns.map((column) => column.name));
+    const profileColumns = {
+      email: 'TEXT',
+      phone: 'TEXT',
+      location: 'TEXT',
+    };
+
+    db.serialize(() => {
+      Object.entries(profileColumns).forEach(([name, type]) => {
+        if (!existingColumns.has(name)) {
+          db.run(`ALTER TABLE users ADD COLUMN ${name} ${type}`, (alterError) => {
+            if (alterError) {
+              console.error(`Error adding users.${name}:`, alterError);
+            }
+          });
+        }
+      });
+
+      db.run(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL',
+        (indexError) => {
+          if (indexError) {
+            console.error('Error creating users email index:', indexError);
+          }
+        }
+      );
+    });
+  });
+
   db.run(`CREATE TABLE IF NOT EXISTS subscriptions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
