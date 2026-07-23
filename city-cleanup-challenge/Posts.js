@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 export default function Posts({ username }) {
   const [posts, setPosts] = useState([]);
