@@ -2,6 +2,31 @@
 
 A comprehensive location-based cleanup event platform with React Native (Expo) frontend and Node.js Express backend. Join cleanup events, track your environmental impact, and help make your city cleaner!
 
+## Current Build Status (July 23, 2026)
+
+Phase 1 and Phase 2 of the current MVP build are complete.
+
+### Phase 1 - Product Foundation
+
+- Defined the cleanup evidence, duplicate-detection, AI-risk, manual-review, privacy, and appeal rules.
+- Defined the CELO reward lifecycle, idempotency requirements, payout controls, and testnet success criteria.
+- Documented the decisions that must be made before a mainnet launch.
+
+See [City Cleanup Reward Product Rules](docs/PRODUCT_RULES.md) for the complete MVP specification.
+
+### Phase 2 - Application Foundation
+
+- Standardized the backend and frontend on Node.js 22.
+- Centralized frontend API configuration and normalized application calls to `/api/v1`.
+- Added bcrypt password hashing and removed automatic creation of the insecure default administrator.
+- Added backend readiness checks and corrected Kubernetes health probes and secret references.
+- Added a web-safe event map and corrected the Expo web entry point so the landing page renders.
+- Added synchronized lockfiles, frontend build and lint scripts, and stricter CI checks.
+- Removed tracked dependency artifacts and removed committed Kubernetes secret placeholders.
+- Verified all 27 backend tests and a clean production frontend build.
+
+The application is still **pre-deployment**. Authentication/authorization, evidence verification, production storage, security remediation, and Celo testnet integration remain release blockers.
+
 ## 🚀 Latest Updates (v2.9 - March 3, 2026)
 
 ### Major Enhanced Social Platform Release
@@ -322,10 +347,10 @@ Our development follows a **granular commit strategy** for maximum maintainabili
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # Start with monitoring
-docker-compose --profile monitoring up -d
+docker compose --profile monitoring up -d
 
 # Access the application
 # Frontend: http://localhost
@@ -338,7 +363,7 @@ docker-compose --profile monitoring up -d
 
 #### Backend Setup
 
-Prerequisites: Node.js 18+
+Prerequisites: Node.js 22
 
 ```bash
 cd backend
@@ -1021,12 +1046,13 @@ defined in [Product Rules](docs/PRODUCT_RULES.md).
 
 ### High Priority - Deployment Blockers
 
-- [ ] Convert `backend/src/services/socialService.js` from UTF-16LE to UTF-8 so Node.js can parse it.
-- [ ] Replace hard-coded `localhost` frontend API URLs with environment-based configuration.
-- [ ] Update frontend social endpoints from `/api/social` to `/api/v1/social`.
-- [ ] Change Kubernetes backend health probes from `/api/health` to `/health`.
-- [ ] Hash passwords with Argon2 or bcrypt and migrate existing accounts.
-- [ ] Remove the default `admin / admin123` account.
+- [x] Convert `backend/src/services/socialService.js` from UTF-16LE to UTF-8 so Node.js can parse it.
+- [x] Replace hard-coded `localhost` frontend API URLs with environment-based configuration.
+- [x] Update frontend social endpoints from `/api/social` to `/api/v1/social`.
+- [x] Change Kubernetes backend health probes from `/api/health` to `/health`.
+- [x] Hash newly created passwords with bcrypt.
+- [ ] Migrate any existing plaintext account passwords before retaining production data.
+- [x] Remove the default `admin / admin123` account.
 - [ ] Implement proper JWT creation, verification, expiration, and authorization.
 - [ ] Protect all state-changing API endpoints with authentication and ownership checks.
 - [ ] Choose a production database architecture: one SQLite replica temporarily, or a complete PostgreSQL migration.
@@ -1035,18 +1061,20 @@ defined in [Product Rules](docs/PRODUCT_RULES.md).
 - [ ] Store production credentials in Azure Key Vault or Kubernetes Secrets and connect them to the backend.
 - [ ] Validate every required production environment variable during backend startup.
 - [ ] Inject frontend configuration during the static build or through a runtime configuration file.
-- [ ] Complete clean dependency installs and build both Docker images from a clean checkout.
-- [ ] Make lint, integration, and end-to-end test failures fail CI.
-- [ ] Correct end-to-end API paths and complete a successful staging smoke test.
+- [x] Complete clean dependency installs and verify the backend tests and production frontend build.
+- [x] Make lint, integration, and end-to-end test failures fail CI.
+- [x] Correct end-to-end API paths.
+- [ ] Complete a successful staging smoke test.
 
 ### Medium Priority - Required Before Public Release
 
-- [ ] Upgrade Node.js 18 to a supported LTS release and verify Expo compatibility.
+- [x] Upgrade Node.js to version 22 and verify the backend and Expo web build.
 - [ ] Pin production container image versions or digests instead of deploying `latest`.
 - [ ] Run dependency and container scans and resolve all critical and high-severity vulnerabilities.
-- [ ] Remove tracked `node_modules` files and continue committing synchronized lockfiles.
+- [x] Remove tracked `node_modules` files and commit synchronized lockfiles.
 - [ ] Stop tracking real production environment files and rotate any previously committed credentials.
-- [ ] Add explicit frontend build, lint, component-test, and integration-test scripts.
+- [x] Add explicit frontend build and lint scripts.
+- [ ] Add frontend component-test and integration-test scripts.
 - [ ] Add authentication, authorization, upload, validation, rate-limit, and migration tests.
 - [ ] Establish and enforce a meaningful coverage threshold.
 - [ ] Upgrade retired GitHub Actions, including `actions/upload-artifact@v3` and `github/codeql-action@v2`.
