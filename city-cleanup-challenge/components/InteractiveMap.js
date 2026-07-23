@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     height: 180,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#142F4D',
     borderBottomWidth: 1,
     borderBottomColor: '#bbb',
   },
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
   },
   locationDot: {
     width: 12,
