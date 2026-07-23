@@ -122,9 +122,38 @@ function createApp() {
 
 	// User authentication endpoints
 	apiRouter.post('/signup', async (req, res) => {
-		const { username, password } = req.body;
-		if (!username || !password) {
-			return res.status(400).json({ success: false, message: 'Username and password required' });
+		const username = req.body.username?.trim();
+		const password = req.body.password;
+		const email = req.body.email?.trim().toLowerCase();
+		const phone = req.body.phone?.trim();
+		const location = req.body.location?.trim();
+
+		if (!username || !password || !email || !phone || !location) {
+			return res.status(400).json({
+				success: false,
+				message: 'Username, email, phone number, location, and password are required'
+			});
+		}
+		if (!/^[a-zA-Z0-9._-]{3,30}$/.test(username)) {
+			return res.status(400).json({
+				success: false,
+				message: 'Username must be 3-30 characters and use only letters, numbers, dots, underscores, or hyphens'
+			});
+		}
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			return res.status(400).json({ success: false, message: 'Please enter a valid email address' });
+		}
+		if (email.length > 254 || location.length > 120) {
+			return res.status(400).json({ success: false, message: 'Email or location is too long' });
+		}
+		const phoneDigits = phone.replace(/\D/g, '');
+		if (
+			phone.length > 30
+			|| phoneDigits.length < 7
+			|| phoneDigits.length > 15
+			|| !/^\+?[\d\s().-]+$/.test(phone)
+		) {
+			return res.status(400).json({ success: false, message: 'Please enter a valid phone number' });
 		}
 		if (password.length < 10) {
 			return res.status(400).json({ success: false, message: 'Password must be at least 10 characters' });
