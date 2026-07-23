@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   cardPrice: {
     fontSize: 18,
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 16,
   },
 });
