@@ -1,5 +1,5 @@
 # Frontend Dockerfile for React Native Web
-FROM node:18-alpine as builder
+FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -14,13 +14,13 @@ RUN npm ci
 COPY . .
 
 # Build for web
-RUN npx expo export:web
+RUN npm run build:web
 
 # Production stage with nginx
 FROM nginx:alpine
 
 # Copy built assets from builder
-COPY --from=builder /app/web-build /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
