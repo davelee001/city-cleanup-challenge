@@ -1016,6 +1016,9 @@ SENTRY_ENVIRONMENT=production
 
 > **Current status:** Pre-deployment. Complete every high-priority item before deploying to a public environment.
 
+The MVP eligibility, verification, review, privacy, and CELO payout rules are
+defined in [Product Rules](docs/PRODUCT_RULES.md).
+
 ### High Priority - Deployment Blockers
 
 - [ ] Convert `backend/src/services/socialService.js` from UTF-16LE to UTF-8 so Node.js can parse it.
