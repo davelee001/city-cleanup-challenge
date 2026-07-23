@@ -243,7 +243,7 @@ export default function Events({ username, onShowMap }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 16 },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   createForm: { 
     backgroundColor: '#0B1E36',
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     borderRadius: 8, 
     marginBottom: 16 
   },
-  formTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
+  formTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
   input: { 
     borderWidth: 1, 
     borderColor: '#ccc', 
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     borderRadius: 8, 
     marginBottom: 12 
   },
-  eventTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
+  eventTitle: { fontSize: 18, fontWeight: '600', marginBottom: 4 },
   eventDesc: { fontSize: 14, color: '#AFC0D4', marginBottom: 8 },
   eventLocation: { fontSize: 14, marginBottom: 4 },
   eventDate: { fontSize: 14, marginBottom: 4 },
@@ -282,13 +282,13 @@ const styles = StyleSheet.create({
     padding: 8, 
     borderRadius: 4 
   },
-  checkinButtonText: { color: '#fff', fontWeight: 'bold' },
+  checkinButtonText: { color: '#fff', fontWeight: '600' },
   checkedIn: { 
     backgroundColor: '#28a745', 
     padding: 8, 
     borderRadius: 4 
   },
-  checkedInText: { color: '#fff', fontWeight: 'bold' },
+  checkedInText: { color: '#fff', fontWeight: '600' },
   creatorBadge: { 
     backgroundColor: '#ffc107', 
     color: '#F5F8FF',
