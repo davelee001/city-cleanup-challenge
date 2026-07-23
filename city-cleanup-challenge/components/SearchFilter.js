@@ -58,7 +58,7 @@ const SearchFilter = ({ onSearch, onFilterChange, theme }) => {
                 styles.filterText,
                 selectedFilters.includes(filter.id)
                   ? { color: '#fff' }
-                  : { color: '#666' },
+                  : { color: '#AFC0D4' },
               ]}
             >
               {filter.label}
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
@@ -107,8 +107,8 @@ const styles = StyleSheet.create({
     borderColor: '#4CAF50',
   },
   filterTagInactive: {
-    backgroundColor: '#f0f0f0',
-    borderColor: '#ddd',
+    backgroundColor: '#132A46',
+    borderColor: '#315574',
   },
   filterText: {
     fontSize: 12,
