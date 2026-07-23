@@ -205,11 +205,11 @@ const styles = StyleSheet.create({
     gap: 20,
     marginBottom: 30,
   },
-  eyebrow: { color: '#69B4FF', fontSize: 11, fontWeight: '800', letterSpacing: 1.8 },
+  eyebrow: { color: '#69B4FF', fontSize: 11, fontWeight: '600', letterSpacing: 1.8 },
   welcome: {
     color: '#F5F8FF',
-    fontSize: 34,
-    fontWeight: '800',
+    fontSize: 30,
+    fontWeight: '600',
     letterSpacing: -0.6,
     marginTop: 7,
   },
@@ -237,8 +237,8 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 4,
   },
-  gridIcon: { color: '#61D6C6', fontSize: 27, fontWeight: '700', marginBottom: 14 },
-  gridText: { color: '#EDF5FF', fontSize: 17, fontWeight: '800' },
+  gridIcon: { color: '#61D6C6', fontSize: 27, fontWeight: '600', marginBottom: 14 },
+  gridText: { color: '#EDF5FF', fontSize: 17, fontWeight: '600' },
   gridHint: { color: '#8298AF', fontSize: 12, lineHeight: 18, marginTop: 6 },
   logoutButton: {
     borderColor: '#3C6A94',
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 11,
   },
-  logoutText: { color: '#BBD8F7', fontSize: 14, fontWeight: '800' },
+  logoutText: { color: '#BBD8F7', fontSize: 14, fontWeight: '600' },
   backButton: {
     backgroundColor: '#0B1E36',
     borderBottomColor: '#244B70',
@@ -255,5 +255,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 13,
   },
-  backButtonText: { color: '#8DBDFF', fontSize: 14, fontWeight: '800' },
+  backButtonText: { color: '#8DBDFF', fontSize: 14, fontWeight: '600' },
 });
