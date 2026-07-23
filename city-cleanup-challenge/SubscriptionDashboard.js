@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#07182D',
   },
   title: {
     fontSize: 24,
@@ -54,12 +54,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 8,
     padding: 20,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
   },
   selectedCard: {
     borderColor: '#007bff',
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   cardPrice: {
     fontSize: 18,
-    color: '#888',
+    color: '#8EA4BC',
     marginVertical: 10,
   },
   featuresContainer: {
