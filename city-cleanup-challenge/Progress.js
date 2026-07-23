@@ -4,7 +4,7 @@ import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import ProgressPhotoUploader from './components/ProgressPhotoUploader';
 import EnhancedImageUploader from './components/EnhancedImageUploader';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 export default function Progress({ username }) {
   const [userProgress, setUserProgress] = useState([]);
@@ -35,7 +35,7 @@ export default function Progress({ username }) {
   const fetchUserProgress = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/users/${username}/progress`);
+      const res = await apiFetch(`${API_BASE_URL}/users/${username}/progress`);
       const data = await res.json();
       if (data.success) {
         setUserProgress(data.progress);
@@ -51,7 +51,7 @@ export default function Progress({ username }) {
 
   const fetchCheckedInEvents = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/users/${username}/checkins`);
+      const res = await apiFetch(`${API_BASE_URL}/users/${username}/checkins`);
       const data = await res.json();
       if (data.success) {
         setCheckedInEvents(data.checkins);
@@ -69,7 +69,7 @@ export default function Progress({ username }) {
       let validScores = 0;
       
       for (const checkin of checkedInEvents) {
-        const res = await fetch(`${API_BASE_URL}/enhanced/progress/${checkin.eventId}/analysis`);
+        const res = await apiFetch(`${API_BASE_URL}/enhanced/progress/${checkin.eventId}/analysis`);
         if (res.ok) {
           const data = await res.json();
           if (data.enhancedProgress) {
@@ -111,7 +111,7 @@ export default function Progress({ username }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/events/${eventId}/progress`, {
+      const res = await apiFetch(`${API_BASE_URL}/events/${eventId}/progress`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -526,7 +526,7 @@ export default function Progress({ username }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
   summaryCard: { 
     backgroundColor: '#28a745', 
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
   // Mode Toggle Styles
   modeToggleContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#07182D',
     borderRadius: 25,
     padding: 4,
     marginBottom: 20
@@ -604,14 +604,14 @@ const styles = StyleSheet.create({
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
   eventCard: { 
-    backgroundColor: '#f8f9fa', 
+    backgroundColor: '#0B1E36',
     padding: 16, 
     borderRadius: 8, 
     marginBottom: 12 
   },
   eventTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
-  eventLocation: { fontSize: 14, color: '#666', marginBottom: 2 },
-  eventDate: { fontSize: 14, color: '#666', marginBottom: 12 },
+  eventLocation: { fontSize: 14, color: '#AFC0D4', marginBottom: 2 },
+  eventDate: { fontSize: 14, color: '#AFC0D4', marginBottom: 12 },
   progressForm: { marginTop: 12 },
   input: { 
     borderWidth: 1, 
@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     borderRadius: 4, 
     padding: 10, 
     marginBottom: 12,
-    backgroundColor: '#fff'
+    backgroundColor: '#10243E'
   },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-between' },
   actionButtons: { 
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
   photoUploaderWrapper: {
     marginTop: 16,
     padding: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0B1E36',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#dee2e6',
@@ -659,20 +659,20 @@ const styles = StyleSheet.create({
   
   // Enhanced Uploader Styles
   enhancedUploaderWrapper: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#142F4D',
     borderColor: '#2196F3',
     borderWidth: 2
   },
   enhancedUploaderTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1976D2',
+    color: '#69B4FF',
     textAlign: 'center',
     marginBottom: 4
   },
   enhancedUploaderSubtitle: {
     fontSize: 12,
-    color: '#1976D2',
+    color: '#69B4FF',
     textAlign: 'center',
     marginBottom: 16,
     opacity: 0.8
@@ -680,15 +680,15 @@ const styles = StyleSheet.create({
   enhancedPhotoSection: {
     marginBottom: 16,
     padding: 12,
-    backgroundColor: '#FFF',
+    backgroundColor: '#10243E',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0'
+    borderColor: '#244B70'
   },
   enhancedPhotoLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 8,
     textAlign: 'center'
   },
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
   
   progressList: { flex: 1 },
   progressCard: { 
-    backgroundColor: '#e8f5e8', 
+    backgroundColor: '#123B3D',
     padding: 16, 
     borderRadius: 8, 
     marginBottom: 12,
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
   
   // Enhanced Progress Card Styles
   enhancedProgressCard: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#142F4D',
     borderLeftColor: '#007AFF'
   },
   enhancedProgressHeader: {
@@ -719,11 +719,11 @@ const styles = StyleSheet.create({
   },
   
   progressEventTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
-  progressLocation: { fontSize: 14, color: '#666', marginBottom: 2 },
-  progressDate: { fontSize: 14, color: '#666', marginBottom: 8 },
+  progressLocation: { fontSize: 14, color: '#AFC0D4', marginBottom: 2 },
+  progressDate: { fontSize: 14, color: '#AFC0D4', marginBottom: 8 },
   progressStats: { marginBottom: 8 },
   progressAmount: { fontSize: 16, fontWeight: 'bold', color: '#28a745' },
-  progressType: { fontSize: 14, color: '#666', marginTop: 2 },
+  progressType: { fontSize: 14, color: '#AFC0D4', marginTop: 2 },
   
   // GPS Section Styles
   gpsSection: {
@@ -788,7 +788,7 @@ const styles = StyleSheet.create({
   },
   progressReportText: {
     fontSize: 11,
-    color: '#555',
+    color: '#B8C7D9',
     lineHeight: 16
   },
   locationValidation: {
@@ -802,13 +802,13 @@ const styles = StyleSheet.create({
   progressNotes: { 
     fontSize: 14, 
     fontStyle: 'italic', 
-    color: '#666',
+    color: '#AFC0D4',
     marginBottom: 8
   },
-  progressUpdated: { fontSize: 12, color: '#888' },
+  progressUpdated: { fontSize: 12, color: '#8EA4BC' },
   error: { color: 'red', marginBottom: 8, textAlign: 'center' },
   empty: { 
-    color: '#888', 
+    color: '#8EA4BC',
     textAlign: 'center', 
     marginTop: 20,
     fontStyle: 'italic'
