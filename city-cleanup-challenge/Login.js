@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 export default function Login({ onLogin, onSwitchToSignup }) {
   const [username, setUsername] = useState('');
