@@ -26,7 +26,8 @@ See [City Cleanup Reward Product Rules](docs/PRODUCT_RULES.md) for the complete 
 - Expanded signup to collect username, email, phone number, location, and password confirmation.
 - Added client and server validation, unique email protection, and automatic profile-column migration for existing SQLite databases.
 - Redesigned signup with accessible feedback, responsive spacing, and a friendly green community theme.
-- Verified all 28 backend tests and a clean production frontend build.
+- Added signed JWT access tokens, rotating refresh tokens, revocation, role checks, and resource ownership enforcement.
+- Verified all 36 backend tests and a clean production frontend build.
 
 The application is still **pre-deployment**. Authentication/authorization, evidence verification, production storage, security remediation, and Celo testnet integration remain release blockers.
 
@@ -551,9 +552,15 @@ npx expo start
 
 ### Authentication
 - `POST /api/v1/signup` — Register a user with username, email, phone number, location, and password
-- `POST /api/v1/login` — User login (returns role information)
+- `POST /api/v1/login` — User login returning a short-lived access token and rotating refresh token
+- `POST /api/v1/auth/refresh` — Rotate a valid refresh token and issue a new token pair
+- `POST /api/v1/auth/logout` — Revoke a refresh token
 - `GET /profile/:username` — Get user profile
 - `PUT /profile/:username` — Update user profile
+
+Private endpoints require `Authorization: Bearer <access-token>`. The client stores
+the session locally, refreshes an expired access token once, and revokes the
+refresh token during logout.
 
 ### Admin Panel APIs
 - `GET /admin/analytics` — Comprehensive system analytics (admin only)
@@ -1056,8 +1063,9 @@ defined in [Product Rules](docs/PRODUCT_RULES.md).
 - [x] Hash newly created passwords with bcrypt.
 - [ ] Migrate any existing plaintext account passwords before retaining production data.
 - [x] Remove the default `admin / admin123` account.
-- [ ] Implement proper JWT creation, verification, expiration, and authorization.
-- [ ] Protect all state-changing API endpoints with authentication and ownership checks.
+- [x] Implement JWT access and rotating refresh tokens with verification, expiration, and revocation.
+- [x] Protect private and state-changing API endpoints with authentication.
+- [x] Enforce administrator roles and resource ownership checks.
 - [ ] Choose a production database architecture: one SQLite replica temporarily, or a complete PostgreSQL migration.
 - [ ] Run and verify every database migration in staging.
 - [ ] Replace placeholder domains, CORS origins, certificate email addresses, and Kubernetes secrets.
