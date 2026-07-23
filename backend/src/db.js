@@ -97,36 +97,17 @@ db.serialize(() => {
     FOREIGN KEY (eventId) REFERENCES events (id)
   )`);
 
-  // Create default admin user if none exists
-  db.get('SELECT * FROM users WHERE role = "admin"', [], (err, adminUser) => {
-    if (err) {
-      console.error('Error checking for admin user:', err);
-      return;
-    }
-    if (!adminUser) {
-      db.run(
-        'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-        ['admin', 'admin123', 'admin'],
-        function (err) {
-          if (err) {
-            console.error('Error creating admin user:', err);
-          } else {
-            console.log('Default admin user created: admin / admin123');
-          }
-        }
-      );
-    }
-  });
-
-  // Run enhanced features migration
-  setTimeout(async () => {
-    try {
-      await runEnhancedFeaturesMigration(db);
-      console.log('Enhanced image features migration completed successfully');
-    } catch (error) {
-      console.error('Failed to run enhanced features migration:', error);
-    }
-  }, 1000); // Wait 1 second for basic tables to be created
+  if (process.env.NODE_ENV !== 'test') {
+    // Run enhanced features migration after the base tables are available.
+    setTimeout(async () => {
+      try {
+        await runEnhancedFeaturesMigration(db);
+        console.log('Enhanced image features migration completed successfully');
+      } catch (error) {
+        console.error('Failed to run enhanced features migration:', error);
+      }
+    }, 1000);
+  }
 });
 
 module.exports = db;
