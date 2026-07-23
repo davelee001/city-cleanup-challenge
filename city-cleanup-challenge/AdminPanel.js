@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator, Switch } from 'react-native';
 import Toast from 'react-hot-toast';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 const AdminPanel = ({ username, onBack }) => {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -37,7 +37,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`);
+      const response = await apiFetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setAnalytics(data.analytics);
@@ -53,7 +53,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/cleanup-plans?username=${username}`);
+      const response = await apiFetch(`${API_BASE_URL}/admin/cleanup-plans?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setPlans(data.plans);
@@ -69,7 +69,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users?username=${username}`);
+      const response = await apiFetch(`${API_BASE_URL}/admin/users?username=${username}`);
       const data = await response.json();
       if (data.success) {
         setUsers(data.users);
@@ -85,7 +85,7 @@ const AdminPanel = ({ username, onBack }) => {
   const fetchActivity = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/analytics?username=${username}&limit=50`);
+      const response = await apiFetch(`${API_BASE_URL}/admin/analytics?username=${username}&limit=50`);
       const data = await response.json();
       if (data.success) {
         setActivities(data.activities);
@@ -106,7 +106,7 @@ const AdminPanel = ({ username, onBack }) => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/cleanup-plans`, {
+      const response = await apiFetch(`${API_BASE_URL}/admin/cleanup-plans`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -142,7 +142,7 @@ const AdminPanel = ({ username, onBack }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`${API_BASE_URL}/admin/cleanup-plans/${planId}`, {
+              const response = await apiFetch(`${API_BASE_URL}/admin/cleanup-plans/${planId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username })
@@ -174,7 +174,7 @@ const AdminPanel = ({ username, onBack }) => {
           text: 'Confirm',
           onPress: async () => {
             try {
-              const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
+              const response = await apiFetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role: newRole, username })
@@ -448,13 +448,13 @@ const AdminPanel = ({ username, onBack }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#07182D',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
@@ -469,11 +469,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: '#666',
+    color: '#AFC0D4',
   },
   activeTabText: {
     color: '#007bff',
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#333',
+    color: '#EAF2FF',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48%',
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     padding: 16,
     borderRadius: 8,
     marginBottom: 8,
@@ -541,22 +541,22 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#AFC0D4',
     marginTop: 4,
   },
   statSubtext: {
     fontSize: 12,
-    color: '#999',
+    color: '#7890AA',
     marginTop: 2,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
   },
   createForm: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
@@ -568,11 +568,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#0D213A',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   planCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
   },
   inactivePlan: {
     borderLeftColor: '#dc3545',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0B1E36',
   },
   planHeader: {
     flexDirection: 'row',
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
   planTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
     flex: 1,
   },
   planStatus: {
@@ -651,12 +651,12 @@ const styles = StyleSheet.create({
   },
   planDesc: {
     fontSize: 14,
-    color: '#666',
+    color: '#AFC0D4',
     marginBottom: 8,
   },
   planArea: {
     fontSize: 14,
-    color: '#666',
+    color: '#AFC0D4',
     marginBottom: 8,
   },
   planStats: {
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
   },
   planStat: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
   },
   planFooter: {
     flexDirection: 'row',
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
   },
   planCreated: {
     fontSize: 12,
-    color: '#999',
+    color: '#7890AA',
   },
   deleteButton: {
     backgroundColor: '#dc3545',
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   userCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -703,11 +703,11 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
   },
   userDate: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     marginTop: 2,
   },
   roleSection: {
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   activityCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
@@ -754,24 +754,24 @@ const styles = StyleSheet.create({
   activityUser: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
   },
   activityAction: {
     fontSize: 14,
-    color: '#666',
+    color: '#AFC0D4',
   },
   activityTime: {
     fontSize: 12,
-    color: '#999',
+    color: '#7890AA',
   },
   activityTarget: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     marginTop: 2,
   },
   activityDetails: {
     fontSize: 12,
-    color: '#999',
+    color: '#7890AA',
     marginTop: 2,
     fontStyle: 'italic',
   },
