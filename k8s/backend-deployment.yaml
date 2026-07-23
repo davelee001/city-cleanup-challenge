@@ -51,11 +51,16 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: CORS_ORIGIN
-        - name: AZURE_KEY_VAULT_URL
+        - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: city-cleanup-secrets
-              key: AZURE_KEY_VAULT_URL
+              key: JWT_SECRET
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: SESSION_SECRET
         resources:
           requests:
             memory: "256Mi"
@@ -65,7 +70,7 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /api/health
+            path: /health
             port: 3001
           initialDelaySeconds: 30
           periodSeconds: 10
@@ -73,7 +78,7 @@ spec:
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /api/health
+            path: /health
             port: 3001
           initialDelaySeconds: 10
           periodSeconds: 5
@@ -82,19 +87,10 @@ spec:
         volumeMounts:
         - name: backend-data
           mountPath: /app/data
-        - name: secrets-store
-          mountPath: "/mnt/secrets-store"
-          readOnly: true
       volumes:
       - name: backend-data
         persistentVolumeClaim:
           claimName: backend-data-pvc
-      - name: secrets-store
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: "azure-keyvault-secret-provider"
       imagePullSecrets:
       - name: acr-secret
 ---
