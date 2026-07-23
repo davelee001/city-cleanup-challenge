@@ -197,7 +197,7 @@ export default function Signup({ onSignup, onSwitchToLogin }) {
             })}
             {renderField({
               field: 'location',
-              label: 'Location',
+              label: 'County / location',
               placeholder: 'City, district, or neighborhood',
               autoComplete: 'street-address',
               maxLength: 120,
