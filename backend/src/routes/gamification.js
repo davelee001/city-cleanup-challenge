@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const GamificationService = require('../services/gamificationService');
-const { authenticateUser } = require('../middleware/auth');
+const { authenticateUser, requireAdmin } = require('../middleware/auth');
 
 // Initialize gamification service
 let gamificationService;
@@ -66,17 +66,12 @@ router.get('/dashboard/:username', authenticateUser, async (req, res) => {
 /**
  * Award points for user action
  */
-router.post('/points/award', authenticateUser, async (req, res) => {
+router.post('/points/award', authenticateUser, requireAdmin, async (req, res) => {
     try {
         const { username, action, sourceId, metadata = {} } = req.body;
 
         if (!username || !action) {
             return res.status(400).json({ error: 'Username and action are required' });
-        }
-
-        // Verify user authorization (admin or self)
-        if (req.user.username !== username && req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Access denied' });
         }
 
         const result = await gamificationService.awardPoints(
@@ -465,12 +460,8 @@ router.get('/stats/summary', async (req, res) => {
 /**
  * Award achievement manually (admin only)
  */
-router.post('/achievements/award', authenticateUser, async (req, res) => {
+router.post('/achievements/award', authenticateUser, requireAdmin, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
         const { username, achievementId, metadata } = req.body;
 
         if (!username || !achievementId) {
@@ -499,12 +490,8 @@ router.post('/achievements/award', authenticateUser, async (req, res) => {
 /**
  * Create custom seasonal challenge (admin only)
  */
-router.post('/challenges/create', authenticateUser, async (req, res) => {
+router.post('/challenges/create', authenticateUser, requireAdmin, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
         const challengeData = req.body;
 
         if (!challengeData.challengeName || !challengeData.targetValue || !challengeData.targetType) {
