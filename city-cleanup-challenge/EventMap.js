@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } fr
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 export default function EventMap({ username }) {
   const [events, setEvents] = useState([]);
@@ -34,8 +34,8 @@ export default function EventMap({ username }) {
   const fetchEventsAndCheckins = async () => {
     try {
       const [eventsRes, checkinsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/events`),
-        fetch(`${API_BASE_URL}/users/${username}/checkins`)
+        apiFetch(`${API_BASE_URL}/events`),
+        apiFetch(`${API_BASE_URL}/users/${username}/checkins`)
       ]);
       const eventsData = await eventsRes.json();
       if (eventsData.success) {
@@ -62,7 +62,7 @@ export default function EventMap({ username }) {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/events/${eventId}/checkin`, {
+      const res = await apiFetch(`${API_BASE_URL}/events/${eventId}/checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -206,19 +206,19 @@ export default function EventMap({ username }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     padding: 20,
   },
   title: {
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   legend: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0B1E36',
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
   },
   map: {
     flex: 1,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   calloutDesc: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     marginBottom: 4,
   },
   calloutLocation: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   calloutCreator: {
     fontSize: 10,
-    color: '#888',
+    color: '#8EA4BC',
     marginBottom: 8,
   },
   checkinButton: {
@@ -297,13 +297,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   stats: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0B1E36',
     padding: 12,
     alignItems: 'center',
   },
   statsText: {
     fontSize: 14,
-    color: '#666',
+    color: '#AFC0D4',
   },
   error: {
     color: 'red',
