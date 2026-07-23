@@ -80,6 +80,7 @@ const config = {
     analytics: process.env.ENABLE_ANALYTICS === 'true',
     notifications: process.env.ENABLE_NOTIFICATIONS === 'true',
     cache: process.env.ENABLE_CACHE === 'true',
+    gamification: process.env.ENABLE_GAMIFICATION === 'true',
   },
 
   // Development
@@ -90,15 +91,14 @@ const config = {
 };
 
 // Validation
-const requiredEnvVars = ['NODE_ENV'];
+const requiredEnvVars = config.env === 'production'
+  ? ['NODE_ENV', 'DATABASE_PATH', 'CORS_ORIGIN', 'JWT_SECRET', 'SESSION_SECRET']
+  : [];
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
-if (missingVars.length > 0 && config.env === 'production') {
+if (missingVars.length > 0) {
   console.error('Missing required environment variables:', missingVars);
-  // Don't exit in development for flexibility
-  if (config.env === 'production') {
-    process.exit(1);
-  }
+  process.exit(1);
 }
 
 module.exports = config;
