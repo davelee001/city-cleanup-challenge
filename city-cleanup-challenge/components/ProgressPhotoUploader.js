@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import ImageUploader from './ImageUploader';
-import { API_BASE_URL } from '../apiConfig';
+import { API_BASE_URL, apiFetch } from '../apiConfig';
 
 const ProgressPhotoUploader = ({ username, eventId, onProgressUpdated }) => {
   const [wasteCollected, setWasteCollected] = useState('');
@@ -33,7 +33,7 @@ const ProgressPhotoUploader = ({ username, eventId, onProgressUpdated }) => {
       setSaving(true);
 
       // Since photos are already uploaded via ImageUploader, we just need to save the metadata
-      const response = await fetch(`${API_BASE_URL}/upload/progress/${eventId}`, {
+      const response = await apiFetch(`${API_BASE_URL}/upload/progress/${eventId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
   },
   title: {
     fontSize: 24, 
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
-    color: '#333',
+    color: '#EAF2FF',
   },
   photoRow: {
     flexDirection: 'row',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
-    color: '#555',
+    color: '#B8C7D9',
   },
   photoUploader: {
     marginBottom: 8,
@@ -201,16 +201,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 6,
-    color: '#555',
+    color: '#B8C7D9',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#0D213A',
   },
   textArea: {
     height: 80,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   saveButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#486078',
   },
   saveButtonText: {
     fontSize: 16,
