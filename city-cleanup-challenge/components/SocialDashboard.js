@@ -1275,7 +1275,7 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: 'white',
   },
   statLabel: {
@@ -1484,7 +1484,7 @@ const styles = StyleSheet.create({
   },
   challengeTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: 'white',
     flex: 1,
   },
@@ -1544,7 +1544,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
     marginBottom: 15,
   },
@@ -1570,15 +1570,15 @@ const styles = StyleSheet.create({
   },
   statusActive: {
     color: '#4CAF50',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   statusCompleted: {
     color: '#2196F3',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   statusPending: {
     color: '#FF9800',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   participantsList: {
     marginTop: 10,
@@ -1651,7 +1651,7 @@ const styles = StyleSheet.create({
   kudosType: {
     fontSize: 10,
     color: '#ffc107',
-    fontWeight: 'bold',
+    fontWeight: '600',
     textTransform: 'uppercase',
   },
   kudosMessage: {
@@ -1675,7 +1675,7 @@ const styles = StyleSheet.create({
   },
   badgeTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#4CAF50',
     marginBottom: 5,
   },
