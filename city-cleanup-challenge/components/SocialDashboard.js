@@ -1,264 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View, Text, StyleSheet, ScrollView, TouchableOpacity, 
-    TextInput, Alert, RefreshControl
-} from 'react-native';
-
-const SocialDashboard = () => {
-    const [activeTab, setActiveTab] = useState('feed');
-    const [refreshing, setRefreshing] = useState(false);
-    const [socialData, setSocialData] = useState({
-        posts: [],
-        teams: [],
-        challenges: [],
-        friends: []
-    });
-
-    // Basic refresh handler
-    const onRefresh = React.useCallback(() => {
-        setRefreshing(true);
-        // Simulate refresh
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 1000);
-    }, []);
-
-    const renderTabContent = () => {
-        switch (activeTab) {
-            case 'feed':
-                return (
-                    <View style={styles.tabContent}>
-                        <Text style={styles.tabTitle}>Social Feed</Text>
-                        <Text style={styles.placeholder}>Feed content will be displayed here</Text>
-                    </View>
-                );
-            case 'teams':
-                return (
-                    <View style={styles.tabContent}>
-                        <Text style={styles.tabTitle}>My Teams</Text>
-                        <Text style={styles.placeholder}>Teams content will be displayed here</Text>
-                    </View>
-                );
-            case 'challenges':
-                return (
-                    <View style={styles.tabContent}>
-                        <Text style={styles.tabTitle}>Friend Challenges</Text>
-                        {renderChallengesTab()}
-                    </View>
-                );
-            case 'friends':
-                return (
-                    <View style={styles.tabContent}>
-                        <Text style={styles.tabTitle}>Friends</Text>
-                        {renderFriendsTab()}
-                    </View>
-                );
-            default:
-                return (
-                    <View style={styles.tabContent}>
-                        <Text style={styles.tabTitle}>Social Features</Text>
-                        <Text style={styles.placeholder}>Select a tab to view content</Text>
-                    </View>
-                );
-        }
-    };
-
-    // Render Challenges tab content
-    const renderChallengesTab = () => (
-        <View>
-            <TouchableOpacity style={styles.createButton}>
-                <Text style={styles.createButtonText}>+ Create New Challenge</Text>
-            </TouchableOpacity>
-            
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Active Challenges</Text>
-                <Text style={styles.placeholder}>No active challenges</Text>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Challenge Invitations</Text>
-                <Text style={styles.placeholder}>No pending invitations</Text>
-            </View>
-        </View>
-    );
-
-    // Render Friends tab content
-    const renderFriendsTab = () => (
-        <View>
-            <View style={styles.searchContainer}>
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search friends or add new..."
-                    placeholderTextColor="#999"
-                />
-                <TouchableOpacity style={styles.addButton}>
-                    <Text style={styles.addButtonText}>Add</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Friend Requests</Text>
-                <Text style={styles.placeholder}>No pending friend requests</Text>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>My Friends</Text>
-                <Text style={styles.placeholder}>No friends yet</Text>
-            </View>
-        </View>
-    );
-
-    return (
-        <View style={styles.container}>
-            <View style={styles.tabBar}>
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'feed' && styles.activeTab]}
-                    onPress={() => setActiveTab('feed')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'feed' && styles.activeTabText]}>
-                        Feed
-                    </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'teams' && styles.activeTab]}
-                    onPress={() => setActiveTab('teams')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'teams' && styles.activeTabText]}>
-                        Teams
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'challenges' && styles.activeTab]}
-                    onPress={() => setActiveTab('challenges')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'challenges' && styles.activeTabText]}>
-                        Challenges
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'friends' && styles.activeTab]}
-                    onPress={() => setActiveTab('friends')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'friends' && styles.activeTabText]}>
-                        Friends
-                    </Text>
-                </TouchableOpacity>
-            </View>
-
-            <ScrollView
-                style={styles.content}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            >
-                {renderTabContent()}
-            </ScrollView>
-        </View>
-    );
-};
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    tabBar: {
-        flexDirection: 'row',
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    tab: {
-        flex: 1,
-        paddingVertical: 15,
-        alignItems: 'center',
-    },
-    activeTab: {
-        borderBottomWidth: 2,
-        borderBottomColor: '#4CAF50',
-    },
-    tabText: {
-        fontSize: 16,
-        color: '#666',
-        fontWeight: '500',
-    },
-    activeTabText: {
-        color: '#4CAF50',
-        fontWeight: '600',
-    },
-    content: {
-        flex: 1,
-    },
-    tabContent: {
-        padding: 20,
-    },
-    tabTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    placeholder: {
-        fontSize: 16,
-        color: '#666',
-        textAlign: 'center',
-        marginTop: 50,
-    },
-    createButton: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        marginBottom: 20,
-        alignItems: 'center',
-    },
-    createButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        marginBottom: 20,
-        alignItems: 'center',
-    },
-    searchInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        paddingVertical: 12,
-        fontSize: 16,
-        backgroundColor: '#fff',
-    },
-    addButton: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        marginLeft: 10,
-    },
-    addButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    section: {
-        marginBottom: 25,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 10,
-    },
-});
-
-export default SocialDashboard;
-import {
   View,
   Text,
   StyleSheet,
@@ -276,6 +17,7 @@ import {
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SOCIAL_API_BASE_URL } from '../apiConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -372,47 +114,47 @@ const SocialDashboard = ({ navigation, route }) => {
     setLoading(true);
     try {
       // Enhanced social feed with personalized content
-      const feedResponse = await fetch(`http://localhost:3000/api/social/feed?feed_type=personal&limit=20&sort_by=${activeFilter}`, {
+      const feedResponse = await fetch(`${SOCIAL_API_BASE_URL}/feed?feed_type=personal&limit=20&sort_by=${activeFilter}`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const feedData = await feedResponse.json();
 
       // Load user teams
-      const teamsResponse = await fetch('http://localhost:3000/api/social/teams', {
+      const teamsResponse = await fetch(`${SOCIAL_API_BASE_URL}/teams`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const teamsData = await teamsResponse.json();
 
       // Load active challenges
-      const challengesResponse = await fetch('http://localhost:3000/api/social/challenges', {
+      const challengesResponse = await fetch(`${SOCIAL_API_BASE_URL}/challenges`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const challengesData = await challengesResponse.json();
 
       // Load friend challenges
-      const friendChallengesResponse = await fetch('http://localhost:3000/api/social/user-active-challenges', {
+      const friendChallengesResponse = await fetch(`${SOCIAL_API_BASE_URL}/user-active-challenges`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const friendChallengesData = await friendChallengesResponse.json();
 
       // Load community recognition
-      const recognitionResponse = await fetch(`http://localhost:3000/api/social/recognition-summary/${user.id}`, {
+      const recognitionResponse = await fetch(`${SOCIAL_API_BASE_URL}/recognition-summary/${user.id}`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const recognitionData = await recognitionResponse.json();
 
       // Load community spotlights
-      const spotlightsResponse = await fetch('http://localhost:3000/api/social/spotlights?limit=5');
+      const spotlightsResponse = await fetch(`${SOCIAL_API_BASE_URL}/spotlights?limit=5`);
       const spotlightsData = await spotlightsResponse.json();
 
       // Load notifications
-      const notificationsResponse = await fetch('http://localhost:3000/api/social/notifications?limit=20', {
+      const notificationsResponse = await fetch(`${SOCIAL_API_BASE_URL}/notifications?limit=20`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const notificationsData = await notificationsResponse.json();
 
       // Load enhanced social stats
-      const statsResponse = await fetch(`http://localhost:3000/api/social/user-stats/${user.id}`, {
+      const statsResponse = await fetch(`${SOCIAL_API_BASE_URL}/user-stats/${user.id}`, {
         headers: { 'Authorization': `Bearer ${user.username}` }
       });
       const statsData = await statsResponse.json();
@@ -446,7 +188,7 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleLikePost = async (postId, reactionType = 'like') => {
     try {
-      const response = await fetch(`http://localhost:3000/api/social/posts/${postId}/like`, {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -467,7 +209,7 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleCreateFriendChallenge = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/social/friend-challenges', {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/friend-challenges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -500,7 +242,7 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleGiveKudos = async (recipientId) => {
     try {
-      const response = await fetch('http://localhost:3000/api/social/kudos', {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/kudos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -531,7 +273,7 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleJoinFriendChallenge = async (challengeId, response) => {
     try {
-      const apiResponse = await fetch(`http://localhost:3000/api/social/friend-challenges/${challengeId}/respond`, {
+      const apiResponse = await fetch(`${SOCIAL_API_BASE_URL}/friend-challenges/${challengeId}/respond`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -555,7 +297,7 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleSharePost = async (postId, shareType = 'share', customMessage = '') => {
     try {
-      const response = await fetch(`http://localhost:3000/api/social/posts/${postId}/share`, {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/posts/${postId}/share`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -579,38 +321,10 @@ const SocialDashboard = ({ navigation, route }) => {
       Alert.alert('Error', 'Failed to share post');
     }
   };
-        // Refresh feed to show updated like count
-        loadSocialData();
-      }
-    } catch (error) {
-      console.error('Error liking post:', error);
-    }
-  };
-
-  const handleSharePost = async (postId) => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/social/posts/${postId}/share`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
-        },
-        body: JSON.stringify({ share_type: 'internal' })
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        Alert.alert('Success', 'Post shared successfully!');
-        loadSocialData();
-      }
-    } catch (error) {
-      console.error('Error sharing post:', error);
-    }
-  };
 
   const handleJoinTeam = async (teamId) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/social/teams/${teamId}/join`, {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/teams/${teamId}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -632,7 +346,7 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleJoinChallenge = async (challengeId) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/social/challenges/${challengeId}/join`, {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/challenges/${challengeId}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -659,7 +373,7 @@ const SocialDashboard = ({ navigation, route }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/social/posts', {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -694,7 +408,7 @@ const SocialDashboard = ({ navigation, route }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/social/teams', {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/teams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -727,7 +441,7 @@ const SocialDashboard = ({ navigation, route }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/social/challenges', {
+      const response = await fetch(`${SOCIAL_API_BASE_URL}/challenges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1409,9 +1123,7 @@ const SocialDashboard = ({ navigation, route }) => {
                         style={[
                           styles.typeOption,
                           friendChallengeForm.challenge_type === option && styles.selectedOption
-            else if (activeTab === 'friendChallenges') {
-            setModalType('friendChallenge');
-          }             ]}
+                        ]}
                         onPress={() => setFriendChallengeForm({ ...friendChallengeForm, challenge_type: option })}
                       >
                         <Text style={styles.typeOptionText}>
@@ -1542,6 +1254,8 @@ const SocialDashboard = ({ navigation, route }) => {
             setModalType('team');
           } else if (activeTab === 'challenges') {
             setModalType('challenge');
+          } else if (activeTab === 'friendChallenges') {
+            setModalType('friendChallenge');
           }
           setModalVisible(true);
         }}
