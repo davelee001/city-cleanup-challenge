@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import ImageUploader from './ImageUploader';
+import { API_BASE_URL } from '../apiConfig';
 
 const ProgressPhotoUploader = ({ username, eventId, onProgressUpdated }) => {
   const [wasteCollected, setWasteCollected] = useState('');
@@ -32,7 +33,7 @@ const ProgressPhotoUploader = ({ username, eventId, onProgressUpdated }) => {
       setSaving(true);
 
       // Since photos are already uploaded via ImageUploader, we just need to save the metadata
-      const response = await fetch(`http://localhost:3001/api/v1/upload/progress/${eventId}`, {
+      const response = await fetch(`${API_BASE_URL}/upload/progress/${eventId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
