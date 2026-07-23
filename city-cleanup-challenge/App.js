@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, Text, StyleSheet, Button, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Login from './Login';
 import Signup from './Signup';
 import Chatbot from './Chatbot';
@@ -13,75 +13,162 @@ import AdminPanel from './AdminPanel';
 import SubscriptionDashboard from './SubscriptionDashboard';
 import GamificationDashboard from './components/GamificationDashboard';
 import SocialDashboard from './components/SocialDashboard';
+import { getStoredUser, logoutAuthSession } from './apiConfig';
+
+const BackButton = ({ label = 'Back to home', onPress }) => (
+  <TouchableOpacity style={styles.backButton} onPress={onPress} accessibilityRole="button">
+    <Text style={styles.backButtonText}>‹  {label}</Text>
+  </TouchableOpacity>
+);
+
+const homeItems = [
+  { key: 'profile', icon: '◎', title: 'Profile', hint: 'Account and personal details' },
+  { key: 'posts', icon: '▣', title: 'Cleanup posts', hint: 'Share your cleanup evidence' },
+  { key: 'chatbot', icon: '◌', title: 'Cleanup assistant', hint: 'Get help planning your work' },
+  { key: 'events', icon: '◈', title: 'Events', hint: 'Join community cleanups' },
+  { key: 'map', icon: '⌖', title: 'Map', hint: 'Explore cleanup locations' },
+  { key: 'progress', icon: '↗', title: 'My progress', hint: 'See your verified impact' },
+  { key: 'dashboard', icon: '▥', title: 'Dashboard', hint: 'Review community activity' },
+  { key: 'subscription', icon: '◇', title: 'Subscription', hint: 'Manage your plan' },
+  { key: 'gamification', icon: '★', title: 'Achievements', hint: 'Rewards, points, and badges' },
+  { key: 'social', icon: '♢', title: 'Community', hint: 'Teams and shared goals' },
+];
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState('user');
   const [showSignup, setShowSignup] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
-  const [showPosts, setShowPosts] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [showEvents, setShowEvents] = useState(false);
-  const [showMap, setShowMap] = useState(false);
-  const [showProgress, setShowProgress] = useState(false);
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [showSubscription, setShowSubscription] = useState(false);
-  const [showGamification, setShowGamification] = useState(false);
-  const [showSocial, setShowSocial] = useState(false);
-  
+  const [activeView, setActiveView] = useState('home');
+
+  useEffect(() => {
+    getStoredUser().then((storedUser) => {
+      if (storedUser) {
+        setUser(storedUser.username);
+        setUserRole(storedUser.role || 'user');
+      }
+    });
+  }, []);
+
   const handleLogin = (username, role = 'user') => {
     setUser(username);
     setUserRole(role);
   };
-  
-  const handleLogout = () => {
+
+  const handleLogout = async () => {
+    await logoutAuthSession();
     setUser(null);
     setUserRole('user');
-    resetViews();
-  };
-  
-  const handleUsernameChange = (newUsername) => {
-    setUser(newUsername);
+    setActiveView('home');
   };
 
-  const resetViews = () => {
-    setShowProfile(false);
-    setShowPosts(false);
-    setShowChatbot(false);
-    setShowEvents(false);
-    setShowMap(false);
-    setShowProgress(false);
-    setShowDashboard(false);
-    setShowAdminPanel(false);
-    setShowSubscription(false);
-    setShowGamification(false);
-    setShowSocial(false);
+  const renderHome = () => {
+    const items = userRole === 'admin'
+      ? [...homeItems, { key: 'admin', icon: '⚙', title: 'Admin panel', hint: 'Manage users and content' }]
+      : homeItems;
+
+    return (
+      <ScrollView contentContainerStyle={styles.homeContainer}>
+        <View style={styles.homeHeader}>
+          <View>
+            <Text style={styles.eyebrow}>CITY CLEANUP</Text>
+            <Text style={styles.welcome}>Welcome back, {user}</Text>
+            <Text style={styles.welcomeSubtitle}>Choose where you want to make an impact today.</Text>
+          </View>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Sign out</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.grid}>
+          {items.map((item) => (
+            <TouchableOpacity
+              key={item.key}
+              style={styles.gridButton}
+              onPress={() => setActiveView(item.key)}
+              activeOpacity={0.82}
+            >
+              <Text style={styles.gridIcon}>{item.icon}</Text>
+              <Text style={styles.gridText}>{item.title}</Text>
+              <Text style={styles.gridHint}>{item.hint}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    );
   };
 
-  const handleShowAdminPanel = () => {
-    resetViews();
-    setShowAdminPanel(true);
-  };
+  const renderActiveView = () => {
+    if (activeView === 'home') return renderHome();
 
-  const handleShowDashboard = () => {
-    resetViews();
-    setShowDashboard(true);
-  };
+    if (activeView === 'gamification') {
+      return <GamificationDashboard username={user} onClose={() => setActiveView('home')} />;
+    }
+    if (activeView === 'social') {
+      return (
+        <SocialDashboard
+          username={user}
+          onClose={() => setActiveView('home')}
+          navigation={{ goBack: () => setActiveView('home') }}
+        />
+      );
+    }
 
-  const handleShowSubscription = () => {
-    resetViews();
-    setShowSubscription(true);
-  };
+    let content;
+    let backLabel = 'Back to home';
+    switch (activeView) {
+      case 'profile':
+        content = (
+          <Profile
+            username={user}
+            onLogout={handleLogout}
+            onUsernameChange={(newUsername) => setUser(newUsername)}
+          />
+        );
+        break;
+      case 'chatbot':
+        content = <Chatbot />;
+        break;
+      case 'posts':
+        content = <Posts username={user} />;
+        break;
+      case 'events':
+        content = <Events username={user} onShowMap={() => setActiveView('map')} />;
+        break;
+      case 'map':
+        backLabel = 'Back to events';
+        content = <EventMap username={user} />;
+        break;
+      case 'progress':
+        content = <Progress username={user} />;
+        break;
+      case 'dashboard':
+        content = (
+          <Dashboard
+            username={user}
+            userRole={userRole}
+            onAdminPanel={() => setActiveView('admin')}
+          />
+        );
+        break;
+      case 'admin':
+        content = <AdminPanel username={user} />;
+        break;
+      case 'subscription':
+        content = <SubscriptionDashboard />;
+        break;
+      default:
+        return renderHome();
+    }
 
-  const handleShowGamification = () => {
-    resetViews();
-    setShowGamification(true);
-  };
-
-  const handleShowSocial = () => {
-    resetViews();
-    setShowSocial(true);
+    return (
+      <>
+        <BackButton
+          label={backLabel}
+          onPress={() => setActiveView(activeView === 'map' ? 'events' : 'home')}
+        />
+        {content}
+      </>
+    );
   };
 
   return (
@@ -92,151 +179,81 @@ export default function App() {
         ) : (
           <Login onLogin={handleLogin} onSwitchToSignup={() => setShowSignup(true)} />
         )
-      ) : showProfile ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowProfile(false)} />
-          <Profile username={user} onLogout={handleLogout} onUsernameChange={handleUsernameChange} />
-        </>
-      ) : showChatbot ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowChatbot(false)} />
-          <Chatbot />
-        </>
-      ) : showPosts ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowPosts(false)} />
-          <Posts username={user} />
-        </>
-      ) : showEvents ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowEvents(false)} />
-          <Events username={user} onShowMap={() => { setShowEvents(false); setShowMap(true); }} />
-        </>
-      ) : showMap ? (
-        <>
-          <Button title="Back to Events" onPress={() => { setShowMap(false); setShowEvents(true); }} />
-          <EventMap username={user} />
-        </>
-      ) : showProgress ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowProgress(false)} />
-          <Progress username={user} />
-        </>
-      ) : showDashboard ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowDashboard(false)} />
-          <Dashboard 
-            username={user} 
-            userRole={userRole} 
-            onAdminPanel={handleShowAdminPanel} 
-          />
-        </>
-      ) : showAdminPanel ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowAdminPanel(false)} />
-          <AdminPanel username={user} />
-        </>
-      ) : showSubscription ? (
-        <>
-          <Button title="Back to Home" onPress={() => setShowSubscription(false)} />
-          <SubscriptionDashboard />
-        </>
-      ) : showGamification ? (
-        <GamificationDashboard 
-          username={user} 
-          onClose={() => setShowGamification(false)} 
-        />
-      ) : showSocial ? (
-        <SocialDashboard 
-          username={user} 
-          onClose={() => setShowSocial(false)}
-          navigation={{ goBack: () => setShowSocial(false) }}
-        />
       ) : (
-        <View style={styles.homeContainer}>
-          <Text style={styles.welcome}>Welcome, {user}!</Text>
-          <View style={styles.grid}>
-            <TouchableOpacity style={styles.gridButton} onPress={() => setShowProfile(true)}>
-              <Text style={styles.gridText}>Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={() => setShowPosts(true)}>
-              <Text style={styles.gridText}>Posts</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={() => setShowEvents(true)}>
-              <Text style={styles.gridText}>Events</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={() => setShowMap(true)}>
-              <Text style={styles.gridText}>Map</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={() => setShowProgress(true)}>
-              <Text style={styles.gridText}>My Progress</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={handleShowDashboard}>
-              <Text style={styles.gridText}>Dashboard</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={handleShowSubscription}>
-              <Text style={styles.gridText}>Subscription</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={handleShowGamification}>
-              <Text style={styles.gridText}>🏆 Achievements</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.gridButton} onPress={handleShowSocial}>
-              <Text style={styles.gridText}>👥 Social</Text>
-            </TouchableOpacity>
-            {userRole === 'admin' && (
-              <TouchableOpacity style={styles.gridButton} onPress={handleShowAdminPanel}>
-                <Text style={styles.gridText}>Admin Panel</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          <View style={styles.footer}>
-            <Button title="Logout" onPress={handleLogout} color="#d9534f" />
-          </View>
-        </View>
+        renderActiveView()
       )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
+  container: { flex: 1, backgroundColor: '#07182D' },
   homeContainer: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 22,
+    paddingVertical: 42,
   },
+  homeHeader: {
+    width: '100%',
+    maxWidth: 1060,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 20,
+    marginBottom: 30,
+  },
+  eyebrow: { color: '#69B4FF', fontSize: 11, fontWeight: '800', letterSpacing: 1.8 },
   welcome: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#F5F8FF',
+    fontSize: 34,
+    fontWeight: '800',
+    letterSpacing: -0.6,
+    marginTop: 7,
   },
+  welcomeSubtitle: { color: '#93A9C0', fontSize: 15, marginTop: 7 },
   grid: {
+    width: '100%',
+    maxWidth: 1080,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    gap: 16,
   },
   gridButton: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    backgroundColor: '#10243E',
+    borderColor: '#244B70',
+    borderWidth: 1,
+    borderRadius: 18,
     padding: 20,
-    margin: 10,
-    width: 150,
-    height: 100,
+    width: 200,
+    minHeight: 155,
     justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 2,
+    alignItems: 'flex-start',
+    shadowColor: '#020912',
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    elevation: 4,
   },
-  gridText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  gridIcon: { color: '#61D6C6', fontSize: 27, fontWeight: '700', marginBottom: 14 },
+  gridText: { color: '#EDF5FF', fontSize: 17, fontWeight: '800' },
+  gridHint: { color: '#8298AF', fontSize: 12, lineHeight: 18, marginTop: 6 },
+  logoutButton: {
+    borderColor: '#3C6A94',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
   },
-  footer: {
-    marginTop: 20,
+  logoutText: { color: '#BBD8F7', fontSize: 14, fontWeight: '800' },
+  backButton: {
+    backgroundColor: '#0B1E36',
+    borderBottomColor: '#244B70',
+    borderBottomWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 13,
   },
+  backButtonText: { color: '#8DBDFF', fontSize: 14, fontWeight: '800' },
 });
