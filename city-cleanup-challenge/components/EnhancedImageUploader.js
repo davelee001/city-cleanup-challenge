@@ -1,3 +1,4 @@
+import { apiFetch } from '../apiConfig';
 /**
  * Enhanced Image Uploader with GPS, AI Analysis, and Progress Tracking
  * Supports avatar uploads and progress photos with advanced features
@@ -221,7 +222,7 @@ const EnhancedImageUploader = ({
           (type === 'avatar' ? '/api/v1/enhanced/upload/avatar' : '/api/v1/enhanced/upload/progress/' + eventId) :
           (type === 'avatar' ? '/api/v1/upload/avatar' : '/api/v1/upload/progress/' + eventId);
 
-        const response = await fetch(endpoint, {
+        const response = await apiFetch(endpoint, {
           method: 'POST',
           body: formData,
           headers: {
@@ -462,14 +463,14 @@ const styles = StyleSheet.create({
   gpsStatus: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#07182D',
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
   },
   gpsText: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     marginLeft: 8,
   },
   imageGrid: {
@@ -483,7 +484,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 8,
     position: 'relative',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#07182D',
   },
   imagePreview: {
     width: '100%',
@@ -560,7 +561,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   analysisContainer: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#0B1E36',
     padding: 16,
     borderRadius: 8,
     marginVertical: 16,
@@ -568,7 +569,7 @@ const styles = StyleSheet.create({
   analysisTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 12,
   },
   analysisItem: {
@@ -605,7 +606,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   featureInfo: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#142F4D',
     padding: 12,
     borderRadius: 8,
     marginTop: 16,
@@ -613,7 +614,7 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1976D2',
+    color: '#69B4FF',
     marginBottom: 8,
   },
   featureList: {
@@ -628,7 +629,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 12,
-    color: '#1976D2',
+    color: '#69B4FF',
     marginLeft: 4,
   },
 });
