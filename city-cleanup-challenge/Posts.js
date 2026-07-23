@@ -83,12 +83,12 @@ export default function Posts({ username }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 12 },
   form: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   input: { flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 10, marginRight: 8 },
   posts: { flex: 1 },
   post: { backgroundColor: '#132A46', padding: 12, borderRadius: 6, marginBottom: 8 },
-  author: { fontWeight: 'bold', marginBottom: 2 },
+  author: { fontWeight: '600', marginBottom: 2 },
   date: { fontSize: 12, color: '#8EA4BC', marginTop: 4 },
   error: { color: 'red', marginBottom: 8 },
   empty: { color: '#8EA4BC', textAlign: 'center', marginTop: 20 }
