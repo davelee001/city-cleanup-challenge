@@ -55,7 +55,7 @@ export default function Chatbot() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 12 },
   chat: { flex: 1, marginBottom: 12 },
   bot: { color: '#EAF2FF', backgroundColor: '#213752', padding: 8, borderRadius: 6, marginBottom: 4 },
   user: { color: '#fff', backgroundColor: '#007AFF', padding: 8, borderRadius: 6, alignSelf: 'flex-end', marginBottom: 4 },
