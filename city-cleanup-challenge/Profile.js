@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import ImageUploader from './components/ImageUploader';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 export default function Profile({ username, onLogout, onUsernameChange }) {
   const [profile, setProfile] = useState(null);
@@ -17,8 +17,8 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
     setLoading(true);
     // Load profile details and current avatar
     Promise.all([
-      fetch(`${API_BASE_URL}/profile/${username}`),
-      fetch(`${API_BASE_URL}/user/${username}/avatar`)
+      apiFetch(`${API_BASE_URL}/profile/${username}`),
+      apiFetch(`${API_BASE_URL}/user/${username}/avatar`)
     ])
     .then(([profileRes, avatarRes]) => Promise.all([profileRes.json(), avatarRes.json()]))
     .then(([profileData, avatarData]) => {
@@ -50,7 +50,7 @@ export default function Profile({ username, onLogout, onUsernameChange }) {
     setSuccess('');
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/profile/${username}` , {
+      const res = await apiFetch(`${API_BASE_URL}/profile/${username}` , {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newUsername, newPassword })
@@ -116,15 +116,15 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     padding: 24, 
-    backgroundColor: '#f5f5f5' 
+    backgroundColor: '#07182D'
   },
   avatarContainer: {
     alignItems: 'center',
     marginBottom: 24,
     paddingVertical: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowcolor: '#F5F8FF',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: '#333',
+    color: '#EAF2FF',
   },
   avatarUploader: {
     marginBottom: 8,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   label: { 
     fontWeight: 'bold', 
     marginTop: 12,
-    color: '#555'
+    color: '#B8C7D9'
   },
   input: { 
     borderWidth: 1, 
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 4, 
     padding: 10, 
     marginTop: 4, 
-    backgroundColor: '#fff' 
+    backgroundColor: '#10243E'
   },
   error: { 
     color: 'red', 
