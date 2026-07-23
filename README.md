@@ -24,6 +24,7 @@ See [City Cleanup Reward Product Rules](docs/PRODUCT_RULES.md) for the complete 
 - Added synchronized lockfiles, frontend build and lint scripts, and stricter CI checks.
 - Removed tracked dependency artifacts and removed committed Kubernetes secret placeholders.
 - Expanded signup to collect username, email, phone number, location, and password confirmation.
+- Ordered signup details for clearer onboarding: username, email, county/location, phone number, password, and password confirmation.
 - Added client and server validation, unique email protection, and automatic profile-column migration for existing SQLite databases.
 - Redesigned the sign-in, signup, and authenticated home experiences with responsive layouts and accessible feedback.
 - Standardized the frontend on a cohesive dark-blue palette with readable blue-gray text and preserved semantic status colors.
