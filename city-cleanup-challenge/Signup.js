@@ -188,20 +188,20 @@ export default function Signup({ onSignup, onSwitchToLogin }) {
               maxLength: 254,
             })}
             {renderField({
-              field: 'phone',
-              label: 'Phone number',
-              placeholder: '+256 700 000 000',
-              keyboardType: 'phone-pad',
-              autoComplete: 'tel',
-              maxLength: 30,
-            })}
-            {renderField({
               field: 'location',
               label: 'County / location',
               placeholder: 'County, city, district, or neighborhood',
               autoComplete: 'street-address',
               maxLength: 120,
               hint: 'This helps us show relevant cleanup events near you.',
+            })}
+            {renderField({
+              field: 'phone',
+              label: 'Phone number',
+              placeholder: '+256 700 000 000',
+              keyboardType: 'phone-pad',
+              autoComplete: 'tel',
+              maxLength: 30,
             })}
             {renderField({
               field: 'password',
