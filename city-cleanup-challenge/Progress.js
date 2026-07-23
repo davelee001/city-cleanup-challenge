@@ -527,7 +527,7 @@ export default function Progress({ username }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 16 },
   summaryCard: { 
     backgroundColor: '#28a745', 
     padding: 20, 
@@ -535,8 +535,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24 
   },
-  summaryTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-  totalWaste: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginVertical: 8 },
+  summaryTitle: { color: '#fff', fontSize: 18, fontWeight: '600' },
+  totalWaste: { color: '#fff', fontSize: 36, fontWeight: '600', marginVertical: 8 },
   summarySubtext: { color: '#fff', fontSize: 14, opacity: 0.9 },
   
   // Enhanced Summary Styles
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
   aiStatText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginLeft: 8
   },
   aiStatSubtext: {
@@ -602,14 +602,14 @@ const styles = StyleSheet.create({
   },
   
   section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
   eventCard: { 
     backgroundColor: '#0B1E36',
     padding: 16, 
     borderRadius: 8, 
     marginBottom: 12 
   },
-  eventTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  eventTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
   eventLocation: { fontSize: 14, color: '#AFC0D4', marginBottom: 2 },
   eventDate: { fontSize: 14, color: '#AFC0D4', marginBottom: 12 },
   progressForm: { marginTop: 12 },
@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
   },
   enhancedUploaderTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#69B4FF',
     textAlign: 'center',
     marginBottom: 4
@@ -718,11 +718,11 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
   
-  progressEventTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  progressEventTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
   progressLocation: { fontSize: 14, color: '#AFC0D4', marginBottom: 2 },
   progressDate: { fontSize: 14, color: '#AFC0D4', marginBottom: 8 },
   progressStats: { marginBottom: 8 },
-  progressAmount: { fontSize: 16, fontWeight: 'bold', color: '#28a745' },
+  progressAmount: { fontSize: 16, fontWeight: '600', color: '#28a745' },
   progressType: { fontSize: 14, color: '#AFC0D4', marginTop: 2 },
   
   // GPS Section Styles
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
   },
   gpsSectionTitle: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#4CAF50',
     marginBottom: 4
   },
@@ -753,7 +753,7 @@ const styles = StyleSheet.create({
   },
   aiAnalysisTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#007AFF',
     marginBottom: 8
   },
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   },
   impactScoreText: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#007AFF',
     marginBottom: 4
   },
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
   },
   progressReportTitle: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#007AFF',
     marginBottom: 4
   },
