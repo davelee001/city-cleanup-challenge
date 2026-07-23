@@ -62,11 +62,17 @@ az keyvault secret set \
   --name DATABASE-PASSWORD \
   --value "your-secure-password"
 
-# JWT secret
+# JWT access-token secret
 az keyvault secret set \
   --vault-name city-cleanup-keyvault \
-  --name JWT-SECRET \
-  --value "your-jwt-secret-key"
+  --name JWT-ACCESS-SECRET \
+  --value "your-access-token-secret"
+
+# JWT refresh-token secret (must be different)
+az keyvault secret set \
+  --vault-name city-cleanup-keyvault \
+  --name JWT-REFRESH-SECRET \
+  --value "your-refresh-token-secret"
 
 # Maps API key
 az keyvault secret set \
@@ -141,7 +147,8 @@ const dbPassword = await secretsManager.get('DATABASE-PASSWORD');
 
 // Get multiple secrets
 const secrets = await secretsManager.getMultiple([
-  'JWT-SECRET',
+  'JWT-ACCESS-SECRET',
+  'JWT-REFRESH-SECRET',
   'MAPS-API-KEY',
   'SMTP-PASS'
 ]);
