@@ -11,7 +11,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
-import { API_BASE_URL } from '../apiConfig';
+import { API_BASE_URL, apiFetch } from '../apiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -35,9 +35,8 @@ const GamificationDashboard = ({ username, onClose }) => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/gamification/dashboard/${username}`, {
+      const response = await apiFetch(`${API_BASE_URL}/gamification/dashboard/${username}`, {
         headers: {
-          'Authorization': username,
           'Content-Type': 'application/json',
         },
       });
@@ -60,7 +59,7 @@ const GamificationDashboard = ({ username, onClose }) => {
     try {
       const types = ['points', 'waste', 'streak', 'achievements'];
       const leaderboardPromises = types.map(async (type) => {
-        const response = await fetch(`${API_BASE_URL}/gamification/leaderboard?type=${type}&limit=10`);
+        const response = await apiFetch(`${API_BASE_URL}/gamification/leaderboard?type=${type}&limit=10`);
         const result = await response.json();
         return { type, data: result.success ? result.leaderboard : [] };
       });
@@ -79,9 +78,8 @@ const GamificationDashboard = ({ username, onClose }) => {
 
   const fetchAchievements = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/gamification/achievements/${username}`, {
+      const response = await apiFetch(`${API_BASE_URL}/gamification/achievements/${username}`, {
         headers: {
-          'Authorization': username,
         },
       });
 
@@ -442,7 +440,7 @@ const GamificationDashboard = ({ username, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#07182D',
   },
   header: {
     paddingTop: 50,
@@ -470,7 +468,7 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     elevation: 2,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -490,7 +488,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     marginLeft: 5,
-    color: '#666',
+    color: '#AFC0D4',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -534,7 +532,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 4,
   },
   progressText: {
@@ -549,7 +547,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: (width - 60) / 2,
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 20,
     margin: 5,
@@ -562,16 +560,16 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
     marginVertical: 8,
   },
   statLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#AFC0D4',
     textAlign: 'center',
   },
   impactCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
@@ -583,7 +581,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 15,
   },
   impactRow: {
@@ -594,10 +592,10 @@ const styles = StyleSheet.create({
   impactText: {
     marginLeft: 10,
     fontSize: 16,
-    color: '#666',
+    color: '#AFC0D4',
   },
   achievementsCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 20,
     elevation: 2,
@@ -622,7 +620,7 @@ const styles = StyleSheet.create({
   achievementName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
   },
   achievementPoints: {
     fontSize: 14,
@@ -630,7 +628,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   leaderboardCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 20,
     marginBottom: 15,
@@ -650,12 +648,12 @@ const styles = StyleSheet.create({
   rank: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#666',
+    color: '#AFC0D4',
   },
   username: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: '#EAF2FF',
     marginLeft: 10,
   },
   currentUser: {
@@ -665,7 +663,7 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#AFC0D4',
   },
   achievementCategory: {
     marginBottom: 20,
@@ -673,7 +671,7 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 10,
   },
   achievementGrid: {
@@ -682,7 +680,7 @@ const styles = StyleSheet.create({
   },
   achievementCard: {
     width: (width - 60) / 3,
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 15,
     margin: 5,
@@ -699,13 +697,13 @@ const styles = StyleSheet.create({
   achievementCardName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
     textAlign: 'center',
     marginBottom: 4,
   },
   achievementCardDate: {
     fontSize: 10,
-    color: '#666',
+    color: '#AFC0D4',
   },
   noAchievements: {
     alignItems: 'center',
@@ -714,18 +712,18 @@ const styles = StyleSheet.create({
   noAchievementsText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
+    color: '#AFC0D4',
     marginTop: 15,
   },
   noAchievementsSubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#7890AA',
     textAlign: 'center',
     marginTop: 5,
   },
   noData: {
     textAlign: 'center',
-    color: '#999',
+    color: '#7890AA',
     fontSize: 16,
     paddingVertical: 20,
   },
@@ -736,7 +734,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
+    color: '#AFC0D4',
   },
   modalOverlay: {
     flex: 1,
@@ -745,7 +743,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderRadius: 20,
     padding: 30,
     alignItems: 'center',
@@ -759,13 +757,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
     textAlign: 'center',
     marginBottom: 10,
   },
   modalDescription: {
     fontSize: 16,
-    color: '#666',
+    color: '#AFC0D4',
     textAlign: 'center',
     marginBottom: 15,
   },
@@ -777,7 +775,7 @@ const styles = StyleSheet.create({
   },
   modalDate: {
     fontSize: 14,
-    color: '#999',
+    color: '#7890AA',
     marginBottom: 20,
   },
   modalCloseButton: {
