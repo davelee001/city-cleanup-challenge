@@ -300,7 +300,8 @@ npx playwright test --ui
 - `PORT` - Server port
 - `DATABASE_PATH` - SQLite database path
 - `CORS_ORIGIN` - Allowed origins
-- `JWT_SECRET` - JWT signing key
+- `JWT_ACCESS_SECRET` - access-token signing key
+- `JWT_REFRESH_SECRET` - separate refresh-token signing key
 - `AZURE_KEY_VAULT_URL` - Key Vault URL
 
 ### Frontend Environment Variables
