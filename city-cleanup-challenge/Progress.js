@@ -4,7 +4,7 @@ import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import ProgressPhotoUploader from './components/ProgressPhotoUploader';
 import EnhancedImageUploader from './components/EnhancedImageUploader';
 
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 export default function Progress({ username }) {
   const [userProgress, setUserProgress] = useState([]);
