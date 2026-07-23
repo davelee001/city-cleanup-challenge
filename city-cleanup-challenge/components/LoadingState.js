@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#07182D',
   },
   skeletonLoader: {
     marginBottom: 12,
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   skeleton: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#213752',
     borderRadius: 4,
     marginRight: 12,
   },
