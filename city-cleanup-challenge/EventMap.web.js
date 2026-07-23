@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#72D7CA',
     fontSize: 28,
-    fontWeight: '700'
+    fontWeight: '600'
   },
   subtitle: {
     color: '#93A9C0',
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   eventTitle: {
     color: '#72D7CA',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 6
   },
   eventMeta: {
