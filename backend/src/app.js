@@ -167,13 +167,16 @@ function createApp() {
 		}
 		const role = 'user'; // Default role for new users
 		db.run(
-			'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-			[username, passwordHash, role],
+			'INSERT INTO users (username, password, email, phone, location, role) VALUES (?, ?, ?, ?, ?, ?)',
+			[username, passwordHash, email, phone, location, role],
 			function (err) {
 				if (err) {
-					return res.status(400).json({ success: false, message: 'Username already exists' });
+					const message = err.message?.includes('users.email')
+						? 'Email address is already registered'
+						: 'Username already exists';
+					return res.status(400).json({ success: false, message });
 				}
-                const newUser = { id: this.lastID, username, role };
+                const newUser = { id: this.lastID, username, email, phone, location, role };
                 // Emit an event for the new user signup
                 emitter.emit('user:signup', newUser);
 				res.json({ success: true, user: newUser });
