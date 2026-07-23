@@ -7,7 +7,7 @@ import LoadingState from './components/LoadingState';
 import SearchFilter from './components/SearchFilter';
 import DataExport from './components/DataExport';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 // Mock data for oil fields
 const initialOilFields = [
