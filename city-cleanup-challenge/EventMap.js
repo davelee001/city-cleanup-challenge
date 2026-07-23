@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     textAlign: 'center',
     margin: 16,
   },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   calloutTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 4,
   },
   calloutDesc: {
@@ -288,12 +288,12 @@ const styles = StyleSheet.create({
   },
   checkinButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 12,
   },
   checkedInText: {
     color: '#28a745',
-    fontWeight: 'bold',
+    fontWeight: '600',
     textAlign: 'center',
   },
   stats: {
