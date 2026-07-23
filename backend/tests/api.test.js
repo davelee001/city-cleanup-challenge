@@ -2,7 +2,15 @@ const request = require('supertest');
 const { createApp } = require('../src/app');
 
 const app = createApp();
-const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+const suffix = `${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 7)}`;
+const signupData = (username, overrides = {}) => ({
+  username,
+  password: 'test-password',
+  email: `${username}@example.com`,
+  phone: '+256 700 123 456',
+  location: 'Kampala, Uganda',
+  ...overrides,
+});
 
 describe('API Endpoints', () => {
   it('should return 200 for health check', async () => {
@@ -14,7 +22,7 @@ describe('API Endpoints', () => {
   it('should signup a new user', async () => {
     const res = await request(app)
       .post('/api/v1/signup')
-      .send({ username: `testuser-${suffix}`, password: 'test-password' });
+      .send(signupData(`testuser-${suffix}`));
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.user.username).toBe(`testuser-${suffix}`);
