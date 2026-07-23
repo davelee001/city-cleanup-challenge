@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
   },
   tabContainer: {
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 16,
     color: '#EAF2FF',
   },
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#007bff',
   },
   statLabel: {
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   },
   formTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 12,
   },
   input: {
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   },
   planTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
     flex: 1,
   },
@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
   },
   userDate: {
