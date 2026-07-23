@@ -141,13 +141,13 @@ const styles = StyleSheet.create({
   },
   title: { 
     fontSize: 22, 
-    fontWeight: 'bold', 
+    fontWeight: '600',
     marginBottom: 16, 
     textAlign: 'center',
     color: '#2e8b57'
   },
   label: { 
-    fontWeight: 'bold', 
+    fontWeight: '600',
     marginTop: 12,
     color: '#B8C7D9'
   },
