@@ -17,7 +17,7 @@ import {
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SOCIAL_API_BASE_URL } from '../apiConfig';
+import { SOCIAL_API_BASE_URL, apiFetch } from '../apiConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -114,48 +114,41 @@ const SocialDashboard = ({ navigation, route }) => {
     setLoading(true);
     try {
       // Enhanced social feed with personalized content
-      const feedResponse = await fetch(`${SOCIAL_API_BASE_URL}/feed?feed_type=personal&limit=20&sort_by=${activeFilter}`, {
-        headers: { 'Authorization': `Bearer ${user.username}` }
+      const feedResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/feed?feed_type=personal&limit=20&sort_by=${activeFilter}`, {
       });
       const feedData = await feedResponse.json();
 
       // Load user teams
-      const teamsResponse = await fetch(`${SOCIAL_API_BASE_URL}/teams`, {
-        headers: { 'Authorization': `Bearer ${user.username}` }
+      const teamsResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/teams`, {
       });
       const teamsData = await teamsResponse.json();
 
       // Load active challenges
-      const challengesResponse = await fetch(`${SOCIAL_API_BASE_URL}/challenges`, {
-        headers: { 'Authorization': `Bearer ${user.username}` }
+      const challengesResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/challenges`, {
       });
       const challengesData = await challengesResponse.json();
 
       // Load friend challenges
-      const friendChallengesResponse = await fetch(`${SOCIAL_API_BASE_URL}/user-active-challenges`, {
-        headers: { 'Authorization': `Bearer ${user.username}` }
+      const friendChallengesResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/user-active-challenges`, {
       });
       const friendChallengesData = await friendChallengesResponse.json();
 
       // Load community recognition
-      const recognitionResponse = await fetch(`${SOCIAL_API_BASE_URL}/recognition-summary/${user.id}`, {
-        headers: { 'Authorization': `Bearer ${user.username}` }
+      const recognitionResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/recognition-summary/${user.id}`, {
       });
       const recognitionData = await recognitionResponse.json();
 
       // Load community spotlights
-      const spotlightsResponse = await fetch(`${SOCIAL_API_BASE_URL}/spotlights?limit=5`);
+      const spotlightsResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/spotlights?limit=5`);
       const spotlightsData = await spotlightsResponse.json();
 
       // Load notifications
-      const notificationsResponse = await fetch(`${SOCIAL_API_BASE_URL}/notifications?limit=20`, {
-        headers: { 'Authorization': `Bearer ${user.username}` }
+      const notificationsResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/notifications?limit=20`, {
       });
       const notificationsData = await notificationsResponse.json();
 
       // Load enhanced social stats
-      const statsResponse = await fetch(`${SOCIAL_API_BASE_URL}/user-stats/${user.id}`, {
-        headers: { 'Authorization': `Bearer ${user.username}` }
+      const statsResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/user-stats/${user.id}`, {
       });
       const statsData = await statsResponse.json();
 
@@ -188,11 +181,10 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleLikePost = async (postId, reactionType = 'like') => {
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/posts/${postId}/like`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify({ reaction_type: reactionType })
       });
@@ -209,11 +201,10 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleCreateFriendChallenge = async () => {
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/friend-challenges`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/friend-challenges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify({
           ...friendChallengeForm,
@@ -242,11 +233,10 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleGiveKudos = async (recipientId) => {
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/kudos`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/kudos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify({
           recipient_id: recipientId,
@@ -273,11 +263,10 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleJoinFriendChallenge = async (challengeId, response) => {
     try {
-      const apiResponse = await fetch(`${SOCIAL_API_BASE_URL}/friend-challenges/${challengeId}/respond`, {
+      const apiResponse = await apiFetch(`${SOCIAL_API_BASE_URL}/friend-challenges/${challengeId}/respond`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify({ response })
       });
@@ -297,11 +286,10 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleSharePost = async (postId, shareType = 'share', customMessage = '') => {
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/posts/${postId}/share`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/posts/${postId}/share`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify({
           share_type: shareType,
@@ -324,11 +312,10 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleJoinTeam = async (teamId) => {
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/teams/${teamId}/join`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/teams/${teamId}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         }
       });
 
@@ -346,11 +333,10 @@ const SocialDashboard = ({ navigation, route }) => {
 
   const handleJoinChallenge = async (challengeId) => {
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/challenges/${challengeId}/join`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/challenges/${challengeId}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         }
       });
 
@@ -373,11 +359,10 @@ const SocialDashboard = ({ navigation, route }) => {
     }
 
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/posts`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify({
           content: postForm.content,
@@ -408,11 +393,10 @@ const SocialDashboard = ({ navigation, route }) => {
     }
 
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/teams`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/teams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify(teamForm)
       });
@@ -441,11 +425,10 @@ const SocialDashboard = ({ navigation, route }) => {
     }
 
     try {
-      const response = await fetch(`${SOCIAL_API_BASE_URL}/challenges`, {
+      const response = await apiFetch(`${SOCIAL_API_BASE_URL}/challenges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.username}`
         },
         body: JSON.stringify({
           ...challengeForm,
@@ -1271,7 +1254,7 @@ const SocialDashboard = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#07182D',
   },
   header: {
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
@@ -1302,7 +1285,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: 'white',
+    backgroundColor: '#10243E',
     elevation: 2,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1320,7 +1303,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     marginTop: 4,
   },
   activeTabLabel: {
@@ -1334,7 +1317,7 @@ const styles = StyleSheet.create({
   
   // Post styles
   postCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
@@ -1364,11 +1347,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   postTime: {
-    color: '#666',
+    color: '#AFC0D4',
     fontSize: 12,
   },
   teamBadge: {
-    backgroundColor: '#E8F5E8',
+    backgroundColor: '#123B3D',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -1386,7 +1369,7 @@ const styles = StyleSheet.create({
   eventTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F8FF',
+    backgroundColor: '#142F4D',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 15,
@@ -1413,17 +1396,17 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   activeAction: {
-    backgroundColor: '#FFE5E5',
+    backgroundColor: '#3D1C29',
   },
   actionText: {
-    color: '#666',
+    color: '#AFC0D4',
     fontSize: 12,
     marginLeft: 5,
   },
 
   // Team styles
   teamCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
@@ -1445,7 +1428,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   teamDescription: {
-    color: '#666',
+    color: '#AFC0D4',
     fontSize: 13,
     marginTop: 4,
     marginBottom: 8,
@@ -1456,7 +1439,7 @@ const styles = StyleSheet.create({
   },
   teamStat: {
     fontSize: 11,
-    color: '#888',
+    color: '#8EA4BC',
   },
   roleTag: {
     alignSelf: 'flex-start',
@@ -1546,7 +1529,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: 'white',
+    backgroundColor: '#10243E',
     borderRadius: 3,
   },
   challengeJoinButton: {
@@ -1554,7 +1537,7 @@ const styles = StyleSheet.create({
   // Friend Challenge Styles
   section: {
     margin: 15,
-    backgroundColor: 'white',
+    backgroundColor: '#10243E',
     borderRadius: 10,
     padding: 15,
     elevation: 2,
@@ -1562,7 +1545,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 15,
   },
   subsection: {
@@ -1571,7 +1554,7 @@ const styles = StyleSheet.create({
   subsectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#555',
+    color: '#B8C7D9',
     marginBottom: 10,
   },
   challengeActions: {
@@ -1600,13 +1583,13 @@ const styles = StyleSheet.create({
   participantsList: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0B1E36',
     borderRadius: 8,
   },
   participantsTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 5,
   },
   participantCard: {
@@ -1617,12 +1600,12 @@ const styles = StyleSheet.create({
   },
   participantName: {
     fontSize: 14,
-    color: '#333',
+    color: '#EAF2FF',
     fontWeight: '500',
   },
   participantProgress: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
   },
   challengeStatus: {
     fontSize: 12,
@@ -1636,17 +1619,17 @@ const styles = StyleSheet.create({
   },
   challengeMetric: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
   },
   noDataText: {
     textAlign: 'center',
-    color: '#999',
+    color: '#7890AA',
     fontStyle: 'italic',
     padding: 20,
   },
   // Community Recognition Styles
   kudosCard: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#3A321A',
     borderRadius: 8,
     padding: 12,
     marginRight: 15,
@@ -1662,7 +1645,7 @@ const styles = StyleSheet.create({
   kudosGiver: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
     flex: 1,
   },
   kudosType: {
@@ -1673,16 +1656,16 @@ const styles = StyleSheet.create({
   },
   kudosMessage: {
     fontSize: 14,
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 5,
   },
   kudosCategory: {
     fontSize: 10,
-    color: '#666',
+    color: '#AFC0D4',
     textTransform: 'capitalize',
   },
   badgeCard: {
-    backgroundColor: '#e8f5e8',
+    backgroundColor: '#123B3D',
     borderRadius: 8,
     padding: 12,
     marginRight: 15,
@@ -1699,17 +1682,17 @@ const styles = StyleSheet.create({
   badgeRecipient: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
     marginBottom: 3,
   },
   badgeDescription: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     marginBottom: 5,
   },
   badgeDate: {
     fontSize: 10,
-    color: '#999',
+    color: '#7890AA',
   },
   // Form Options Styles
   typeOptions: {
@@ -1720,13 +1703,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#132A46',
     marginRight: 10,
     marginBottom: 10,
   },
   typeOptionText: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
   },
   metricOptions: {
     flexDirection: 'row',
@@ -1736,13 +1719,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#132A46',
     marginRight: 10,
     marginBottom: 10,
   },
   metricOptionText: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
   },
   challengeOptions: {
     marginVertical: 15,
@@ -1762,7 +1745,7 @@ const styles = StyleSheet.create({
 
   // Recognition styles
   recognitionCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#10243E',
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
@@ -1788,11 +1771,11 @@ const styles = StyleSheet.create({
   recognitionTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
+    color: '#EAF2FF',
   },
   recognitionRecipient: {
     fontSize: 13,
-    color: '#666',
+    color: '#AFC0D4',
     marginTop: 2,
   },
   recognitionType: {
@@ -1802,19 +1785,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   recognitionBadge: {
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#3A321A',
     padding: 8,
     borderRadius: 20,
   },
   recognitionDescription: {
     fontSize: 13,
-    color: '#555',
+    color: '#B8C7D9',
     lineHeight: 18,
     marginBottom: 8,
   },
   recognitionDate: {
     fontSize: 11,
-    color: '#888',
+    color: '#8EA4BC',
     fontStyle: 'italic',
   },
 
@@ -1838,7 +1821,7 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#10243E',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1850,7 +1833,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   modalCancel: {
-    color: '#666',
+    color: '#AFC0D4',
     fontSize: 16,
   },
   modalTitle: {
@@ -1868,7 +1851,7 @@ const styles = StyleSheet.create({
   },
   textArea: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
@@ -1876,7 +1859,7 @@ const styles = StyleSheet.create({
   },
   inputField: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
@@ -1886,7 +1869,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#333',
+    color: '#EAF2FF',
   },
   privacySelector: {
     marginTop: 20,
@@ -1899,7 +1882,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 20,
     marginRight: 10,
     marginBottom: 10,
@@ -1910,7 +1893,7 @@ const styles = StyleSheet.create({
   },
   privacyOptionText: {
     fontSize: 13,
-    color: '#333',
+    color: '#EAF2FF',
   },
   teamTypeSelector: {
     marginBottom: 15,
@@ -1923,14 +1906,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 20,
     marginRight: 10,
     marginBottom: 10,
   },
   teamTypeOptionText: {
     fontSize: 13,
-    color: '#333',
+    color: '#EAF2FF',
   },
   challengeOptions: {
     marginBottom: 15,
@@ -1946,14 +1929,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderRadius: 15,
     marginRight: 8,
     marginBottom: 8,
   },
   categoryOptionText: {
     fontSize: 12,
-    color: '#333',
+    color: '#EAF2FF',
   },
   difficultyOptions: {
     flexDirection: 'row',
@@ -1968,7 +1951,7 @@ const styles = StyleSheet.create({
   },
   selectedDifficultyOption: {
     borderWidth: 2,
-    borderColor: '#333',
+    bordercolor: '#EAF2FF',
   },
   difficultyOptionText: {
     fontSize: 12,
