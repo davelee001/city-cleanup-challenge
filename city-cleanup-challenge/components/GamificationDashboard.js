@@ -11,6 +11,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import { API_BASE_URL } from '../apiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -34,7 +35,7 @@ const GamificationDashboard = ({ username, onClose }) => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/gamification/dashboard/${username}`, {
+      const response = await fetch(`${API_BASE_URL}/gamification/dashboard/${username}`, {
         headers: {
           'Authorization': username,
           'Content-Type': 'application/json',
@@ -59,7 +60,7 @@ const GamificationDashboard = ({ username, onClose }) => {
     try {
       const types = ['points', 'waste', 'streak', 'achievements'];
       const leaderboardPromises = types.map(async (type) => {
-        const response = await fetch(`http://localhost:3000/api/v1/gamification/leaderboard?type=${type}&limit=10`);
+        const response = await fetch(`${API_BASE_URL}/gamification/leaderboard?type=${type}&limit=10`);
         const result = await response.json();
         return { type, data: result.success ? result.leaderboard : [] };
       });
@@ -78,7 +79,7 @@ const GamificationDashboard = ({ username, onClose }) => {
 
   const fetchAchievements = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/gamification/achievements/${username}`, {
+      const response = await fetch(`${API_BASE_URL}/gamification/achievements/${username}`, {
         headers: {
           'Authorization': username,
         },
