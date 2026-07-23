@@ -119,7 +119,7 @@ export default function Signup({ onSignup, onSwitchToLogin }) {
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor="#78948A"
+        placeholderTextColor="#7890AA"
         value={form[field]}
         onChangeText={(value) => updateField(field, value)}
         keyboardType={keyboardType}
@@ -136,7 +136,7 @@ export default function Signup({ onSignup, onSwitchToLogin }) {
   );
 
   return (
-    <LinearGradient colors={['#E8F7EE', '#F5FBF7', '#E2F2EA']} style={styles.container}>
+    <LinearGradient colors={['#061426', '#0A2240', '#0D3155']} style={styles.container}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -277,27 +277,29 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   badge: {
-    backgroundColor: '#D4ECDD',
+    backgroundColor: 'rgba(62, 139, 255, 0.14)',
+    borderColor: 'rgba(91, 161, 255, 0.36)',
+    borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 7,
     marginBottom: 16,
   },
   badgeText: {
-    color: '#17633D',
+    color: '#8DBDFF',
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 1.5,
   },
   title: {
-    color: '#153F2B',
+    color: '#F5F8FF',
     fontSize: 38,
     fontWeight: '800',
     textAlign: 'center',
     letterSpacing: -0.8,
   },
   subtitle: {
-    color: '#4D695B',
+    color: '#AEC1D7',
     fontSize: 16,
     lineHeight: 24,
     marginTop: 10,
@@ -307,25 +309,25 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 560,
-    backgroundColor: '#FFFFFF',
-    borderColor: '#DCEBE2',
+    backgroundColor: 'rgba(13, 35, 61, 0.96)',
+    borderColor: '#244B70',
     borderWidth: 1,
     borderRadius: 22,
     paddingHorizontal: 26,
     paddingVertical: 28,
-    shadowColor: '#123B27',
+    shadowColor: '#020912',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.12,
     shadowRadius: 28,
     elevation: 6,
   },
   cardTitle: {
-    color: '#173D2B',
+    color: '#F5F8FF',
     fontSize: 25,
     fontWeight: '800',
   },
   cardSubtitle: {
-    color: '#61776B',
+    color: '#93A9C0',
     fontSize: 14,
     lineHeight: 21,
     marginBottom: 22,
@@ -335,7 +337,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    color: '#254B38',
+    color: '#D9E6F5',
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 7,
@@ -343,17 +345,17 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     minHeight: 50,
-    backgroundColor: '#F7FAF8',
-    borderColor: '#C8DDD0',
+    backgroundColor: '#091B30',
+    borderColor: '#315574',
     borderWidth: 1,
     borderRadius: 12,
-    color: '#173D2B',
+    color: '#F5F8FF',
     fontSize: 16,
     paddingHorizontal: 15,
     paddingVertical: 12,
   },
   hint: {
-    color: '#71877B',
+    color: '#8298AF',
     fontSize: 12,
     lineHeight: 18,
     marginTop: 5,
@@ -365,22 +367,22 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   errorMessage: {
-    backgroundColor: '#FFF0ED',
-    borderColor: '#F3C5BB',
+    backgroundColor: '#3D1C29',
+    borderColor: '#7C3447',
     borderWidth: 1,
   },
   errorText: {
-    color: '#9B3527',
+    color: '#FFB8C5',
     fontSize: 14,
     lineHeight: 20,
   },
   successMessage: {
-    backgroundColor: '#EAF8EF',
-    borderColor: '#B9DFC7',
+    backgroundColor: '#123B3D',
+    borderColor: '#246B68',
     borderWidth: 1,
   },
   successText: {
-    color: '#17633D',
+    color: '#83E1D4',
     fontSize: 14,
     lineHeight: 20,
   },
@@ -388,19 +390,19 @@ const styles = StyleSheet.create({
     minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#218653',
+    backgroundColor: '#2878E4',
     borderRadius: 13,
     marginTop: 4,
     paddingHorizontal: 18,
     paddingVertical: 14,
-    shadowColor: '#17633D',
+    shadowColor: '#1E6ED3',
     shadowOffset: { width: 0, height: 7 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 3,
   },
   buttonDisabled: {
-    backgroundColor: '#7CAC91',
+    backgroundColor: '#315A83',
     shadowOpacity: 0,
   },
   buttonText: {
@@ -415,16 +417,16 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
   loginPrompt: {
-    color: '#61776B',
+    color: '#93A9C0',
     fontSize: 14,
   },
   loginLink: {
-    color: '#17633D',
+    color: '#69B4FF',
     fontSize: 14,
     fontWeight: '800',
   },
   privacyNote: {
-    color: '#789084',
+    color: '#7890AA',
     fontSize: 12,
     lineHeight: 18,
     marginTop: 18,
