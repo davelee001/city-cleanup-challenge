@@ -8,7 +8,7 @@ import {
   View
 } from 'react-native';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 export default function EventMapWeb({ username }) {
   const [events, setEvents] = useState([]);
@@ -16,7 +16,7 @@ export default function EventMapWeb({ username }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/events`)
+    apiFetch(`${API_BASE_URL}/events`)
       .then(response => response.json())
       .then(data => {
         if (!data.success) {
@@ -82,7 +82,7 @@ export default function EventMapWeb({ username }) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#f4f8f4',
+    backgroundColor: '#07182D',
     minHeight: '100%'
   },
   centered: {
@@ -94,30 +94,30 @@ const styles = StyleSheet.create({
   },
   message: {
     marginTop: 12,
-    color: '#35523a'
+    color: '#D9E6F5'
   },
   error: {
     color: '#b3261e',
     textAlign: 'center'
   },
   title: {
-    color: '#174d2a',
+    color: '#72D7CA',
     fontSize: 28,
     fontWeight: '700'
   },
   subtitle: {
-    color: '#55705d',
+    color: '#93A9C0',
     lineHeight: 22,
     marginBottom: 20,
     marginTop: 8
   },
   empty: {
-    color: '#55705d',
+    color: '#93A9C0',
     paddingVertical: 30,
     textAlign: 'center'
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#10243E',
     borderColor: '#d8e5da',
     borderRadius: 12,
     borderWidth: 1,
@@ -125,18 +125,18 @@ const styles = StyleSheet.create({
     padding: 16
   },
   eventTitle: {
-    color: '#174d2a',
+    color: '#72D7CA',
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 6
   },
   eventMeta: {
-    color: '#55705d',
+    color: '#93A9C0',
     marginBottom: 4
   },
   button: {
     alignSelf: 'flex-start',
-    backgroundColor: '#2e7d32',
+    backgroundcolor: '#72D7CA',
     borderRadius: 8,
     marginTop: 12,
     paddingHorizontal: 14,
