@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 const db = require('./db');
@@ -16,14 +17,15 @@ const {
 } = require('./services/enhancedImageUpload');
 const { initializeGamificationAPI } = require('./routes/gamification');
 const GamificationIntegration = require('./services/gamificationIntegration');
+const config = require('./config');
 
 // --- Event Listeners ---
 
 // Listener for user signup event to handle analytics
 emitter.on('user:signup', (user) => {
   db.run(
-    'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
-    ['user_signup', user.username, JSON.stringify({ userId: user.id })],
+    'INSERT INTO usage_analytics (username, action, details) VALUES (?, ?, ?)',
+    [user.username, 'user_signup', JSON.stringify({ userId: user.id })],
     (err) => {
       if (err) {
         // Emit a system error event for logging or monitoring
@@ -36,8 +38,8 @@ emitter.on('user:signup', (user) => {
 // Listener for new post event to handle analytics
 emitter.on('post:created', (post) => {
     db.run(
-        'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
-        ['post_created', post.username, JSON.stringify({ postId: post.id })],
+        'INSERT INTO usage_analytics (username, action, details) VALUES (?, ?, ?)',
+        [post.username, 'post_created', JSON.stringify({ postId: post.id })],
         (err) => {
             if (err) {
                 emitter.emit('error', new Error(`Failed to record post_created activity for ${post.username}: ${err.message}`));
@@ -49,8 +51,8 @@ emitter.on('post:created', (post) => {
 // Listener for new event creation to handle analytics
 emitter.on('event:created', (event) => {
     db.run(
-        'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
-        ['event_created', event.username, JSON.stringify({ eventId: event.id, title: event.title })],
+        'INSERT INTO usage_analytics (username, action, details) VALUES (?, ?, ?)',
+        [event.creator, 'event_created', JSON.stringify({ eventId: event.id, title: event.title })],
         (err) => {
             if (err) {
                 emitter.emit('error', new Error(`Failed to record event_created activity for ${event.username}: ${err.message}`));
@@ -62,8 +64,8 @@ emitter.on('event:created', (event) => {
 // Listener for new plan creation to handle analytics
 emitter.on('plan:created', (plan) => {
     db.run(
-        'INSERT INTO usage_analytics (activity_type, user, metadata) VALUES (?, ?, ?)',
-        ['plan_created', plan.created_by, JSON.stringify({ planId: plan.id, title: plan.title })],
+        'INSERT INTO usage_analytics (username, action, details) VALUES (?, ?, ?)',
+        [plan.createdBy, 'plan_created', JSON.stringify({ planId: plan.id, title: plan.title })],
         (err) => {
             if (err) {
                 emitter.emit('error', new Error(`Failed to record plan_created activity for ${plan.created_by}: ${err.message}`));
@@ -90,12 +92,17 @@ function requireAdmin(req, res, next) {
 
 function createApp() {
 	const app = express();
-	app.use(cors());
+	app.use(cors({
+		origin: config.cors.origin,
+		credentials: true
+	}));
 	app.use(express.json());
 	app.use(morgan('dev'));
 
 	// Initialize gamification integration
-	const gamificationIntegration = new GamificationIntegration(db, emitter);
+	const gamificationIntegration = config.features.gamification
+		? new GamificationIntegration(db, emitter)
+		: null;
 
 	// Health check endpoint
 	app.get('/health', (req, res) => {
@@ -103,22 +110,36 @@ function createApp() {
 			if (err) {
 				return res.status(500).json({ status: 'error', message: 'Database connection failed' });
 			}
-			res.json({ status: 'ok', message: 'Backend is running and database is connected' });
+			res.json({
+				status: 'ok',
+				message: 'Backend is running and database is connected',
+				timestamp: new Date().toISOString()
+			});
 		});
 	});
 
 	const apiRouter = express.Router();
 
 	// User authentication endpoints
-	apiRouter.post('/signup', (req, res) => {
+	apiRouter.post('/signup', async (req, res) => {
 		const { username, password } = req.body;
 		if (!username || !password) {
 			return res.status(400).json({ success: false, message: 'Username and password required' });
 		}
+		if (password.length < 10) {
+			return res.status(400).json({ success: false, message: 'Password must be at least 10 characters' });
+		}
+		let passwordHash;
+		try {
+			passwordHash = await bcrypt.hash(password, 12);
+		} catch (error) {
+			console.error('Password hashing failed:', error);
+			return res.status(500).json({ success: false, message: 'Unable to create account' });
+		}
 		const role = 'user'; // Default role for new users
 		db.run(
 			'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-			[username, password, role],
+			[username, passwordHash, role],
 			function (err) {
 				if (err) {
 					return res.status(400).json({ success: false, message: 'Username already exists' });
@@ -131,24 +152,33 @@ function createApp() {
 		);
 	});
 
-	app.post('/login', (req, res) => {
+	apiRouter.post('/login', (req, res) => {
 		const { username, password } = req.body;
 		if (!username || !password) {
 			return res.status(400).json({ success: false, message: 'Username and password required' });
 		}
-		db.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, user) => {
+		db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
 			}
-			if (!user) {
+			if (!user || !(await bcrypt.compare(password, user.password))) {
 				return res.status(401).json({ success: false, message: 'Invalid credentials' });
 			}
 			res.json({ success: true, user: { username: user.username, role: user.role } });
 		});
 	});
 
+	app.get('/ready', (req, res) => {
+		db.get('SELECT 1 AS ready', (err) => {
+			if (err) {
+				return res.status(503).json({ status: 'not_ready', timestamp: new Date().toISOString() });
+			}
+			res.json({ status: 'ready', timestamp: new Date().toISOString() });
+		});
+	});
+
 	// Posts endpoints
-	app.post('/posts', (req, res) => {
+	apiRouter.post('/posts', (req, res) => {
 		const { username, content } = req.body;
 		if (!username || !content) {
 			return res.status(400).json({ success: false, message: 'Username and content required' });
@@ -183,7 +213,7 @@ function createApp() {
 		});
 	});
 
-	app.put('/posts/:id', (req, res) => {
+	apiRouter.put('/posts/:id', (req, res) => {
 		const { id } = req.params;
 		const { username, content } = req.body;
 		if (!username || !content) {
@@ -208,7 +238,7 @@ function createApp() {
 		});
 	});
 
-	app.delete('/posts/:id', (req, res) => {
+	apiRouter.delete('/posts/:id', (req, res) => {
 		const { id } = req.params;
 		const { username } = req.body;
 		if (!username) {
@@ -234,15 +264,15 @@ function createApp() {
 	});
 
 	// Events endpoints
-	app.post('/events', (req, res) => {
-		const { title, description, date, time, location, username } = req.body;
+	apiRouter.post('/events', (req, res) => {
+		const { title, description, date, time, location, username, latitude = 0, longitude = 0 } = req.body;
 		if (!title || !description || !date || !time || !location || !username) {
 			return res.status(400).json({ success: false, message: 'All fields required' });
 		}
 		const createdAt = new Date().toISOString();
 		db.run(
-			'INSERT INTO events (title, description, date, time, location, username, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
-			[title, description, date, time, location, username, createdAt],
+			'INSERT INTO events (title, description, location, latitude, longitude, date, time, creator, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			[title, description, location, latitude, longitude, date, time, username, createdAt],
 			function (err) {
 				if (err) {
 					return res.status(500).json({ success: false, message: 'Database error' });
@@ -260,7 +290,7 @@ function createApp() {
 	});
 
 	apiRouter.get('/events', (req, res) => {
-		db.all('SELECT * FROM events ORDER BY date ASC', (err, events) => {
+		db.all('SELECT *, creator AS username FROM events ORDER BY date ASC', (err, events) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
 			}
@@ -268,7 +298,7 @@ function createApp() {
 		});
 	});
 
-	app.put('/events/:id', (req, res) => {
+	apiRouter.put('/events/:id', (req, res) => {
 		const { id } = req.params;
 		const { title, description, date, time, location, username } = req.body;
 		if (!title || !description || !date || !time || !location || !username) {
@@ -281,7 +311,7 @@ function createApp() {
 			if (!event) {
 				return res.status(404).json({ success: false, message: 'Event not found' });
 			}
-			if (event.username !== username) {
+			if (event.creator !== username) {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
 			db.run(
@@ -297,7 +327,7 @@ function createApp() {
 		});
 	});
 
-	app.delete('/events/:id', (req, res) => {
+	apiRouter.delete('/events/:id', (req, res) => {
 		const { id } = req.params;
 		const { username } = req.body;
 		if (!username) {
@@ -310,7 +340,7 @@ function createApp() {
 			if (!event) {
 				return res.status(404).json({ success: false, message: 'Event not found' });
 			}
-			if (event.username !== username) {
+			if (event.creator !== username) {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
 			db.run('DELETE FROM events WHERE id = ?', [id], function (err2) {
@@ -324,7 +354,7 @@ function createApp() {
 
 	// Admin endpoints
 	// Cleanup Plans Management
-	app.get('/admin/cleanup-plans', requireAdmin, (req, res) => {
+	apiRouter.get('/admin/cleanup-plans', requireAdmin, (req, res) => {
 		db.all('SELECT * FROM cleanup_plans ORDER BY created_at DESC', (err, plans) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
@@ -333,7 +363,7 @@ function createApp() {
 		});
 	});
 
-	app.post('/admin/cleanup-plans', requireAdmin, (req, res) => {
+	apiRouter.post('/admin/cleanup-plans', requireAdmin, (req, res) => {
 		const { title, description, requirements, codes, username } = req.body;
 		if (!title || !description || !requirements || !codes) {
 			return res.status(400).json({ success: false, message: 'All fields required' });
@@ -385,7 +415,7 @@ function createApp() {
 		);
 	});
 
-	app.delete('/admin/cleanup-plans/:id', requireAdmin, (req, res) => {
+	apiRouter.delete('/admin/cleanup-plans/:id', requireAdmin, (req, res) => {
 		const { id } = req.params;
 		db.run('DELETE FROM cleanup_plans WHERE id = ?', [id], function (err) {
 			if (err) {
@@ -396,7 +426,7 @@ function createApp() {
 	});
 
 	// User Management
-	app.get('/admin/users', requireAdmin, (req, res) => {
+	apiRouter.get('/admin/users', requireAdmin, (req, res) => {
 		db.all('SELECT id, username, role, created_at FROM users ORDER BY created_at DESC', (err, users) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
@@ -405,7 +435,7 @@ function createApp() {
 		});
 	});
 
-	app.put('/admin/users/:id/role', requireAdmin, (req, res) => {
+	apiRouter.put('/admin/users/:id/role', requireAdmin, (req, res) => {
 		const { id } = req.params;
 		const { role } = req.body;
 		if (!role || !['user', 'admin'].includes(role)) {
@@ -421,7 +451,7 @@ function createApp() {
 	});
 
 	// Usage Analytics
-	app.get('/admin/analytics', requireAdmin, (req, res) => {
+	apiRouter.get('/admin/analytics', requireAdmin, (req, res) => {
 		const { startDate, endDate, activityType } = req.query;
 		let query = 'SELECT * FROM usage_analytics WHERE 1=1';
 		const params = [];
@@ -435,7 +465,7 @@ function createApp() {
 			params.push(endDate);
 		}
 		if (activityType) {
-			query += ' AND activity_type = ?';
+			query += ' AND action = ?';
 			params.push(activityType);
 		}
 		
@@ -449,19 +479,19 @@ function createApp() {
 		});
 	});
 
-	app.get('/admin/analytics/summary', requireAdmin, (req, res) => {
+	apiRouter.get('/admin/analytics/summary', requireAdmin, (req, res) => {
 		const queries = [
 			'SELECT COUNT(*) as total_users FROM users',
 			'SELECT COUNT(*) as total_posts FROM posts',
 			'SELECT COUNT(*) as total_events FROM events',
 			'SELECT COUNT(*) as total_plans FROM cleanup_plans',
 			`SELECT COUNT(*) as active_users FROM (
-				SELECT DISTINCT user FROM usage_analytics 
+				SELECT DISTINCT username FROM usage_analytics
 				WHERE timestamp >= datetime('now', '-7 days')
 			)`,
-			`SELECT activity_type, COUNT(*) as count FROM usage_analytics 
+			`SELECT action, COUNT(*) as count FROM usage_analytics
 			 WHERE timestamp >= datetime('now', '-30 days') 
-			 GROUP BY activity_type`,
+			 GROUP BY action`,
 		];
 		
 		Promise.all(queries.map(query => 
@@ -613,11 +643,11 @@ function createApp() {
 				}
 
 				// Award gamification points for progress update
-				gamificationIntegration.awardProgressUpdate(username, eventId, {
+				gamificationIntegration?.awardProgressUpdate(username, eventId, {
 					wasteCollected: wasteCollected || 0,
 					hasPhotos: !!(processedPhotos.beforePhotoPath || processedPhotos.afterPhotoPath),
 					notes: notes || ''
-				}).catch(gamificationError => {
+				})?.catch(gamificationError => {
 					console.error('Error awarding progress points:', gamificationError);
 				});
 
@@ -891,24 +921,24 @@ function createApp() {
 				}
 
 				// Award gamification points for enhanced progress update
-				gamificationIntegration.awardProgressUpdate(username, eventId, {
+				gamificationIntegration?.awardProgressUpdate(username, eventId, {
 					wasteCollected: wasteCollected || 0,
 					hasPhotos: !!(processedPhotos.beforePhotoPath || processedPhotos.afterPhotoPath),
 					hasGPS: !!(processedPhotos.beforeGPS || processedPhotos.afterGPS),
 					hasAI: !!impactAnalysis,
 					notes: notes || ''
-				}).catch(gamificationError => {
+				})?.catch(gamificationError => {
 					console.error('Error awarding enhanced progress points:', gamificationError);
 				});
 
 				// Award additional points for photos with GPS and AI analysis
 				if (processedPhotos.beforePhotoPath || processedPhotos.afterPhotoPath) {
-					gamificationIntegration.awardPhotoUpload(username, eventId, {
+					gamificationIntegration?.awardPhotoUpload(username, eventId, {
 						hasGPS: !!(processedPhotos.beforeGPS || processedPhotos.afterGPS),
 						aiAnalysis: impactAnalysis,
 						photoType: 'progress',
 						location: processedPhotos.beforeGPS || processedPhotos.afterGPS
-					}).catch(gamificationError => {
+					})?.catch(gamificationError => {
 						console.error('Error awarding photo upload points:', gamificationError);
 					});
 				}
