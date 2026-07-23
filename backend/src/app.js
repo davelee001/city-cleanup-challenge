@@ -18,6 +18,16 @@ const {
 const { initializeGamificationAPI } = require('./routes/gamification');
 const GamificationIntegration = require('./services/gamificationIntegration');
 const config = require('./config');
+const {
+	authenticateUser,
+	requireAdmin,
+} = require('./middleware/auth');
+const {
+	issueTokenPair,
+	publicUser,
+	revokeRefreshToken,
+	rotateRefreshToken,
+} = require('./services/tokenService');
 
 // --- Event Listeners ---
 
@@ -75,23 +85,9 @@ emitter.on('plan:created', (plan) => {
 });
 
 
-// Middleware to check if user is admin
-function requireAdmin(req, res, next) {
-	const { username } = req.body;
-	if (!username) {
-		return res.status(401).json({ success: false, message: 'Authentication required' });
-	}
-	
-	db.get('SELECT role FROM users WHERE username = ?', [username], (err, user) => {
-		if (err || !user || user.role !== 'admin') {
-			return res.status(403).json({ success: false, message: 'Admin access required' });
-		}
-		next();
-	});
-}
-
 function createApp() {
 	const app = express();
+	app.set('db', db);
 	app.use(cors({
 		origin: config.cors.origin,
 		credentials: true
@@ -196,9 +192,44 @@ function createApp() {
 			if (!user || !(await bcrypt.compare(password, user.password))) {
 				return res.status(401).json({ success: false, message: 'Invalid credentials' });
 			}
-			res.json({ success: true, user: { username: user.username, role: user.role } });
+			try {
+				const tokens = await issueTokenPair(user);
+				return res.json({ success: true, user: publicUser(user), tokens });
+			} catch (tokenError) {
+				console.error('Token issuance failed:', tokenError);
+				return res.status(500).json({ success: false, message: 'Unable to create login session' });
+			}
 		});
 	});
+
+	apiRouter.post('/auth/refresh', async (req, res) => {
+		const { refreshToken } = req.body;
+		if (!refreshToken) {
+			return res.status(400).json({ success: false, message: 'Refresh token required' });
+		}
+		try {
+			const session = await rotateRefreshToken(refreshToken);
+			return res.json({ success: true, ...session });
+		} catch (error) {
+			return res.status(401).json({
+				success: false,
+				code: error.code || 'INVALID_REFRESH_TOKEN',
+				message: error.message,
+			});
+		}
+	});
+
+	apiRouter.post('/auth/logout', async (req, res) => {
+		const { refreshToken } = req.body;
+		if (!refreshToken) {
+			return res.status(400).json({ success: false, message: 'Refresh token required' });
+		}
+		await revokeRefreshToken(refreshToken);
+		return res.json({ success: true });
+	});
+
+	// Everything below this point is private and requires a verified access token.
+	apiRouter.use(authenticateUser);
 
 	app.get('/ready', (req, res) => {
 		db.get('SELECT 1 AS ready', (err) => {
@@ -211,9 +242,10 @@ function createApp() {
 
 	// Posts endpoints
 	apiRouter.post('/posts', (req, res) => {
-		const { username, content } = req.body;
-		if (!username || !content) {
-			return res.status(400).json({ success: false, message: 'Username and content required' });
+		const { content } = req.body;
+		const username = req.user.username;
+		if (!content) {
+			return res.status(400).json({ success: false, message: 'Content required' });
 		}
 		const createdAt = new Date().toISOString();
 		db.run(
@@ -247,9 +279,9 @@ function createApp() {
 
 	apiRouter.put('/posts/:id', (req, res) => {
 		const { id } = req.params;
-		const { username, content } = req.body;
-		if (!username || !content) {
-			return res.status(400).json({ success: false, message: 'Username and content required' });
+		const { content } = req.body;
+		if (!content) {
+			return res.status(400).json({ success: false, message: 'Content required' });
 		}
 		db.get('SELECT * FROM posts WHERE id = ?', [id], (err, post) => {
 			if (err) {
@@ -258,7 +290,7 @@ function createApp() {
 			if (!post) {
 				return res.status(404).json({ success: false, message: 'Post not found' });
 			}
-			if (post.username !== username) {
+			if (post.username !== req.user.username && req.user.role !== 'admin') {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
 			db.run('UPDATE posts SET content = ? WHERE id = ?', [content, id], function (err2) {
@@ -272,10 +304,6 @@ function createApp() {
 
 	apiRouter.delete('/posts/:id', (req, res) => {
 		const { id } = req.params;
-		const { username } = req.body;
-		if (!username) {
-			return res.status(400).json({ success: false, message: 'Username required' });
-		}
 		db.get('SELECT * FROM posts WHERE id = ?', [id], (err, post) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
@@ -283,7 +311,7 @@ function createApp() {
 			if (!post) {
 				return res.status(404).json({ success: false, message: 'Post not found' });
 			}
-			if (post.username !== username) {
+			if (post.username !== req.user.username && req.user.role !== 'admin') {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
 			db.run('DELETE FROM posts WHERE id = ?', [id], function (err2) {
@@ -297,8 +325,9 @@ function createApp() {
 
 	// Events endpoints
 	apiRouter.post('/events', (req, res) => {
-		const { title, description, date, time, location, username, latitude = 0, longitude = 0 } = req.body;
-		if (!title || !description || !date || !time || !location || !username) {
+		const { title, description, date, time, location, latitude = 0, longitude = 0 } = req.body;
+		const username = req.user.username;
+		if (!title || !description || !date || !time || !location) {
 			return res.status(400).json({ success: false, message: 'All fields required' });
 		}
 		const createdAt = new Date().toISOString();
@@ -332,8 +361,8 @@ function createApp() {
 
 	apiRouter.put('/events/:id', (req, res) => {
 		const { id } = req.params;
-		const { title, description, date, time, location, username } = req.body;
-		if (!title || !description || !date || !time || !location || !username) {
+		const { title, description, date, time, location } = req.body;
+		if (!title || !description || !date || !time || !location) {
 			return res.status(400).json({ success: false, message: 'All fields required' });
 		}
 		db.get('SELECT * FROM events WHERE id = ?', [id], (err, event) => {
@@ -343,7 +372,7 @@ function createApp() {
 			if (!event) {
 				return res.status(404).json({ success: false, message: 'Event not found' });
 			}
-			if (event.creator !== username) {
+			if (event.creator !== req.user.username && req.user.role !== 'admin') {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
 			db.run(
@@ -361,10 +390,6 @@ function createApp() {
 
 	apiRouter.delete('/events/:id', (req, res) => {
 		const { id } = req.params;
-		const { username } = req.body;
-		if (!username) {
-			return res.status(400).json({ success: false, message: 'Username required' });
-		}
 		db.get('SELECT * FROM events WHERE id = ?', [id], (err, event) => {
 			if (err) {
 				return res.status(500).json({ success: false, message: 'Database error' });
@@ -372,7 +397,7 @@ function createApp() {
 			if (!event) {
 				return res.status(404).json({ success: false, message: 'Event not found' });
 			}
-			if (event.creator !== username) {
+			if (event.creator !== req.user.username && req.user.role !== 'admin') {
 				return res.status(403).json({ success: false, message: 'Not authorized' });
 			}
 			db.run('DELETE FROM events WHERE id = ?', [id], function (err2) {
@@ -396,7 +421,7 @@ function createApp() {
 	});
 
 	apiRouter.post('/admin/cleanup-plans', requireAdmin, (req, res) => {
-		const { title, description, requirements, codes, username } = req.body;
+		const { title, description, requirements, codes } = req.body;
 		if (!title || !description || !requirements || !codes) {
 			return res.status(400).json({ success: false, message: 'All fields required' });
 		}
@@ -406,7 +431,7 @@ function createApp() {
 		
 		db.run(
 			'INSERT INTO cleanup_plans (title, description, requirements, codes, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-			[title, description, requirementsJson, codesJson, username, created_at],
+			[title, description, requirementsJson, codesJson, req.user.username, created_at],
 			function (err) {
 				if (err) {
 					return res.status(500).json({ success: false, message: 'Database error' });
@@ -564,11 +589,7 @@ function createApp() {
 				return res.status(400).json({ success: false, message: 'No file uploaded' });
 			}
 
-			const { username } = req.body;
-			if (!username) {
-				cleanupTempFiles([req.file.path]);
-				return res.status(400).json({ success: false, message: 'Username required' });
-			}
+			const username = req.user.username;
 
 			// Process the avatar image
 			const outputPath = path.join(path.dirname(req.file.path), `processed-${req.file.filename}`);
@@ -614,10 +635,11 @@ function createApp() {
 	]), async (req, res) => {
 		try {
 			const { eventId } = req.params;
-			const { username, wasteCollected, wasteType, notes } = req.body;
+			const { wasteCollected, wasteType, notes } = req.body;
+			const username = req.user.username;
 
-			if (!username || !eventId) {
-				return res.status(400).json({ success: false, message: 'Username and event ID required' });
+			if (!eventId) {
+				return res.status(400).json({ success: false, message: 'Event ID required' });
 			}
 
 			const processedPhotos = {};
@@ -717,10 +739,9 @@ function createApp() {
 	apiRouter.post('/upload/event/:eventId', upload.array('photos', 5), async (req, res) => {
 		try {
 			const { eventId } = req.params;
-			const { username } = req.body;
 
-			if (!username || !eventId || !req.files || req.files.length === 0) {
-				return res.status(400).json({ success: false, message: 'Username, event ID, and at least one photo required' });
+			if (!eventId || !req.files || req.files.length === 0) {
+				return res.status(400).json({ success: false, message: 'Event ID and at least one photo required' });
 			}
 
 			const processedPhotos = [];
@@ -824,10 +845,11 @@ function createApp() {
 	]), async (req, res) => {
 		try {
 			const { eventId } = req.params;
-			const { username, wasteCollected, wasteType, notes, latitude, longitude } = req.body;
+			const { wasteCollected, wasteType, notes, latitude, longitude } = req.body;
+			const username = req.user.username;
 
-			if (!username || !eventId) {
-				return res.status(400).json({ success: false, message: 'Username and event ID required' });
+			if (!eventId) {
+				return res.status(400).json({ success: false, message: 'Event ID required' });
 			}
 
 			// Get event location for validation
@@ -1022,11 +1044,8 @@ function createApp() {
 				return res.status(400).json({ success: false, message: 'No file uploaded' });
 			}
 
-			const { username, latitude, longitude } = req.body;
-			if (!username) {
-				if (!useCloudStorage) cleanupTempFiles([req.file.path]);
-				return res.status(400).json({ success: false, message: 'Username required' });
-			}
+			const { latitude, longitude } = req.body;
+			const username = req.user.username;
 
 			// Create GPS data if provided
 			let gpsData = null;
