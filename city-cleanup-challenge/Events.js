@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 export default function Events({ username, onShowMap }) {
   const [events, setEvents] = useState([]);
