@@ -1,108 +1,73 @@
 const request = require('supertest');
-const app = require('../../src/app');
+const { createApp } = require('../../src/app');
 
-describe('Events API Integration Tests', () => {
-  let server;
+const app = createApp();
 
-  beforeAll(() => {
-    // Start server for testing
-    server = app.listen(0);
-  });
+describe('Events API integration', () => {
+  const username = `event-owner-${Date.now()}`;
+  let eventId;
 
-  afterAll(done => {
-    server.close(done);
-  });
-
-  describe('GET /api/events', () => {
-    it('should return all events', async () => {
-      const response = await request(app)
-        .get('/api/events')
-        .expect('Content-Type', /json/)
-        .expect(200);
-
-      expect(Array.isArray(response.body)).toBe(true);
-    });
-
-    it('should filter events by status', async () => {
-      const response = await request(app)
-        .get('/api/events?status=upcoming')
-        .expect(200);
-
-      expect(response.body).toBeDefined();
-    });
-  });
-
-  describe('POST /api/events', () => {
-    it('should create a new event', async () => {
-      const newEvent = {
+  it('creates an event through the versioned API', async () => {
+    const response = await request(app)
+      .post('/api/v1/events')
+      .send({
         title: 'Test Cleanup Event',
         description: 'Test event for integration testing',
         location: 'Test Location',
-        date: new Date().toISOString(),
-        maxParticipants: 50
-      };
+        latitude: 0,
+        longitude: 0,
+        date: '2026-08-01',
+        time: '09:00',
+        username
+      })
+      .expect(200);
 
-      const response = await request(app)
-        .post('/api/events')
-        .send(newEvent)
-        .expect('Content-Type', /json/);
-
-      expect(response.status).toBeGreaterThanOrEqual(200);
-      expect(response.status).toBeLessThan(300);
-    });
-
-    it('should return 400 for invalid event data', async () => {
-      const invalidEvent = {
-        title: '',
-        // Missing required fields
-      };
-
-      const response = await request(app)
-        .post('/api/events')
-        .send(invalidEvent);
-
-      expect([400, 500]).toContain(response.status);
-    });
+    expect(response.body.success).toBe(true);
+    expect(response.body.event.title).toBe('Test Cleanup Event');
+    eventId = response.body.event.id;
   });
 
-  describe('GET /api/events/:id', () => {
-    it('should return a single event', async () => {
-      const response = await request(app)
-        .get('/api/events/1')
-        .expect('Content-Type', /json/);
+  it('lists events through the versioned API', async () => {
+    const response = await request(app)
+      .get('/api/v1/events')
+      .expect(200);
 
-      expect([200, 404]).toContain(response.status);
-    });
-
-    it('should return 404 for non-existent event', async () => {
-      const response = await request(app)
-        .get('/api/events/99999')
-        .expect('Content-Type', /json/);
-
-      expect([404, 500]).toContain(response.status);
-    });
+    expect(response.body.success).toBe(true);
+    expect(Array.isArray(response.body.events)).toBe(true);
+    expect(response.body.events.some(event => event.id === eventId)).toBe(true);
   });
 
-  describe('PUT /api/events/:id', () => {
-    it('should update an event', async () => {
-      const updateData = {
-        title: 'Updated Event Title'
-      };
+  it('rejects an incomplete event', async () => {
+    const response = await request(app)
+      .post('/api/v1/events')
+      .send({ title: 'Missing required fields' })
+      .expect(400);
 
-      const response = await request(app)
-        .put('/api/events/1')
-        .send(updateData);
-
-      expect([200, 404, 500]).toContain(response.status);
-    });
+    expect(response.body.success).toBe(false);
   });
 
-  describe('DELETE /api/events/:id', () => {
-    it('should delete an event', async () => {
-      const response = await request(app)
-        .delete('/api/events/999');
+  it('updates an event owned by the requesting user', async () => {
+    const response = await request(app)
+      .put(`/api/v1/events/${eventId}`)
+      .send({
+        title: 'Updated Cleanup Event',
+        description: 'Updated description',
+        location: 'Updated Location',
+        date: '2026-08-02',
+        time: '10:00',
+        username
+      })
+      .expect(200);
 
-      expect([200, 204, 404, 500]).toContain(response.status);
-    });
+    expect(response.body.success).toBe(true);
+  });
+
+  it('deletes an event owned by the requesting user', async () => {
+    const response = await request(app)
+      .delete(`/api/v1/events/${eventId}`)
+      .send({ username })
+      .expect(200);
+
+    expect(response.body.success).toBe(true);
   });
 });
