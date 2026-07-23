@@ -29,8 +29,8 @@ const DataExport = ({ onExport, theme }) => {
         ))}
       </View>
 
-      <View style={[styles.infoBox, { backgroundColor: '#e8f5e9' }]}>
-        <Text style={[styles.infoText, { color: '#2e7d32' }]}>
+      <View style={[styles.infoBox, { backgroundColor: '#123B3D' }]}>
+        <Text style={[styles.infoText, { color: '#72D7CA' }]}>
           ✓ All data exported with timestamps and metadata
         </Text>
       </View>
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     marginRight: 8,
   },
   buttonIcon: {
