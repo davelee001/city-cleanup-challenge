@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 export default function Chatbot() {
   const [messages, setMessages] = useState([
@@ -17,7 +17,7 @@ export default function Chatbot() {
     setLoading(true);
     try {
       // Get bot response
-      const res = await fetch(`${API_BASE_URL}/chatbot`, {
+      const res = await apiFetch(`${API_BASE_URL}/chatbot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })
@@ -54,10 +54,10 @@ export default function Chatbot() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
   chat: { flex: 1, marginBottom: 12 },
-  bot: { color: '#333', backgroundColor: '#e0e0e0', padding: 8, borderRadius: 6, marginBottom: 4 },
+  bot: { color: '#EAF2FF', backgroundColor: '#213752', padding: 8, borderRadius: 6, marginBottom: 4 },
   user: { color: '#fff', backgroundColor: '#007AFF', padding: 8, borderRadius: 6, alignSelf: 'flex-end', marginBottom: 4 },
   inputRow: { flexDirection: 'row', alignItems: 'center' },
   input: { flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 10, marginRight: 8 }
