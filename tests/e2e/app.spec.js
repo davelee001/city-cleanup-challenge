@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
 
 test.describe('City Cleanup E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -103,15 +104,16 @@ test.describe('City Cleanup E2E Tests', () => {
 
   test.describe('API Integration', () => {
     test('should fetch events from API', async ({ page }) => {
-      const response = await page.request.get('/api/events');
+      const response = await page.request.get(`${apiBaseUrl}/api/v1/events`);
       expect(response.ok()).toBeTruthy();
       
       const data = await response.json();
-      expect(Array.isArray(data)).toBeTruthy();
+      expect(data.success).toBe(true);
+      expect(Array.isArray(data.events)).toBeTruthy();
     });
 
     test('should check API health', async ({ page }) => {
-      const response = await page.request.get('/api/health');
+      const response = await page.request.get(`${apiBaseUrl}/health`);
       expect(response.ok()).toBeTruthy();
       
       const data = await response.json();
