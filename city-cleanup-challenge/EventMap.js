@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } fr
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from './apiConfig';
 
 export default function EventMap({ username }) {
   const [events, setEvents] = useState([]);
