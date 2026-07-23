@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
 
-import { API_BASE_URL } from './apiConfig';
+import { API_BASE_URL, apiFetch } from './apiConfig';
 
 export default function Events({ username, onShowMap }) {
   const [events, setEvents] = useState([]);
@@ -43,7 +43,7 @@ export default function Events({ username, onShowMap }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/events`);
+      const res = await apiFetch(`${API_BASE_URL}/events`);
       const data = await res.json();
       if (data.success) {
         setEvents(data.events);
@@ -58,7 +58,7 @@ export default function Events({ username, onShowMap }) {
 
   const fetchUserCheckins = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/users/${username}/checkins`);
+      const res = await apiFetch(`${API_BASE_URL}/users/${username}/checkins`);
       const data = await res.json();
       if (data.success) {
         const checkedInEventIds = new Set(data.checkins.map(checkin => checkin.eventId));
@@ -82,7 +82,7 @@ export default function Events({ username, onShowMap }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/events`, {
+      const res = await apiFetch(`${API_BASE_URL}/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,7 +114,7 @@ export default function Events({ username, onShowMap }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/events/${eventId}/checkin`, {
+      const res = await apiFetch(`${API_BASE_URL}/events/${eventId}/checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -242,11 +242,11 @@ export default function Events({ username, onShowMap }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   createForm: { 
-    backgroundColor: '#f8f9fa', 
+    backgroundColor: '#0B1E36',
     padding: 16, 
     borderRadius: 8, 
     marginBottom: 16 
@@ -258,20 +258,20 @@ const styles = StyleSheet.create({
     borderRadius: 4, 
     padding: 10, 
     marginBottom: 12,
-    backgroundColor: '#fff'
+    backgroundColor: '#10243E'
   },
   eventsList: { flex: 1 },
   eventCard: { 
-    backgroundColor: '#f0f0f0', 
+    backgroundColor: '#132A46',
     padding: 16, 
     borderRadius: 8, 
     marginBottom: 12 
   },
   eventTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
-  eventDesc: { fontSize: 14, color: '#666', marginBottom: 8 },
+  eventDesc: { fontSize: 14, color: '#AFC0D4', marginBottom: 8 },
   eventLocation: { fontSize: 14, marginBottom: 4 },
   eventDate: { fontSize: 14, marginBottom: 4 },
-  eventCreator: { fontSize: 12, color: '#888', marginBottom: 8 },
+  eventCreator: { fontSize: 12, color: '#8EA4BC', marginBottom: 8 },
   eventActions: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
@@ -291,11 +291,11 @@ const styles = StyleSheet.create({
   checkedInText: { color: '#fff', fontWeight: 'bold' },
   creatorBadge: { 
     backgroundColor: '#ffc107', 
-    color: '#000', 
+    color: '#F5F8FF',
     padding: 4, 
     borderRadius: 4, 
     fontSize: 12 
   },
   error: { color: 'red', marginBottom: 8 },
-  empty: { color: '#888', textAlign: 'center', marginTop: 20 }
+  empty: { color: '#8EA4BC', textAlign: 'center', marginTop: 20 }
 });
