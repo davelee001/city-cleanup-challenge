@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies - Backend
@@ -40,11 +40,11 @@ jobs:
 
       - name: Run ESLint - Backend
         working-directory: ./backend
-        run: npx eslint . --ext .js,.jsx || true
+        run: npm run lint
 
       - name: Run ESLint - Frontend
         working-directory: ./city-cleanup-challenge
-        run: npx eslint . --ext .js,.jsx || true
+        run: npm run lint
 
   # Job 2: Unit Tests
   unit-tests:
@@ -58,7 +58,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install backend dependencies
@@ -102,7 +102,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Install backend dependencies
         working-directory: ./backend
@@ -110,7 +110,7 @@ jobs:
 
       - name: Run integration tests
         working-directory: ./backend
-        run: npm run test:integration || echo "No integration tests found"
+        run: npm run test:integration
         env:
           DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
           NODE_ENV: test
@@ -204,7 +204,7 @@ jobs:
           output: 'trivy-backend-results.sarif'
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-backend-results.sarif'
 
@@ -216,7 +216,7 @@ jobs:
           output: 'trivy-frontend-results.sarif'
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-frontend-results.sarif'
 
@@ -261,7 +261,6 @@ jobs:
         run: |
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/secrets.yaml
           kubectl apply -f k8s/persistent-volume.yaml
           kubectl apply -f k8s/backend-deployment.yaml
           kubectl apply -f k8s/frontend-deployment.yaml
@@ -296,7 +295,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Install Playwright
         run: |
@@ -304,13 +303,14 @@ jobs:
           npx playwright install --with-deps
 
       - name: Run E2E tests
-        run: npx playwright test || echo "No E2E tests configured yet"
+        run: npx playwright test
         env:
           BASE_URL: https://city-cleanup.example.com
+          API_BASE_URL: https://api.city-cleanup.example.com
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
