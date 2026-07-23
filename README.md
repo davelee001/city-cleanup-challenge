@@ -25,11 +25,13 @@ See [City Cleanup Reward Product Rules](docs/PRODUCT_RULES.md) for the complete 
 - Removed tracked dependency artifacts and removed committed Kubernetes secret placeholders.
 - Expanded signup to collect username, email, phone number, location, and password confirmation.
 - Added client and server validation, unique email protection, and automatic profile-column migration for existing SQLite databases.
-- Redesigned signup with accessible feedback, responsive spacing, and a friendly green community theme.
+- Redesigned the sign-in, signup, and authenticated home experiences with responsive layouts and accessible feedback.
+- Standardized the frontend on a cohesive dark-blue palette with readable blue-gray text and preserved semantic status colors.
+- Applied a simple system sans-serif typography stack across web, iOS, and Android, with moderate heading and control weights.
 - Added signed JWT access tokens, rotating refresh tokens, revocation, role checks, and resource ownership enforcement.
 - Verified all 36 backend tests and a clean production frontend build.
 
-The application is still **pre-deployment**. Authentication/authorization, evidence verification, production storage, security remediation, and Celo testnet integration remain release blockers.
+The application is still **pre-deployment**. Evidence verification, production storage, dependency security remediation, and Celo testnet integration remain release blockers.
 
 ## 🚀 Latest Updates (v2.9 - March 3, 2026)
 
