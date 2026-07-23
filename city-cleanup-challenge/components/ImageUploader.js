@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet, ActivityIndicator } from 'react-native';
-import { API_BASE_URL } from '../apiConfig';
+import { API_BASE_URL, apiFetch } from '../apiConfig';
 
 const ImageUploader = ({ 
   onImageUploaded, 
@@ -48,7 +48,7 @@ const ImageUploader = ({
 
     const endpoint = getUploadEndpoint();
     
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await apiFetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -147,10 +147,10 @@ const styles = StyleSheet.create({
   uploadButton: {
     position: 'relative',
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: '#315574',
     borderStyle: 'dashed',
     borderRadius: 8,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#0D213A',
     overflow: 'hidden',
   },
   imagePreview: {
@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: 32,
-    color: '#999',
+    color: '#7890AA',
     marginBottom: 4,
   },
   placeholderLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     textAlign: 'center',
   },
   loadingOverlay: {
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#666',
+    color: '#AFC0D4',
     marginTop: 4,
   },
 });
