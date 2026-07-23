@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   icon: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginRight: 8,
   },
   message: {
