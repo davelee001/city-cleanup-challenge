@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#fff',
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     textAlign: 'center',
   },
   headerStats: {
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#4CAF50',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   levelTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   levelNumber: {
     color: '#fff',
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
     marginVertical: 8,
   },
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
     marginBottom: 15,
   },
@@ -647,7 +647,7 @@ const styles = StyleSheet.create({
   },
   rank: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#AFC0D4',
   },
   username: {
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   },
   currentUser: {
     color: '#4CAF50',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   score: {
     fontSize: 16,
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
     marginBottom: 10,
   },
@@ -756,7 +756,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#EAF2FF',
     textAlign: 'center',
     marginBottom: 10,
@@ -769,7 +769,7 @@ const styles = StyleSheet.create({
   },
   modalPoints: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#4CAF50',
     marginBottom: 10,
   },
@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
   modalCloseText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 });
 
