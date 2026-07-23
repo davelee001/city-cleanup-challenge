@@ -23,7 +23,10 @@ See [City Cleanup Reward Product Rules](docs/PRODUCT_RULES.md) for the complete 
 - Added a web-safe event map and corrected the Expo web entry point so the landing page renders.
 - Added synchronized lockfiles, frontend build and lint scripts, and stricter CI checks.
 - Removed tracked dependency artifacts and removed committed Kubernetes secret placeholders.
-- Verified all 27 backend tests and a clean production frontend build.
+- Expanded signup to collect username, email, phone number, location, and password confirmation.
+- Added client and server validation, unique email protection, and automatic profile-column migration for existing SQLite databases.
+- Redesigned signup with accessible feedback, responsive spacing, and a friendly green community theme.
+- Verified all 28 backend tests and a clean production frontend build.
 
 The application is still **pre-deployment**. Authentication/authorization, evidence verification, production storage, security remediation, and Celo testnet integration remain release blockers.
 
@@ -547,8 +550,8 @@ npx expo start
 - `POST /api/v1/social/upload` — Upload social media files (avatars, attachments, images)
 
 ### Authentication
-- `POST /signup` — Register new user
-- `POST /login` — User login (returns role information)
+- `POST /api/v1/signup` — Register a user with username, email, phone number, location, and password
+- `POST /api/v1/login` — User login (returns role information)
 - `GET /profile/:username` — Get user profile
 - `PUT /profile/:username` — Update user profile
 
@@ -782,7 +785,7 @@ npx expo start
 ## Database Schema
 
 ### Core Tables
-- **users** — User accounts with role-based authentication (user/admin), profile avatar, and subscription status.
+- **users** — User accounts with hashed passwords, email, phone number, location, role, profile avatar, and subscription status. Existing SQLite databases add the contact columns automatically.
 - **subscriptions** — Defines subscription tiers and links them to users.
 - **events** — Cleanup events with GPS coordinates
 - **event_checkins** — User check-ins with location verification
@@ -844,7 +847,7 @@ npm run test:coverage
 ## App Workflow
 
 ### Standard User Flow
-1. **Sign Up/Login** — Create account or sign in
+1. **Sign Up/Login** — Create an account with contact and location details, or sign in
 2. **Browse Events** — View cleanup events on map or list
 3. **Create Events** — Organize your own cleanup events
 4. **Check In** — Use GPS to check into events you attend
