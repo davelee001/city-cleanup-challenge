@@ -46,6 +46,11 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: DATABASE_PATH
+        - name: EVIDENCE_STORAGE_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: EVIDENCE_STORAGE_PATH
         - name: CORS_ORIGIN
           valueFrom:
             configMapKeyRef:
