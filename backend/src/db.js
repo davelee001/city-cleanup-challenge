@@ -49,6 +49,8 @@ db.serialize(() => {
     location TEXT,
     role TEXT DEFAULT 'user',
     avatar TEXT,
+    celo_wallet_address TEXT,
+    celo_wallet_verified_at TEXT,
     subscription_id INTEGER,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
@@ -240,11 +242,46 @@ db.serialize(() => {
     FOREIGN KEY (actor_user_id) REFERENCES users (id)
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS reward_payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    claim_id TEXT UNIQUE NOT NULL,
+    submission_id INTEGER UNIQUE NOT NULL,
+    user_id INTEGER NOT NULL,
+    wallet_address TEXT,
+    policy_version TEXT NOT NULL,
+    calculation TEXT NOT NULL,
+    amount_wei TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    chain_id INTEGER NOT NULL,
+    contract_address TEXT,
+    transaction_hash TEXT UNIQUE,
+    block_number TEXT,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    failure_code TEXT,
+    failure_reason TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    broadcast_at TEXT,
+    confirmed_at TEXT,
+    FOREIGN KEY (submission_id) REFERENCES cleanup_submissions (id) ON DELETE RESTRICT,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT
+  )`);
+
   db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_submissions_user ON cleanup_submissions(user_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_submissions_status ON cleanup_submissions(status)');
   db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_evidence_sha256 ON cleanup_evidence_files(sha256)');
   db.run('CREATE INDEX IF NOT EXISTS idx_submission_transitions_submission ON submission_transitions(submission_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_reward_payments_user_created ON reward_payments(user_id, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_reward_payments_wallet_created ON reward_payments(wallet_address, created_at)');
 
+  ensureColumns('users', {
+    celo_wallet_address: 'TEXT',
+    celo_wallet_verified_at: 'TEXT',
+  }, [
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_celo_wallet
+     ON users(lower(celo_wallet_address))
+     WHERE celo_wallet_address IS NOT NULL`,
+  ]);
   ensureColumns('cleanup_submissions', {
     verification_version: 'TEXT',
     risk_level: 'TEXT',
