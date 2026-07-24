@@ -79,6 +79,21 @@ thresholds, decision policy, limitations, and pilot requirements.
 - Verified all 20 commits use the `davelee001` Git author identity.
 - Confirmed the local branch and `origin/main` are synchronized after the push.
 
+### Interface and Local Development Update
+
+- Simplified the sign-in experience by removing pre-authentication welcome copy
+  and using concise `Sign in` labels.
+- Expanded the City Cleanup brand lockup above the sign-in impact message.
+- Redesigned the authenticated landing dashboard with a professional header,
+  focused primary actions, account and verification status, categorized tools,
+  and responsive dark-blue cards.
+- Allowed both the Docker web frontend at `http://localhost` and the Expo web
+  frontend at `http://localhost:19006` to call the local backend.
+- Verified backend and frontend linting, the production web build, and live
+  frontend and backend HTTP responses.
+- Delivered these interface and connectivity changes as 14 focused commits on
+  `main`.
+
 The application is still **pre-deployment**. Verification threshold calibration,
 production cloud storage, dependency security remediation, and Celo testnet
 integration remain release blockers.
