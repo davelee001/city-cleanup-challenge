@@ -60,11 +60,14 @@ export default function Login({ onLogin, onSwitchToSignup }) {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.hero}>
-            <View style={styles.mark}>
-              <Text style={styles.markIcon}>♻</Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>CITY CLEANUP</Text>
+            <View style={styles.logo}>
+              <View style={styles.logoMark}>
+                <Text style={styles.logoMarkIcon}>♻</Text>
+              </View>
+              <View>
+                <Text style={styles.logoName}>CITY CLEANUP</Text>
+                <Text style={styles.logoTagline}>Cleaner cities. Shared rewards.</Text>
+              </View>
             </View>
             <Text style={styles.title}>Turn clean streets into real impact.</Text>
             <Text style={styles.subtitle}>
