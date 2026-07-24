@@ -16,7 +16,7 @@ const RealTimeChart = ({ theme }) => {
       setData(prevData => [
         ...prevData.slice(1),
         {
-          label: 'New',
+          label: 'Now',
           value: Math.floor(Math.random() * 100)
         }
       ]);
@@ -37,7 +37,7 @@ const RealTimeChart = ({ theme }) => {
                 styles.bar,
                 {
                   height: (item.value / maxValue) * 150,
-                  backgroundColor: '#4CAF50',
+                  backgroundColor: index === data.length - 1 ? '#61D6C6' : '#367FC3',
                 }
               ]}
             />
@@ -46,7 +46,10 @@ const RealTimeChart = ({ theme }) => {
           </View>
         ))}
       </View>
-      <Text style={[styles.info, theme.text]}>Updates every 3 seconds</Text>
+      <View style={styles.updateNote}>
+        <View style={styles.updateDot} />
+        <Text style={[styles.info, theme.text]}>Live activity refreshes every 3 seconds</Text>
+      </View>
     </View>
   );
 };
@@ -67,9 +70,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bar: {
-    width: 30,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    width: 28,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
     marginBottom: 8,
   },
   label: {
@@ -81,10 +84,11 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   info: {
+    color: '#7890AA',
     fontSize: 12,
-    fontStyle: 'italic',
-    textAlign: 'center',
   },
+  updateNote: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 },
+  updateDot: { width: 6, height: 6, borderRadius: 999, backgroundColor: '#61D6C6' },
 });
 
 export default RealTimeChart;
