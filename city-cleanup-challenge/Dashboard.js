@@ -100,7 +100,12 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
           </Text>
         </View>
         {isAdmin ? (
-          <TouchableOpacity style={styles.adminButton} onPress={onAdminPanel}>
+          <TouchableOpacity
+            style={styles.adminButton}
+            onPress={onAdminPanel}
+            accessibilityRole="button"
+            accessibilityLabel="Open admin workspace"
+          >
             <Text style={styles.adminButtonText}>Admin workspace</Text>
             <Text style={styles.adminButtonArrow}>→</Text>
           </TouchableOpacity>
@@ -168,7 +173,12 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
                   <Text style={styles.cardEyebrow}>OPERATIONS</Text>
                   <Text style={styles.cardTitle}>Recent admin activity</Text>
                 </View>
-                <TouchableOpacity style={styles.textButton} onPress={onAdminPanel}>
+                <TouchableOpacity
+                  style={styles.textButton}
+                  onPress={onAdminPanel}
+                  accessibilityRole="button"
+                  accessibilityLabel="View all admin activity"
+                >
                   <Text style={styles.textButtonText}>View all →</Text>
                 </TouchableOpacity>
               </View>
