@@ -8,6 +8,7 @@ const { requireAdmin } = require('../middleware/auth');
 const {
   verifyEvidencePair,
 } = require('../services/evidenceVerification');
+const { ensureRewardClaim } = require('../services/rewardService');
 
 const EVIDENCE_ROOT = path.resolve(
   process.env.EVIDENCE_STORAGE_PATH || path.join(__dirname, '../../data/evidence')
@@ -567,9 +568,23 @@ function createEvidenceRouter(db) {
          VALUES (?, ?, ?, ?, ?)`,
         [submission.id, req.user.id, submission.status, decision, reason]
       );
+      let reward = null;
+      let rewardError = null;
+      if (decision === 'approved') {
+        try {
+          reward = await ensureRewardClaim(db, submission.id);
+        } catch (error) {
+          rewardError = {
+            code: error.code || 'REWARD_CLAIM_FAILED',
+            message: error.message || 'Unable to create reward claim',
+          };
+        }
+      }
       return res.json({
         success: true,
         submission: serializeSubmission(await getSubmission(db, submission.id)),
+        reward,
+        rewardError,
       });
     } catch {
       return res.status(500).json({ success: false, message: 'Unable to review submission' });
