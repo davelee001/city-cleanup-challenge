@@ -29,6 +29,7 @@ const homeItems = [
   { key: 'events', icon: '◈', title: 'Events', hint: 'Join community cleanups' },
   { key: 'map', icon: '⌖', title: 'Map', hint: 'Explore cleanup locations' },
   { key: 'progress', icon: '↗', title: 'My progress', hint: 'See your verified impact' },
+  { key: 'evidence', icon: '◉', title: 'Submit evidence', hint: 'Capture and verify cleanup work' },
   { key: 'dashboard', icon: '▥', title: 'Dashboard', hint: 'Review community activity' },
   { key: 'subscription', icon: '◇', title: 'Subscription', hint: 'Manage your plan' },
   { key: 'gamification', icon: '★', title: 'Achievements', hint: 'Rewards, points, and badges' },
@@ -141,6 +142,9 @@ export default function App() {
         break;
       case 'progress':
         content = <Progress username={user} />;
+        break;
+      case 'evidence':
+        content = <Evidence userRole={userRole} />;
         break;
       case 'dashboard':
         content = (
