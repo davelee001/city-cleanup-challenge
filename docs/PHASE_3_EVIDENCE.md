@@ -76,8 +76,9 @@ See [Phase 4 Advanced Verification](PHASE_4_VERIFICATION.md).
 - A dedicated reviewer role separate from administrator.
 - Expiring object-storage URLs and production cloud storage.
 - Configurable review thresholds and appeal deadlines.
-- Reward calculation and CELO testnet payment.
+- Wallet ownership verification and the user-facing CELO transaction experience.
 
-No approved Phase 3 submission triggers a payment yet. Blockchain integration
-must consume the immutable submission ID and preserve exactly-once payout
-semantics in a later phase.
+Phase 5 now creates an idempotent reward claim after approval and provides the
+Celo Sepolia payout foundation. Live payments remain disabled until wallet
+ownership verification and controlled pilot deployment are complete. See
+[Phase 5 Celo Rewards](PHASE_5_CELO_REWARDS.md).
