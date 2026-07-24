@@ -83,7 +83,8 @@ reason. An approved or paid submission cannot return to an editable state.
 ## 7. CELO Reward Rules
 
 - The MVP pays native CELO, not a custom token.
-- Testnet CELO is used until the complete workflow passes the pilot phase.
+- Celo Sepolia testnet CELO is used until the complete workflow passes the pilot
+  phase.
 - The production reward amount remains configurable and must not be hard-coded
   in the mobile application or smart contract client.
 - The reward engine records the rule version and calculation used for each
@@ -94,9 +95,23 @@ reason. An approved or paid submission cannot return to an editable state.
 - The database and smart contract both reject a claim ID that was already paid.
 - A transaction is marked `paid` only after the required on-chain confirmations.
 
-Initial production reward values, payout caps, and treasury size require a
-separate financial decision after testnet measurements establish expected
-submission volume, fraud rate, and transaction cost.
+The versioned `celo-testnet-v1` pilot policy is:
+
+- Base reward: `0.01 CELO`.
+- Waste multipliers: paper `0.80x`, plastic and mixed waste `1.00x`, glass
+  `1.20x`, and metal `1.50x`.
+- Impact multipliers: `1.00x` below 5 kg and 20 items, `1.25x` from 5 kg or 20
+  items, and `1.50x` from 10 kg or 50 items.
+- Per-submission maximum: `0.05 CELO`.
+- Per-account and per-wallet maximum: `0.10 CELO` in a rolling 24-hour period
+  and `0.35 CELO` in a rolling seven-day period.
+- Manual payout approval at `0.03 CELO` or above.
+- Two on-chain confirmations before a live payment is marked confirmed.
+
+These are controlled by server environment variables and are pilot values, not
+mainnet financial commitments. Final mainnet amounts and treasury size require a
+separate financial decision after measurements establish submission volume,
+fraud rate, and transaction cost.
 
 ## 8. Privacy and Data Handling
 
@@ -123,13 +138,11 @@ The MVP is ready for a controlled testnet pilot when:
 
 ## 10. Decisions Required Before Mainnet
 
-- Final CELO reward per approved submission.
-- Quantity or waste-type multipliers.
-- Daily and weekly payout caps.
+- Confirm or revise the pilot reward, multiplier, and payout-cap values.
 - Eligible geographic areas.
 - Minimum age and identity requirements.
 - Evidence and account retention periods.
 - Appeal response time.
 - Treasury ownership and multisig signers.
-- Required blockchain confirmation count.
+- Confirm or revise the two-confirmation policy.
 - Legal terms, privacy policy, and prohibited-waste policy.
