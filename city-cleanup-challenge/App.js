@@ -31,17 +31,17 @@ const BackButton = ({ label = 'Back to home', onPress }) => (
 );
 
 const homeItems = [
-  { key: 'profile', icon: '◎', title: 'Profile', hint: 'Account and personal details' },
-  { key: 'posts', icon: '▣', title: 'Cleanup posts', hint: 'Share your cleanup evidence' },
-  { key: 'chatbot', icon: '◌', title: 'Cleanup assistant', hint: 'Get help planning your work' },
-  { key: 'events', icon: '◈', title: 'Events', hint: 'Join community cleanups' },
-  { key: 'map', icon: '⌖', title: 'Map', hint: 'Explore cleanup locations' },
-  { key: 'progress', icon: '↗', title: 'My progress', hint: 'See your verified impact' },
-  { key: 'evidence', icon: '◉', title: 'Submit evidence', hint: 'Capture and verify cleanup work' },
-  { key: 'dashboard', icon: '▥', title: 'Dashboard', hint: 'Review community activity' },
-  { key: 'subscription', icon: '◇', title: 'Subscription', hint: 'Manage your plan' },
-  { key: 'gamification', icon: '★', title: 'Achievements', hint: 'Rewards, points, and badges' },
-  { key: 'social', icon: '♢', title: 'Community', hint: 'Teams and shared goals' },
+  { key: 'evidence', icon: '◉', title: 'Submit evidence', hint: 'Document a completed cleanup', group: 'Action' },
+  { key: 'progress', icon: '↗', title: 'My progress', hint: 'Track verified environmental impact', group: 'Impact' },
+  { key: 'events', icon: '◈', title: 'Cleanup events', hint: 'Find and join nearby activities', group: 'Discover' },
+  { key: 'map', icon: '⌖', title: 'Location map', hint: 'Explore cleanup activity by area', group: 'Discover' },
+  { key: 'posts', icon: '▣', title: 'Community posts', hint: 'Share updates with the community', group: 'Connect' },
+  { key: 'social', icon: '♢', title: 'Teams & community', hint: 'Collaborate around shared goals', group: 'Connect' },
+  { key: 'gamification', icon: '★', title: 'Achievements', hint: 'View rewards, points, and badges', group: 'Rewards' },
+  { key: 'dashboard', icon: '▥', title: 'Impact analytics', hint: 'Review activity and performance', group: 'Insights' },
+  { key: 'chatbot', icon: '◌', title: 'Cleanup assistant', hint: 'Get guidance for your next cleanup', group: 'Support' },
+  { key: 'profile', icon: '◎', title: 'Profile settings', hint: 'Manage account and personal details', group: 'Account' },
+  { key: 'subscription', icon: '◇', title: 'Subscription', hint: 'Review and manage your plan', group: 'Account' },
 ];
 
 export default function App() {
