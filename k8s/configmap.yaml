@@ -13,6 +13,12 @@ data:
   EVIDENCE_SCENE_MEDIUM_RISK_BELOW: "0.48"
   EVIDENCE_SYNTHETIC_HIGH_RISK_AT: "0.60"
   EVIDENCE_SYNTHETIC_MEDIUM_RISK_AT: "0.25"
+  CELO_REWARDS_ENABLED: "false"
+  CELO_REWARD_DRY_RUN: "true"
+  CELO_RPC_URL: "https://forno.celo-sepolia.celo-testnet.org"
+  CELO_CHAIN_ID: "11142220"
+  CELO_REWARD_CONTRACT_ADDRESS: ""
+  CELO_REQUIRED_CONFIRMATIONS: "2"
   CORS_ORIGIN: "https://city-cleanup.example.com"
 ---
 apiVersion: v1
