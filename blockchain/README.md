@@ -1,65 +1,40 @@
-**Celo integration (minimal)**
+# Celo reward contract
 
-This folder provides a minimal, safe starting point for experimenting with Celo using Hardhat (for compiling/deploying) and ContractKit (for runtime interactions).
+This package contains the City Cleanup native CELO reward treasury, local
+contract tests, and the Celo Sepolia deployment script.
 
-Prerequisites
-- Node.js 18+ and npm
-- (Optional) A Celo testnet RPC URL (Alfajores) and a funded test account
+## Setup
 
-Quick start
+Use Node.js 22 and install the pinned dependencies:
 
-1. Install dependencies:
-
-```bash
-cd blockchain
+```powershell
 npm install
-```
-
-2. Create a `.env` file (copy from `.env.example`) and set values:
-
-```
-ALFAJORES_RPC=your_rpc_url_here
-PRIVATE_KEY=0xyourprivatekey
-ACCOUNT_ADDRESS=0xyouraddress
-```
-
-3. Compile contracts:
-
-```bash
 npm run compile
+npm test
 ```
 
-4. Deploy to a local Hardhat node or Alfajores:
+Local tests prove that a reward transfers once, a repeated claim ID reverts,
+only the owner can pay, and the owner can pause payments.
 
-Local (start a local node separately):
-```bash
-npm run deploy:local
+## Deploy to Celo Sepolia
+
+Copy `.env.example` to `.env` and supply a funded testnet deployment key. Never
+commit the key.
+
+```powershell
+npm run deploy:celo-sepolia
 ```
 
-Alfajores:
-```bash
-npm run deploy:alfajores
-```
+The script prints the deployed `RewardTreasury` address. Configure that address
+as `CELO_REWARD_CONTRACT_ADDRESS` in the backend and keep live rewards disabled
+until wallet ownership verification, funding, and monitoring are ready.
 
-5. Use ContractKit example to read balances (requires `ACCOUNT_ADDRESS`):
+## Duplicate protection
 
-```bash
-npm run contractkit:example
-```
+`payReward(bytes32 claimId, address recipient)` accepts native CELO as the
+transaction value. The contract records every successful claim ID in
+`paidClaims` and permanently rejects a second payment for that ID. Only the
+owner can pay, pause, resume, or transfer ownership.
 
-Testing
-- The folder contains a placeholder test. You can run tests after installing `mocha`/`chai` or adapt to your preferred test runner.
-
-Security and recommendations
-- NEVER commit real private keys. Use environment variables, CI secret stores, or a secrets manager (e.g., Azure Key Vault).
-- For production workflows, add tests, proper deployment scripts, and CI integration. Consider using `hardhat-deploy` and plugin ecosystems.
-
-Files of interest
-- `hardhat.config.js` — network and compiler settings
-- `contracts/SimpleStorage.sol` — minimal sample contract
-- `scripts/deploy.js` — example deploy script for Hardhat
-- `scripts/contractkit_example.js` — simple ContractKit usage to fetch balances
-
-If you want, I can:
-- Run `npm install` and `npm run compile` here to verify the setup.
-- Replace `SimpleStorage` with an ERC-20 example and an integration snippet for the frontend.
+For production, transfer ownership to a reviewed multisignature account. Images,
+locations, and user details must remain off-chain.
