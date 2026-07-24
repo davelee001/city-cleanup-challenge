@@ -12,6 +12,11 @@ services:
       - PORT=3001
       - DATABASE_PATH=/app/data/city-cleanup.db
       - EVIDENCE_STORAGE_PATH=/app/data/evidence
+      - EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD=8
+      - EVIDENCE_SCENE_HIGH_RISK_BELOW=0.30
+      - EVIDENCE_SCENE_MEDIUM_RISK_BELOW=0.48
+      - EVIDENCE_SYNTHETIC_HIGH_RISK_AT=0.60
+      - EVIDENCE_SYNTHETIC_MEDIUM_RISK_AT=0.25
       - CORS_ORIGIN=http://localhost:19006
     volumes:
       - ./backend:/app
