@@ -158,6 +158,64 @@ db.serialize(() => {
     FOREIGN KEY (eventId) REFERENCES events (id)
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS cleanup_submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    waste_category TEXT NOT NULL,
+    item_count INTEGER,
+    estimated_weight REAL,
+    notes TEXT,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    location_accuracy REAL NOT NULL,
+    captured_before_at TEXT NOT NULL,
+    captured_after_at TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'submitted',
+    duplicate_of INTEGER,
+    verification_summary TEXT,
+    rejection_reason TEXT,
+    appeal_reason TEXT,
+    appealed_at TEXT,
+    reviewed_by INTEGER,
+    reviewed_at TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (duplicate_of) REFERENCES cleanup_submissions (id),
+    FOREIGN KEY (reviewed_by) REFERENCES users (id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS cleanup_evidence_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    submission_id INTEGER NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('before', 'after')),
+    storage_path TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    byte_size INTEGER NOT NULL,
+    original_name TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (submission_id, kind),
+    FOREIGN KEY (submission_id) REFERENCES cleanup_submissions (id) ON DELETE CASCADE
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS submission_transitions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    submission_id INTEGER NOT NULL,
+    actor_user_id INTEGER,
+    from_status TEXT,
+    to_status TEXT NOT NULL,
+    reason TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (submission_id) REFERENCES cleanup_submissions (id) ON DELETE CASCADE,
+    FOREIGN KEY (actor_user_id) REFERENCES users (id)
+  )`);
+
+  db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_submissions_user ON cleanup_submissions(user_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_submissions_status ON cleanup_submissions(status)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_evidence_sha256 ON cleanup_evidence_files(sha256)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_submission_transitions_submission ON submission_transitions(submission_id)');
+
   if (process.env.NODE_ENV !== 'test') {
     // Run enhanced features migration after the base tables are available.
     setTimeout(async () => {
