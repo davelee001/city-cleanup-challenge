@@ -80,8 +80,7 @@ export default function Login({ onLogin, onSwitchToSignup }) {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardEyebrow}>WELCOME BACK</Text>
-            <Text style={styles.cardTitle}>Sign in to continue</Text>
+            <Text style={styles.cardTitle}>Sign in</Text>
             <Text style={styles.cardSubtitle}>Your next cleanup starts here.</Text>
 
             {error ? (
