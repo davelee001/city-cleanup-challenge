@@ -3,15 +3,15 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 
 const DataExport = ({ onExport, theme }) => {
   const exportFormats = [
-    { format: 'pdf', label: '📄 PDF', icon: '📄' },
-    { format: 'excel', label: '📊 Excel', icon: '📊' },
-    { format: 'csv', label: '📋 CSV', icon: '📋' },
+    { format: 'pdf', label: 'PDF', icon: 'PDF' },
+    { format: 'excel', label: 'Excel', icon: 'XLS' },
+    { format: 'csv', label: 'CSV', icon: 'CSV' },
   ];
 
   return (
     <View style={styles.container}>
       <Text style={[styles.description, theme.text]}>
-        Download your data in your preferred format:
+        Download verified platform records in your preferred format.
       </Text>
       
       <View style={styles.buttonContainer}>
@@ -31,7 +31,7 @@ const DataExport = ({ onExport, theme }) => {
 
       <View style={[styles.infoBox, { backgroundColor: '#123B3D' }]}>
         <Text style={[styles.infoText, { color: '#72D7CA' }]}>
-          ✓ All data exported with timestamps and metadata
+          ✓ Exports include timestamps and available verification metadata
         </Text>
       </View>
     </View>
@@ -48,20 +48,25 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
     marginBottom: 16,
   },
   exportButton: {
     flex: 1,
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 8,
+    minWidth: 88,
+    backgroundColor: '#091B30',
+    padding: 14,
+    borderRadius: 11,
     borderWidth: 1,
     borderColor: '#315574',
-    marginRight: 8,
   },
   buttonIcon: {
-    fontSize: 24,
+    color: '#69B4FF',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
     marginBottom: 8,
   },
   buttonLabel: {
@@ -71,9 +76,9 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    borderRadius: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#61D6C6',
   },
   infoText: {
     fontSize: 13,
