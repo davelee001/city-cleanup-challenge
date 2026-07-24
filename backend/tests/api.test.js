@@ -297,7 +297,9 @@ describe('Phase 3 cleanup evidence workflow', () => {
     expect(response.statusCode).toBe(201);
     expect(response.body.success).toBe(true);
     expect(response.body.submission.status).toBe('manual_review');
-    expect(response.body.submission.verification.exactDuplicate).toBe(false);
+    expect(response.body.submission.verification.exactDuplicate.matched).toBe(false);
+    expect(response.body.submission.verification.version).toBe('phase4-v1');
+    expect(['low', 'medium', 'high']).toContain(response.body.submission.riskLevel);
     createdSubmissionIds.push(response.body.submission.id);
 
     const detail = await authenticated(
