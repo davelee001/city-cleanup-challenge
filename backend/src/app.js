@@ -16,6 +16,7 @@ const {
   useCloudStorage
 } = require('./services/enhancedImageUpload');
 const { initializeGamificationAPI } = require('./routes/gamification');
+const { createEvidenceRouter } = require('./routes/evidence');
 const GamificationIntegration = require('./services/gamificationIntegration');
 const config = require('./config');
 const {
