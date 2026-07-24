@@ -92,5 +92,5 @@ Automated coverage verifies:
 - Reviewer tooling for side-by-side duplicate candidates.
 - Monitoring for model or threshold drift.
 
-Phase 4 does not initiate CELO payments. Only a later idempotent reward phase may
-consume approved submission IDs.
+Phase 4 itself does not initiate CELO payments. Phase 5 now consumes approved
+submission IDs through an idempotent Celo Sepolia reward path.
