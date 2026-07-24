@@ -19,7 +19,8 @@ const config = {
 
   // CORS
   cors: {
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:19006'],
+    origin: process.env.CORS_ORIGIN?.split(',')
+      || ['http://localhost', 'http://localhost:19006'],
   },
 
   // API
