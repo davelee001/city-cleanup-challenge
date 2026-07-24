@@ -231,6 +231,7 @@ function createApp() {
 
 	// Everything below this point is private and requires a verified access token.
 	apiRouter.use(authenticateUser);
+	apiRouter.use('/evidence', createEvidenceRouter(db));
 
 	app.get('/ready', (req, res) => {
 		db.get('SELECT 1 AS ready', (err) => {
