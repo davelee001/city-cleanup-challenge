@@ -405,9 +405,16 @@ export default function Evidence({ userRole = 'user' }) {
                 <Text style={styles.submissionTitle}>
                   #{submission.id} · {submission.wasteCategory}
                 </Text>
-                <Text style={[styles.status, styles[`status_${submission.status}`]]}>
-                  {STATUS_LABELS[submission.status] || submission.status}
-                </Text>
+                <View style={styles.badgeRow}>
+                  {submission.riskLevel ? (
+                    <Text style={[styles.status, styles[`risk_${submission.riskLevel}`]]}>
+                      {submission.riskLevel} risk
+                    </Text>
+                  ) : null}
+                  <Text style={[styles.status, styles[`status_${submission.status}`]]}>
+                    {STATUS_LABELS[submission.status] || submission.status}
+                  </Text>
+                </View>
               </View>
               {userRole === 'admin' ? (
                 <Text style={styles.meta}>Submitted by {submission.username}</Text>
@@ -565,6 +572,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
+  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
   submissionTitle: { color: '#EDF5FF', fontSize: 15, fontWeight: '600' },
   status: {
     borderRadius: 999,
@@ -577,6 +585,9 @@ const styles = StyleSheet.create({
   status_manual_review: { backgroundColor: '#3A321A', color: '#F5D67A' },
   status_approved: { backgroundColor: '#123B3D', color: '#72D7CA' },
   status_rejected: { backgroundColor: '#3D1C29', color: '#FFB8C5' },
+  risk_low: { backgroundColor: '#123B3D', color: '#72D7CA' },
+  risk_medium: { backgroundColor: '#3A321A', color: '#F5D67A' },
+  risk_high: { backgroundColor: '#3D1C29', color: '#FFB8C5' },
   meta: { color: '#8298AF', fontSize: 12, marginTop: 6 },
   rejection: { color: '#FFB8C5', fontSize: 13, lineHeight: 19, marginTop: 9 },
   evidenceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 12 },
