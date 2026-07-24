@@ -245,6 +245,17 @@ db.serialize(() => {
   db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_evidence_sha256 ON cleanup_evidence_files(sha256)');
   db.run('CREATE INDEX IF NOT EXISTS idx_submission_transitions_submission ON submission_transitions(submission_id)');
 
+  ensureColumns('cleanup_submissions', {
+    verification_version: 'TEXT',
+    risk_level: 'TEXT',
+  });
+  ensureColumns('cleanup_evidence_files', {
+    perceptual_hash: 'TEXT',
+    image_metadata: 'TEXT',
+  }, [
+    'CREATE INDEX IF NOT EXISTS idx_cleanup_evidence_perceptual ON cleanup_evidence_files(perceptual_hash)',
+  ]);
+
   if (process.env.NODE_ENV !== 'test') {
     // Run enhanced features migration after the base tables are available.
     setTimeout(async () => {
