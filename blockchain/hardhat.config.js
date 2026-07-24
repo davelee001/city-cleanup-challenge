@@ -1,7 +1,7 @@
 require("dotenv").config();
-require("@nomiclabs/hardhat-ethers");
+require("@nomicfoundation/hardhat-ethers");
 
-const { ALFAJORES_RPC, PRIVATE_KEY } = process.env;
+const { CELO_RPC_URL, CELO_TREASURY_PRIVATE_KEY } = process.env;
 
 module.exports = {
   solidity: "0.8.19",
@@ -10,9 +10,10 @@ module.exports = {
       url: "http://127.0.0.1:8545",
       // local chain usually injects accounts
     },
-    alfajores: {
-      url: ALFAJORES_RPC || "https://alfajores-forno.celo-testnet.org",
-      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
+    celoSepolia: {
+      url: CELO_RPC_URL || "https://forno.celo-sepolia.celo-testnet.org",
+      chainId: 11142220,
+      accounts: CELO_TREASURY_PRIVATE_KEY ? [CELO_TREASURY_PRIVATE_KEY] : []
     }
   }
 };
