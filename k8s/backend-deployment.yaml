@@ -51,6 +51,31 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: EVIDENCE_STORAGE_PATH
+        - name: EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD
+        - name: EVIDENCE_SCENE_HIGH_RISK_BELOW
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: EVIDENCE_SCENE_HIGH_RISK_BELOW
+        - name: EVIDENCE_SCENE_MEDIUM_RISK_BELOW
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: EVIDENCE_SCENE_MEDIUM_RISK_BELOW
+        - name: EVIDENCE_SYNTHETIC_HIGH_RISK_AT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: EVIDENCE_SYNTHETIC_HIGH_RISK_AT
+        - name: EVIDENCE_SYNTHETIC_MEDIUM_RISK_AT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: EVIDENCE_SYNTHETIC_MEDIUM_RISK_AT
         - name: CORS_ORIGIN
           valueFrom:
             configMapKeyRef:
