@@ -30,8 +30,8 @@ const SearchFilter = ({ onSearch, onFilterChange, theme }) => {
       {/* Search Input */}
       <TextInput
         style={[styles.searchInput, theme.text, { color: theme.text.color }]}
-        placeholder="Search records..."
-        placeholderTextColor={theme.text.color}
+        placeholder="Search cleanup records"
+        placeholderTextColor="#7189A2"
         value={searchQuery}
         onChangeText={handleSearch}
       />
@@ -79,16 +79,17 @@ const SearchFilter = ({ onSearch, onFilterChange, theme }) => {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: 15,
+    padding: 16,
   },
   searchInput: {
+    minHeight: 48,
+    backgroundColor: '#091B30',
     borderWidth: 1,
     borderColor: '#315574',
-    borderRadius: 8,
+    borderRadius: 11,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 14,
     fontSize: 14,
   },
   filterContainer: {
@@ -96,15 +97,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   filterTag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
     borderRadius: 16,
     marginRight: 8,
     borderWidth: 1,
   },
   filterTagActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#245F9A',
+    borderColor: '#4B91D4',
   },
   filterTagInactive: {
     backgroundColor: '#132A46',
