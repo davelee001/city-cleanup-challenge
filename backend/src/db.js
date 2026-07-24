@@ -14,6 +14,31 @@ const databasePath = configuredDatabasePath
 fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 const db = new sqlite3.Database(databasePath);
 
+function ensureColumns(tableName, columns, afterStatements = []) {
+  db.all(`PRAGMA table_info(${tableName})`, (error, existingColumns) => {
+    if (error) {
+      console.error(`Error reading ${tableName} schema:`, error);
+      return;
+    }
+    const existingNames = new Set(existingColumns.map((column) => column.name));
+    db.serialize(() => {
+      for (const [columnName, definition] of Object.entries(columns)) {
+        if (!existingNames.has(columnName)) {
+          db.run(
+            `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`,
+            (alterError) => {
+              if (alterError) {
+                console.error(`Error adding ${tableName}.${columnName}:`, alterError);
+              }
+            }
+          );
+        }
+      }
+      afterStatements.forEach((statement) => db.run(statement));
+    });
+  });
+}
+
 db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
