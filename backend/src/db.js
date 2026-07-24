@@ -1,11 +1,18 @@
 // SQLite database setup for users and posts
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 // Import enhanced features migration
 const { runMigration: runEnhancedFeaturesMigration } = require('./migrations/enhance-image-features');
 
-const db = new sqlite3.Database(path.join(__dirname, '../city-cleanup.db'));
+const configuredDatabasePath = process.env.DATABASE_PATH;
+const databasePath = configuredDatabasePath
+  ? path.resolve(configuredDatabasePath)
+  : path.join(__dirname, '../city-cleanup.db');
+
+fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+const db = new sqlite3.Database(databasePath);
 
 db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS users (
