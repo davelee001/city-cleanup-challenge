@@ -31,9 +31,32 @@ See [City Cleanup Reward Product Rules](docs/PRODUCT_RULES.md) for the complete 
 - Standardized the frontend on a cohesive dark-blue palette with readable blue-gray text and preserved semantic status colors.
 - Applied a simple system sans-serif typography stack across web, iOS, and Android, with moderate heading and control weights.
 - Added signed JWT access tokens, rotating refresh tokens, revocation, role checks, and resource ownership enforcement.
-- Verified all 36 backend tests and a clean production frontend build.
+- Verified the authentication foundation and a clean production frontend build.
 
-The application is still **pre-deployment**. Evidence verification, production storage, dependency security remediation, and Celo testnet integration remain release blockers.
+### Phase 3 - Cleanup Evidence Foundation
+
+- Added authenticated before-and-after cleanup evidence submission from the app.
+- Added consented GPS coordinates, capture timestamps, waste categories, item
+  count or estimated weight, and cleanup notes.
+- Added server-side image validation and SHA-256 exact duplicate detection.
+- Automatically reject exact duplicates and route all remaining evidence to
+  manual review until advanced verification signals are ready.
+- Store evidence privately under persistent application storage and enforce
+  owner/admin access on records and images.
+- Record immutable submission-state transitions, review decisions, and reasons.
+- Added admin approval/rejection with self-review prevention and one-time user
+  appeals.
+- Added an authenticated frontend submission history and review queue with
+  private before/after previews.
+- Added tests covering authentication, privacy, duplicates, appeals, and review
+  permissions; all 41 backend tests pass.
+
+See [Phase 3 Evidence Foundation](docs/PHASE_3_EVIDENCE.md) for the API,
+lifecycle, security model, and remaining verification work.
+
+The application is still **pre-deployment**. Perceptual and synthetic-image
+verification, production cloud storage, dependency security remediation, and
+Celo testnet integration remain release blockers.
 
 ## 🚀 Latest Updates (v2.9 - March 3, 2026)
 
