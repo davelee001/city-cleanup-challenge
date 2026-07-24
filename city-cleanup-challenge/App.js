@@ -8,6 +8,7 @@ import Profile from './Profile';
 import Events from './Events';
 import EventMap from './EventMap';
 import Progress from './Progress';
+import Evidence from './Evidence';
 import Dashboard from './Dashboard';
 import AdminPanel from './AdminPanel';
 import SubscriptionDashboard from './SubscriptionDashboard';
