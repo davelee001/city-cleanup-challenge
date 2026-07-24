@@ -435,6 +435,37 @@ export default function Evidence({ userRole = 'user' }) {
                   <ProtectedEvidenceImage path={submission.images.after} />
                 </View>
               </View>
+              {userRole === 'admin' && submission.verification ? (
+                <View style={styles.riskPanel}>
+                  <Text style={styles.riskTitle}>
+                    Verification {submission.verificationVersion || submission.verification.version}
+                  </Text>
+                  <Text style={styles.riskText}>
+                    Perceptual duplicate:{' '}
+                    {submission.verification.perceptualDuplicate?.matched
+                      ? `match at distance ${submission.verification.perceptualDuplicate.distance}`
+                      : 'no close match'}
+                  </Text>
+                  <Text style={styles.riskText}>
+                    Scene consistency:{' '}
+                    {submission.verification.sceneConsistency?.riskLevel || 'not scored'}
+                    {' '}({submission.verification.sceneConsistency?.score ?? '—'})
+                  </Text>
+                  <Text style={styles.riskText}>
+                    Synthetic-image risk:{' '}
+                    {submission.verification.syntheticImageRisk?.level || 'not scored'}
+                    {' '}({submission.verification.syntheticImageRisk?.score ?? '—'})
+                  </Text>
+                  {submission.verification.reviewReasons?.length ? (
+                    <Text style={styles.riskSignals}>
+                      Signals: {submission.verification.reviewReasons.join(', ')}
+                    </Text>
+                  ) : null}
+                  <Text style={styles.riskDisclaimer}>
+                    These signals support human review and are not proof of manipulation.
+                  </Text>
+                </View>
+              ) : null}
               {submission.rejectionReason ? (
                 <Text style={styles.rejection}>{submission.rejectionReason}</Text>
               ) : null}
@@ -599,6 +630,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#091B30',
   },
+  riskPanel: {
+    backgroundColor: '#091B30',
+    borderColor: '#315574',
+    borderWidth: 1,
+    borderRadius: 10,
+    marginTop: 12,
+    padding: 12,
+  },
+  riskTitle: { color: '#BBD8F7', fontSize: 13, fontWeight: '600', marginBottom: 6 },
+  riskText: { color: '#AFC0D4', fontSize: 12, lineHeight: 18 },
+  riskSignals: { color: '#F5D67A', fontSize: 12, lineHeight: 18, marginTop: 5 },
+  riskDisclaimer: { color: '#7890AA', fontSize: 11, lineHeight: 16, marginTop: 7 },
   appealButton: {
     alignSelf: 'flex-start',
     backgroundColor: '#315A83',
