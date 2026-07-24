@@ -45,6 +45,7 @@
     "prom-client": "^15.1.0",
     "sharp": "^0.33.2",
     "sqlite3": "^5.1.7",
+    "viem": "^2.38.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
