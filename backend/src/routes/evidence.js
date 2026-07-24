@@ -171,6 +171,8 @@ function serializeSubmission(row) {
     status: row.status,
     duplicateOf: row.duplicate_of,
     verification,
+    verificationVersion: row.verification_version,
+    riskLevel: row.risk_level,
     rejectionReason: row.rejection_reason,
     appealReason: row.appeal_reason,
     reviewedAt: row.reviewed_at,
@@ -289,8 +291,8 @@ function createEvidenceRouter(db) {
              user_id, waste_category, item_count, estimated_weight, notes,
              latitude, longitude, location_accuracy, captured_before_at,
              captured_after_at, status, duplicate_of, verification_summary,
-             rejection_reason, updated_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+             verification_version, risk_level, rejection_reason, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
           [
             req.user.id,
             values.wasteCategory,
@@ -305,6 +307,8 @@ function createEvidenceRouter(db) {
             finalStatus,
             duplicateOf,
             verificationSummary,
+            verification.version,
+            verification.overallRisk,
             rejectionReason,
           ]
         );
@@ -322,13 +326,16 @@ function createEvidenceRouter(db) {
           await dbRun(
             db,
             `INSERT INTO cleanup_evidence_files (
-               submission_id, kind, storage_path, sha256, mime_type, byte_size, original_name
-             ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+               submission_id, kind, storage_path, sha256, perceptual_hash,
+               image_metadata, mime_type, byte_size, original_name
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               created.lastID,
               kind,
               storagePath,
               image.hash,
+              verification.images[kind].perceptualHash,
+              JSON.stringify(verification.images[kind]),
               image.mimeType,
               file.size,
               path.basename(file.originalname || `${kind}.image`),
@@ -358,7 +365,11 @@ function createEvidenceRouter(db) {
           [
             created.lastID,
             finalStatus,
-            isDuplicate ? rejectionReason : 'Awaiting human verification of remaining risk signals',
+            isDuplicate
+              ? rejectionReason
+              : `Awaiting human verification (${verification.overallRisk} risk: ${
+                verification.reviewReasons.join(', ') || 'no elevated signals'
+              })`,
           ]
         );
         await dbRun(db, 'COMMIT');
