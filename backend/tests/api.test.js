@@ -158,6 +158,28 @@ describe('JWT authentication and authorization', () => {
     expect(response.body.success).toBe(true);
   });
 
+  it('protects the reward policy and exposes it to authenticated users', async () => {
+    const unauthenticated = await request(app).get('/api/v1/rewards/policy');
+    expect(unauthenticated.statusCode).toBe(401);
+
+    const authenticated = await request(app)
+      .get('/api/v1/rewards/policy')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(authenticated.statusCode).toBe(200);
+    expect(authenticated.body.policy).toMatchObject({
+      version: 'celo-testnet-v1',
+      network: 'Celo Sepolia',
+      baseRewardCelo: '0.01',
+    });
+  });
+
+  it('restricts reward creation and payout to administrators', async () => {
+    const response = await request(app)
+      .post('/api/v1/rewards/submissions/999999/claim')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(response.statusCode).toBe(403);
+  });
+
   it('rotates refresh tokens and rejects reuse of the old token', async () => {
     const rotated = await request(app)
       .post('/api/v1/auth/refresh')
