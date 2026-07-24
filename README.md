@@ -4,7 +4,8 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 
 ## Current Build Status (July 23, 2026)
 
-Phase 1 and Phase 2 of the current MVP build are complete.
+Phase 1, Phase 2, and the Phase 3 evidence foundation of the current MVP build
+are complete.
 
 ### Phase 1 - Product Foundation
 
