@@ -54,9 +54,27 @@ See [City Cleanup Reward Product Rules](docs/PRODUCT_RULES.md) for the complete 
 See [Phase 3 Evidence Foundation](docs/PHASE_3_EVIDENCE.md) for the API,
 lifecycle, security model, and remaining verification work.
 
-The application is still **pre-deployment**. Perceptual and synthetic-image
-verification, production cloud storage, dependency security remediation, and
-Celo testnet integration remain release blockers.
+### Phase 4 - Advanced Evidence Verification
+
+- Added versioned perceptual fingerprints and Hamming-distance matching for
+  resized and recompressed duplicates.
+- Added explainable before/after scene-consistency, image-quality, and selected
+  capture-metadata signals.
+- Added cautious synthetic-image risk indicators that explicitly remain
+  heuristic reviewer aids rather than proof.
+- Persisted fingerprints, analysis metadata, risk levels, thresholds, and
+  verification versions with backward-compatible schema updates.
+- Added configurable verification thresholds to local, production, Docker, and
+  Kubernetes environments.
+- Added reviewer-facing risk details and expanded automated coverage to 43
+  passing backend tests.
+
+See [Phase 4 Advanced Verification](docs/PHASE_4_VERIFICATION.md) for algorithms,
+thresholds, decision policy, limitations, and pilot requirements.
+
+The application is still **pre-deployment**. Verification threshold calibration,
+production cloud storage, dependency security remediation, and Celo testnet
+integration remain release blockers.
 
 ## 🚀 Latest Updates (v2.9 - March 3, 2026)
 
