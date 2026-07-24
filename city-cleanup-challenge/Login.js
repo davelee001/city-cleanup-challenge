@@ -137,7 +137,7 @@ export default function Login({ onLogin, onSwitchToSignup }) {
               {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.buttonText}>Sign in securely</Text>
+                <Text style={styles.buttonText}>Sign in</Text>
               )}
             </TouchableOpacity>
 
