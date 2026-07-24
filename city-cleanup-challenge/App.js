@@ -276,7 +276,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#07182D' },
   homeContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 22,
     paddingVertical: 42,
