@@ -94,6 +94,21 @@ thresholds, decision policy, limitations, and pilot requirements.
 - Delivered these interface and connectivity changes as 14 focused commits on
   `main`.
 
+### Logged-in Analytics Workspace Update
+
+- Reworked the impact analytics screen around cleanup activity, verification
+  progress, measurable outcomes, and platform operations.
+- Removed the generic theme toggle, mock oil-field model, and unrelated
+  industrial terminology from the authenticated experience.
+- Added professional member and administrator controls, platform statistics,
+  recent activity, live analytics, reporting, and system-status panels.
+- Updated the interactive map with cleanup locations in Juba and clearer
+  activity states.
+- Refined search filters, live chart presentation, export controls, responsive
+  dark-blue styling, and accessibility labels.
+- Changed five frontend files and delivered the work as six focused commits on
+  `main`; `Dashboard.js` received separate redesign and accessibility commits.
+
 The application is still **pre-deployment**. Verification threshold calibration,
 production cloud storage, dependency security remediation, and Celo testnet
 integration remain release blockers.
