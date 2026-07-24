@@ -81,6 +81,42 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: CORS_ORIGIN
+        - name: CELO_REWARDS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CELO_REWARDS_ENABLED
+        - name: CELO_REWARD_DRY_RUN
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CELO_REWARD_DRY_RUN
+        - name: CELO_RPC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CELO_RPC_URL
+        - name: CELO_CHAIN_ID
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CELO_CHAIN_ID
+        - name: CELO_REWARD_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CELO_REWARD_CONTRACT_ADDRESS
+        - name: CELO_REQUIRED_CONFIRMATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CELO_REQUIRED_CONFIRMATIONS
+        - name: CELO_TREASURY_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: CELO_TREASURY_PRIVATE_KEY
+              optional: true
         - name: JWT_ACCESS_SECRET
           valueFrom:
             secretKeyRef:
