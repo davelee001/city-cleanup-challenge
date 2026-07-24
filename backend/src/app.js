@@ -17,6 +17,7 @@ const {
 } = require('./services/enhancedImageUpload');
 const { initializeGamificationAPI } = require('./routes/gamification');
 const { createEvidenceRouter } = require('./routes/evidence');
+const { createRewardRouter } = require('./routes/rewards');
 const GamificationIntegration = require('./services/gamificationIntegration');
 const config = require('./config');
 const {
@@ -232,6 +233,7 @@ function createApp() {
 	// Everything below this point is private and requires a verified access token.
 	apiRouter.use(authenticateUser);
 	apiRouter.use('/evidence', createEvidenceRouter(db));
+	apiRouter.use('/rewards', createRewardRouter(db));
 
 	app.get('/ready', (req, res) => {
 		db.get('SELECT 1 AS ready', (err) => {
