@@ -60,11 +60,18 @@ All endpoints require a JWT access token.
 - `PATCH /api/v1/evidence/submissions/:id/review` — Approve or reject as an
   administrator.
 
-## Deferred to the Next Verification Iteration
+## Delivered in Phase 4
 
-- Perceptual hashes for resized, cropped, and recompressed images.
-- Scene-consistency and manipulation signals.
-- Synthetic-image risk scoring.
+- Difference-hash perceptual matching for resized and recompressed images.
+- Versioned scene-consistency, image-quality, and integrity-risk signals.
+- Configurable risk thresholds and reviewer-facing explanations.
+
+See [Phase 4 Advanced Verification](PHASE_4_VERIFICATION.md).
+
+## Still Deferred
+
+- Crop/rotation-resistant matching beyond normalized difference hashes.
+- Independently evaluated image-forensics and synthetic-image models.
 - Device, velocity, account, and wallet risk signals.
 - A dedicated reviewer role separate from administrator.
 - Expiring object-storage URLs and production cloud storage.
