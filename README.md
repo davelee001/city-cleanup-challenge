@@ -4,8 +4,9 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 
 ## Current Build Status (July 24, 2026)
 
-Phase 1, Phase 2, Phase 3 evidence submission, and the Phase 4 advanced
-verification foundation of the current MVP build are complete.
+Phase 1, Phase 2, Phase 3 evidence submission, the Phase 4 advanced
+verification foundation, and the Phase 5 Celo Sepolia reward foundation of the
+current MVP build are complete.
 
 ### Phase 1 - Product Foundation
 
@@ -72,6 +73,25 @@ lifecycle, security model, and remaining verification work.
 See [Phase 4 Advanced Verification](docs/PHASE_4_VERIFICATION.md) for algorithms,
 thresholds, decision policy, limitations, and pilot requirements.
 
+### Phase 5 - Celo Sepolia Reward Foundation
+
+- Defined the versioned pilot reward amounts, waste and impact multipliers,
+  manual-approval threshold, and rolling account/wallet payout limits.
+- Added a durable reward ledger that records the exact calculation, lifecycle,
+  transaction hash, confirmations, and failures for every approved submission.
+- Added authenticated owner/admin visibility and administrator-only claim and
+  payout endpoints.
+- Added an idempotent Celo Sepolia payment service with safe local simulation,
+  RPC chain validation, and confirmation tracking.
+- Added `RewardTreasury`, whose on-chain paid-claim registry permanently rejects
+  duplicate payouts.
+- Added automated tests for calculations, limits, repeated and concurrent
+  requests, on-chain duplicate detection, wallet verification, and contract
+  permissions.
+
+See [Phase 5 Celo Rewards](docs/PHASE_5_CELO_REWARDS.md) for the policy,
+idempotency model, API, configuration, and deployment safeguards.
+
 ### Phase 4 Delivery Snapshot
 
 - Delivered the verification foundation as 20 focused commits on `main`.
@@ -110,8 +130,9 @@ thresholds, decision policy, limitations, and pilot requirements.
   `main`; `Dashboard.js` received separate redesign and accessibility commits.
 
 The application is still **pre-deployment**. Verification threshold calibration,
-production cloud storage, dependency security remediation, and Celo testnet
-integration remain release blockers.
+production cloud storage, dependency security remediation, wallet ownership
+verification, contract deployment/funding, and a controlled Celo Sepolia pilot
+remain release blockers.
 
 ## 🚀 Latest Updates (v2.9 - March 3, 2026)
 
