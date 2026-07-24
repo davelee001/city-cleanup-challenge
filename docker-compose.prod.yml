@@ -9,6 +9,7 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - DATABASE_PATH=/app/data/city-cleanup.db
+      - EVIDENCE_STORAGE_PATH=/app/data/evidence
       - CORS_ORIGIN=${CORS_ORIGIN}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
