@@ -78,11 +78,73 @@ export default function App() {
 
     return (
       <ScrollView contentContainerStyle={styles.homeContainer}>
-        <View style={styles.homeHeader}>
-          <View>
-            <Text style={styles.eyebrow}>CITY CLEANUP</Text>
-            <Text style={styles.welcome}>Welcome back, {user}</Text>
-            <Text style={styles.welcomeSubtitle}>Choose where you want to make an impact today.</Text>
+        <View style={styles.dashboardShell}>
+          <View style={styles.homeHeader}>
+            <View style={styles.brand}>
+              <View style={styles.brandMark}>
+                <Text style={styles.brandMarkText}>♻</Text>
+              </View>
+              <View>
+                <Text style={styles.brandName}>CITY CLEANUP</Text>
+                <Text style={styles.brandContext}>Impact workspace</Text>
+              </View>
+            </View>
+            <View style={styles.accountControls}>
+              <View style={styles.accountBadge}>
+                <View style={styles.onlineDot} />
+                <Text style={styles.accountBadgeText}>{userRole === 'admin' ? 'Administrator' : 'Member'}</Text>
+              </View>
+              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.logoutText}>Sign out</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.heroPanel}>
+            <View style={styles.heroCopy}>
+              <Text style={styles.eyebrow}>YOUR CLEANUP DASHBOARD</Text>
+              <Text style={styles.welcome}>Welcome back, {user}</Text>
+              <Text style={styles.welcomeSubtitle}>
+                Document your work, follow its verification, and see the impact you create.
+              </Text>
+              <View style={styles.heroActions}>
+                <TouchableOpacity
+                  style={styles.primaryAction}
+                  onPress={() => setActiveView('evidence')}
+                  activeOpacity={0.86}
+                >
+                  <Text style={styles.primaryActionIcon}>＋</Text>
+                  <Text style={styles.primaryActionText}>Submit cleanup evidence</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.secondaryAction}
+                  onPress={() => setActiveView('events')}
+                  activeOpacity={0.82}
+                >
+                  <Text style={styles.secondaryActionText}>Explore events</Text>
+                  <Text style={styles.secondaryActionArrow}>→</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.statusPanel}>
+              <Text style={styles.statusLabel}>ACCOUNT STATUS</Text>
+              <View style={styles.statusItem}>
+                <View style={styles.statusIcon}><Text style={styles.statusIconText}>✓</Text></View>
+                <View style={styles.statusCopy}>
+                  <Text style={styles.statusTitle}>Secure session</Text>
+                  <Text style={styles.statusHint}>Protected access is active</Text>
+                </View>
+              </View>
+              <View style={styles.statusDivider} />
+              <View style={styles.statusItem}>
+                <View style={styles.statusIcon}><Text style={styles.statusIconText}>◎</Text></View>
+                <View style={styles.statusCopy}>
+                  <Text style={styles.statusTitle}>Evidence verification</Text>
+                  <Text style={styles.statusHint}>Advanced review signals enabled</Text>
+                </View>
+              </View>
+            </View>
           </View>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Sign out</Text>
