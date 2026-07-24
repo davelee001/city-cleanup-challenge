@@ -5,6 +5,9 @@ const express = require('express');
 const multer = require('multer');
 const sharp = require('sharp');
 const { requireAdmin } = require('../middleware/auth');
+const {
+  verifyEvidencePair,
+} = require('../services/evidenceVerification');
 
 const EVIDENCE_ROOT = path.resolve(
   process.env.EVIDENCE_STORAGE_PATH || path.join(__dirname, '../../data/evidence')
@@ -228,16 +231,25 @@ function createEvidenceRouter(db) {
       }
 
       let existingMatch = null;
+      let priorFingerprints = [];
       try {
-        existingMatch = await dbGet(
-          db,
-          `SELECT submission_id, sha256
-           FROM cleanup_evidence_files
-           WHERE sha256 IN (?, ?)
-           ORDER BY id
-           LIMIT 1`,
-          [beforeImage.hash, afterImage.hash]
-        );
+        [existingMatch, priorFingerprints] = await Promise.all([
+          dbGet(
+            db,
+            `SELECT submission_id, sha256
+             FROM cleanup_evidence_files
+             WHERE sha256 IN (?, ?)
+             ORDER BY id
+             LIMIT 1`,
+            [beforeImage.hash, afterImage.hash]
+          ),
+          dbAll(
+            db,
+            `SELECT submission_id, kind, perceptual_hash
+             FROM cleanup_evidence_files
+             WHERE perceptual_hash IS NOT NULL`
+          ),
+        ]);
       } catch (error) {
         return res.status(500).json({ success: false, message: 'Unable to check duplicate evidence' });
       }
@@ -249,13 +261,23 @@ function createEvidenceRouter(db) {
       const rejectionReason = isDuplicate
         ? 'This evidence exactly matches an image that was already submitted.'
         : null;
-      const verificationSummary = JSON.stringify({
-        exactDuplicate: isDuplicate,
-        exactDuplicateSubmissionId: duplicateOf,
-        perceptualDuplicate: 'pending',
-        syntheticImageRisk: 'pending',
-        sceneConsistency: 'pending',
-      });
+      let verification;
+      try {
+        verification = await verifyEvidencePair({
+          beforeBuffer: beforeFile.buffer,
+          afterBuffer: afterFile.buffer,
+          priorFingerprints,
+          exactDuplicate: isDuplicate,
+          exactDuplicateSubmissionId: duplicateOf,
+        });
+      } catch (error) {
+        console.error('Evidence verification failed:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Unable to analyze cleanup evidence',
+        });
+      }
+      const verificationSummary = JSON.stringify(verification);
       const values = validation.value;
       const storedFiles = [];
 
