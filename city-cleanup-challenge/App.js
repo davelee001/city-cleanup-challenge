@@ -146,13 +146,17 @@ export default function App() {
               </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Sign out</Text>
-          </TouchableOpacity>
-        </View>
 
-        <View style={styles.grid}>
-          {items.map((item) => (
+          <View style={styles.sectionHeading}>
+            <View>
+              <Text style={styles.sectionTitle}>Workspace</Text>
+              <Text style={styles.sectionSubtitle}>Everything you need to plan, submit, and track cleanup work.</Text>
+            </View>
+            <Text style={styles.toolCount}>{items.length} tools</Text>
+          </View>
+
+          <View style={styles.grid}>
+            {items.map((item) => (
             <TouchableOpacity
               key={item.key}
               style={styles.gridButton}
