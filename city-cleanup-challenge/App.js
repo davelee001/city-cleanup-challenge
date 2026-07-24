@@ -163,11 +163,18 @@ export default function App() {
               onPress={() => setActiveView(item.key)}
               activeOpacity={0.82}
             >
-              <Text style={styles.gridIcon}>{item.icon}</Text>
+              <View style={styles.cardTop}>
+                <View style={styles.gridIconWrap}>
+                  <Text style={styles.gridIcon}>{item.icon}</Text>
+                </View>
+                <Text style={styles.cardArrow}>↗</Text>
+              </View>
+              <Text style={styles.cardGroup}>{item.group}</Text>
               <Text style={styles.gridText}>{item.title}</Text>
               <Text style={styles.gridHint}>{item.hint}</Text>
             </TouchableOpacity>
-          ))}
+            ))}
+          </View>
         </View>
       </ScrollView>
     );
