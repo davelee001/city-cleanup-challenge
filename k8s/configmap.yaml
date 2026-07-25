@@ -19,6 +19,9 @@ data:
   CELO_CHAIN_ID: "11142220"
   CELO_REWARD_CONTRACT_ADDRESS: ""
   CELO_REQUIRED_CONFIRMATIONS: "2"
+  WALLET_VERIFICATION_DOMAIN: "city-cleanup.example.com"
+  WALLET_VERIFICATION_URI: "https://city-cleanup.example.com"
+  WALLET_CHALLENGE_TTL_MS: "600000"
   CORS_ORIGIN: "https://city-cleanup.example.com"
 ---
 apiVersion: v1
