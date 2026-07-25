@@ -97,5 +97,9 @@ Administrators receive a dedicated **Reward operations** tool showing:
 - Configure the contract address and production verification domain.
 - Run a staged low-value payout, restart, reconciliation, pause, and duplicate
   retry exercise.
-- Add alerts for stuck broadcasts, failures, unexpected payout volume, and low
-  treasury balance.
+- Run and preserve the Phase 8 read-only preflight.
+- Validate stuck-broadcast, failure, preflight, and low-balance alerts with the
+  pilot operators.
+
+See [Phase 8 Celo Pilot Readiness](PHASE_8_CELO_PILOT_READINESS.md) for the
+implemented checks and controlled pilot sequence.
