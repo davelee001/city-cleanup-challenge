@@ -7,7 +7,9 @@ metadata:
     app: backend
     version: v1
 spec:
-  replicas: 3
+  # SQLite requires a single writer. Increase this only after migrating to a
+  # shared production database and validating multi-replica reward locking.
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -21,6 +23,10 @@ spec:
       labels:
         app: backend
         version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/api/metrics"
+        prometheus.io/port: "3001"
     spec:
       containers:
       - name: backend
@@ -111,6 +117,11 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: CELO_REQUIRED_CONFIRMATIONS
+        - name: CELO_TREASURY_MIN_BALANCE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: CELO_TREASURY_MIN_BALANCE
         - name: WALLET_VERIFICATION_DOMAIN
           valueFrom:
             configMapKeyRef:
@@ -126,6 +137,11 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: WALLET_CHALLENGE_TTL_MS
+        - name: METRICS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: METRICS_ENABLED
         - name: CELO_TREASURY_PRIVATE_KEY
           valueFrom:
             secretKeyRef:
@@ -159,7 +175,7 @@ spec:
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /health
+            path: /ready
             port: 3001
           initialDelaySeconds: 10
           periodSeconds: 5
@@ -198,12 +214,13 @@ metadata:
   name: backend-hpa
   namespace: city-cleanup
 spec:
+  # Deliberately fixed at one while SQLite is the persistence layer.
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: backend
-  minReplicas: 2
-  maxReplicas: 10
+  minReplicas: 1
+  maxReplicas: 1
   metrics:
   - type: Resource
     resource:
