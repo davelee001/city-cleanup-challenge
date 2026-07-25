@@ -6,9 +6,9 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 
 Phase 1, Phase 2, Phase 3 evidence submission, the Phase 4 advanced
 verification foundation, the Phase 5 Celo Sepolia reward foundation, the Phase
-6 wallet ownership experience, the Phase 7 reward operations foundation, and
-the Phase 8 Celo pilot-readiness foundation of the current MVP build are
-complete.
+6 wallet ownership experience, the Phase 7 reward operations foundation, the
+Phase 8 Celo pilot-readiness foundation, and the Phase 9 production-security
+foundation of the current MVP build are complete.
 
 ### Phase 1 - Product Foundation
 
@@ -142,6 +142,22 @@ control model, reconciliation behavior, API, audit coverage, and pilot runbook.
 See [Phase 8 Celo Pilot Readiness](docs/PHASE_8_CELO_PILOT_READINESS.md) for
 configuration rules, preflight usage, monitoring, and the controlled pilot
 sequence.
+
+### Phase 9 - Production Security Hardening
+
+- Upgraded actively used backend dependencies and removed all known production
+  dependency audit findings.
+- Migrated optional S3 storage from AWS SDK v2 to AWS SDK v3.
+- Added security headers, API and authentication rate limits, JSON body limits,
+  trusted-proxy controls, and stable abuse-limit errors.
+- Added fail-fast validation for security settings and enforced the production
+  dependency audit in CI.
+- Isolated automated tests from the developer database and evidence storage.
+- Recalibrated perceptual duplicate matching for Sharp 0.35 and recorded the
+  updated analysis as `phase9-v2`.
+
+See [Phase 9 Production Security](docs/PHASE_9_PRODUCTION_SECURITY.md) for the
+controls, configuration, audit boundary, and remaining deployment work.
 
 ### Phase 6 and Phase 7 Delivery Snapshot
 
@@ -414,7 +430,7 @@ Our development follows a **granular commit strategy** for maximum maintainabili
 ## Recent Enhancements (v2.3)
 
 🚀 **Complete DevOps Infrastructure** — Docker, Kubernetes, CI/CD with GitHub Actions
-📊 **Comprehensive Monitoring** — Prometheus, Grafana, Sentry, Application Insights
+📊 **Comprehensive Monitoring** — Prometheus, Grafana, and Sentry
 📝 **Log Aggregation** — Centralized logging with Loki and structured logging
 🔔 **Intelligent Alerting** — Multi-channel alerts with Prometheus and Alertmanager
 🏥 **Health Monitoring** — Advanced health checks and uptime monitoring
@@ -1171,7 +1187,6 @@ The comprehensive admin panel provides powerful management and analytics capabil
 - **Loki**: Centralized log aggregation
 - **Promtail**: Log shipping and processing
 - **Sentry**: Error tracking and performance monitoring
-- **Application Insights**: APM and distributed tracing
 - **Alertmanager**: Multi-channel alert routing
 - **Winston**: Structured logging service
 
@@ -1268,7 +1283,7 @@ defined in [Product Rules](docs/PRODUCT_RULES.md).
 ### Operational and Product Readiness
 
 - [ ] Verify AKS, ACR, ingress-nginx, cert-manager, Metrics Server, managed identity, CSI secrets, and storage.
-- [ ] Configure Sentry or Application Insights, Prometheus alerts, and real Alertmanager receivers.
+- [ ] Configure Sentry, Prometheus alerts, and real Alertmanager receivers.
 - [ ] Replace default monitoring credentials and restrict monitoring services from public access.
 - [ ] Add audit logs for authentication, administrative, moderation, and destructive actions.
 - [ ] Complete or hide unfinished social-dashboard sections.
