@@ -21,6 +21,7 @@ const { createRewardRouter } = require('./routes/rewards');
 const { createWalletRouter } = require('./routes/wallets');
 const GamificationIntegration = require('./services/gamificationIntegration');
 const config = require('./config');
+const metricsService = require('./services/metrics');
 const {
 	authenticateUser,
 	requireAdmin,
@@ -97,6 +98,30 @@ function createApp() {
 	}));
 	app.use(express.json());
 	app.use(morgan('dev'));
+	app.use(metricsService.requestMiddleware());
+
+	app.get('/api/metrics', async (req, res) => {
+		if (process.env.METRICS_ENABLED === 'false') {
+			return res.status(404).json({ success: false, message: 'Metrics are disabled' });
+		}
+		const metricsToken = process.env.METRICS_TOKEN;
+		if (
+			metricsToken
+			&& req.headers.authorization !== `Bearer ${metricsToken}`
+		) {
+			return res.status(401).json({ success: false, message: 'Metrics token required' });
+		}
+		try {
+			await metricsService.refreshRewardMetrics(db);
+			res.set('Content-Type', metricsService.getContentType());
+			return res.send(await metricsService.getMetrics());
+		} catch (error) {
+			return res.status(500).json({
+				success: false,
+				message: 'Unable to collect application metrics',
+			});
+		}
+	});
 
 	// Initialize gamification integration
 	const gamificationIntegration = config.features.gamification
