@@ -42,6 +42,10 @@ jobs:
         working-directory: ./backend
         run: npm run lint
 
+      - name: Audit production dependencies
+        working-directory: ./backend
+        run: npm run audit:prod
+
       - name: Run ESLint - Frontend
         working-directory: ./city-cleanup-challenge
         run: npm run lint
