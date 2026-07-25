@@ -7,14 +7,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install only packages shipped at runtime
+RUN npm ci --omit=dev
 
-# Copy application code
-COPY . .
+# Copy only runtime application code
+COPY --chown=node:node src ./src
+COPY --chown=node:node scripts ./scripts
 
-# Create data directory for SQLite
-RUN mkdir -p /app/data
+# Create writable runtime directories, then drop root privileges
+RUN mkdir -p /app/data /app/uploads \
+  && chown -R node:node /app/data /app/uploads
+USER node
 
 # Expose port
 EXPOSE 3001
