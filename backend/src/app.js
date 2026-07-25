@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
+const config = require('./config');
 const db = require('./db');
 const emitter = require('./events');
 const { upload, imageProcessor, cleanupTempFiles, getImageUrl } = require('./services/imageUpload');
@@ -20,8 +21,12 @@ const { createEvidenceRouter } = require('./routes/evidence');
 const { createRewardRouter } = require('./routes/rewards');
 const { createWalletRouter } = require('./routes/wallets');
 const GamificationIntegration = require('./services/gamificationIntegration');
-const config = require('./config');
 const metricsService = require('./services/metrics');
+const {
+	createApiRateLimiter,
+	createAuthRateLimiter,
+	createSecurityHeaders,
+} = require('./middleware/security');
 const {
 	authenticateUser,
 	requireAdmin,
@@ -92,13 +97,23 @@ emitter.on('plan:created', (plan) => {
 function createApp() {
 	const app = express();
 	app.set('db', db);
+	if (config.api.trustProxyHops > 0) {
+		app.set('trust proxy', config.api.trustProxyHops);
+	}
+	app.disable('x-powered-by');
+	app.use(createSecurityHeaders());
 	app.use(cors({
 		origin: config.cors.origin,
 		credentials: true
 	}));
-	app.use(express.json());
+	app.use(express.json({ limit: config.api.jsonBodyLimitBytes }));
 	app.use(morgan('dev'));
 	app.use(metricsService.requestMiddleware());
+	app.use('/api/v1', createApiRateLimiter(config));
+	app.use(
+		['/api/v1/signup', '/api/v1/login', '/api/v1/auth/refresh'],
+		createAuthRateLimiter(config)
+	);
 
 	app.get('/api/metrics', async (req, res) => {
 		if (process.env.METRICS_ENABLED === 'false') {
@@ -1268,6 +1283,17 @@ function createApp() {
 	// Initialize and mount social features API routes
 	const socialRouter = require('./routes/social');
 	app.use('/api/v1/social', socialRouter);
+
+	app.use((error, req, res, next) => {
+		if (error?.type === 'entity.too.large') {
+			return res.status(413).json({
+				success: false,
+				code: 'REQUEST_BODY_TOO_LARGE',
+				message: 'Request body exceeds the configured size limit',
+			});
+		}
+		return next(error);
+	});
 
 	return app;
 }
