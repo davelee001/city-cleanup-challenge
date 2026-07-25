@@ -80,6 +80,10 @@ Approving evidence attempts to create its reward claim automatically. Missing
 wallet verification or a reached cap creates a visible blocked claim instead of
 silently paying.
 
+Phase 7 adds the administrator payout queue, application-level emergency pause,
+audit trail, and receipt reconciliation. See [Phase 7 Reward
+Operations](PHASE_7_REWARD_OPERATIONS.md).
+
 ## Deployment
 
 From `blockchain/`:
@@ -93,4 +97,6 @@ npm run deploy:celo-sepolia
 
 Copy the printed contract address into the backend deployment secret/config.
 Keep rewards disabled until the contract owner, wallet-verification flow,
-treasury funding, and pilot monitoring have been reviewed.
+treasury funding, and pilot monitoring have been reviewed. Phase 6 provides the
+signed wallet-verification flow and member reward ledger; it still requires
+supported-wallet pilot testing.
