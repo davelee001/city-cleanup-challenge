@@ -39,6 +39,14 @@ describe('API Endpoints', () => {
     expect(res.body.user.location).toBe('Kampala, Uganda');
   });
 
+  it('exposes application and reward metrics for the internal monitoring stack', async () => {
+    const response = await request(app).get('/api/metrics');
+    expect(response.statusCode).toBe(200);
+    expect(response.text).toContain('city_cleanup_http_requests_total');
+    expect(response.text).toContain('city_cleanup_reward_payouts_paused');
+    expect(response.headers['content-type']).toContain('text/plain');
+  });
+
   it('should not signup with existing username', async () => {
     const username = `dupeuser-${suffix}`;
     await request(app).post('/api/v1/signup').send(signupData(username, { password: 'first-password' }));
