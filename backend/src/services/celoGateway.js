@@ -140,6 +140,38 @@ function createCeloGateway(options = {}) {
     });
   }
 
+  async function getPaymentStatus(hash) {
+    if (dryRun) {
+      return {
+        status: 'success',
+        blockNumber: 0n,
+        confirmations,
+        transactionHash: hash,
+        simulated: true,
+      };
+    }
+    const publicClient = createChainClient();
+    try {
+      const receipt = await publicClient.getTransactionReceipt({ hash });
+      const latestBlock = await publicClient.getBlockNumber();
+      const confirmationCount = latestBlock >= receipt.blockNumber
+        ? Number(latestBlock - receipt.blockNumber + 1n)
+        : 0;
+      return {
+        ...receipt,
+        confirmations: confirmationCount,
+      };
+    } catch (error) {
+      if (
+        error.name === 'TransactionReceiptNotFoundError'
+        || String(error.message).includes('could not be found')
+      ) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
   async function isClaimPaid(claimId) {
     if (dryRun || !contractAddress || !isAddress(contractAddress)) return false;
     const publicClient = createChainClient();
@@ -156,7 +188,11 @@ function createCeloGateway(options = {}) {
     chainId: celoSepolia.id,
     contractAddress: contractAddress || null,
     dryRun,
+    enabled,
+    getPaymentStatus,
     isClaimPaid,
+    requiredConfirmations:
+      Number.isInteger(confirmations) && confirmations > 0 ? confirmations : 2,
     waitForPayment,
   };
 }
