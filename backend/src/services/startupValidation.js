@@ -37,7 +37,12 @@ function validateRuntimeEnvironment(environment = process.env) {
     || String(environment.CELO_REWARD_DRY_RUN).toLowerCase() === 'true';
   const liveRewards = rewardsEnabled && !dryRun;
 
-  for (const name of ['CELO_REWARDS_ENABLED', 'CELO_REWARD_DRY_RUN', 'METRICS_ENABLED']) {
+  for (const name of [
+    'CELO_REWARDS_ENABLED',
+    'CELO_REWARD_DRY_RUN',
+    'METRICS_ENABLED',
+    'USE_CLOUD_STORAGE',
+  ]) {
     if (!isBooleanString(environment[name])) {
       errors.push(`${name} must be true or false`);
     }
@@ -62,6 +67,35 @@ function validateRuntimeEnvironment(environment = process.env) {
     const minimumBalance = Number(environment.CELO_TREASURY_MIN_BALANCE);
     if (!Number.isFinite(minimumBalance) || minimumBalance <= 0) {
       errors.push('CELO_TREASURY_MIN_BALANCE must be a positive CELO amount');
+    }
+  }
+  const numericRanges = [
+    ['API_RATE_LIMIT', 1, 10_000],
+    ['AUTH_RATE_LIMIT', 1, 1_000],
+    ['RATE_LIMIT_WINDOW_MS', 1_000, 3_600_000],
+    ['JSON_BODY_LIMIT_BYTES', 1_024, 10 * 1_024 * 1_024],
+    ['TRUST_PROXY_HOPS', 0, 10],
+  ];
+  for (const [name, minimum, maximum] of numericRanges) {
+    if (environment[name] !== undefined && environment[name] !== '') {
+      const value = Number(environment[name]);
+      if (!Number.isInteger(value) || value < minimum || value > maximum) {
+        errors.push(`${name} must be an integer between ${minimum} and ${maximum}`);
+      }
+    }
+  }
+  const cloudStorageEnabled = String(environment.USE_CLOUD_STORAGE).toLowerCase() === 'true';
+  if (cloudStorageEnabled) {
+    if (!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(environment.AWS_S3_BUCKET || '')) {
+      errors.push('AWS_S3_BUCKET must be a valid bucket name when cloud storage is enabled');
+    }
+    if (!environment.AWS_REGION || isPlaceholder(environment.AWS_REGION)) {
+      errors.push('AWS_REGION is required when cloud storage is enabled');
+    }
+    const accessKeyConfigured = Boolean(environment.AWS_ACCESS_KEY_ID);
+    const secretKeyConfigured = Boolean(environment.AWS_SECRET_ACCESS_KEY);
+    if (accessKeyConfigured !== secretKeyConfigured) {
+      errors.push('AWS access key ID and secret must be configured together');
     }
   }
 
