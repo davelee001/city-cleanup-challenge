@@ -2,10 +2,12 @@ const {
   createPublicClient,
   createWalletClient,
   encodePacked,
+  formatEther,
   getAddress,
   http,
   isAddress,
   keccak256,
+  parseEther,
 } = require('viem');
 const { privateKeyToAccount } = require('viem/accounts');
 const { celoSepolia } = require('viem/chains');
@@ -26,6 +28,20 @@ const REWARD_TREASURY_ABI = [
     name: 'paidClaims',
     stateMutability: 'view',
     inputs: [{ name: 'claimId', type: 'bytes32' }],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+  {
+    type: 'function',
+    name: 'owner',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'paused',
+    stateMutability: 'view',
+    inputs: [],
     outputs: [{ name: '', type: 'bool' }],
   },
 ];
@@ -183,6 +199,105 @@ function createCeloGateway(options = {}) {
     });
   }
 
+  async function inspectDeployment() {
+    const checkedAt = new Date().toISOString();
+    const minimumBalanceWei = parseEther(
+      String(process.env.CELO_TREASURY_MIN_BALANCE || '0.10')
+    );
+    const result = {
+      checkedAt,
+      chainId: celoSepolia.id,
+      rpc: { ok: false, url: rpcUrl, blockNumber: null, error: null },
+      contract: {
+        configured: Boolean(contractAddress && isAddress(contractAddress)),
+        address: contractAddress || null,
+        deployed: false,
+        owner: null,
+        paused: null,
+        error: null,
+      },
+      signer: {
+        configured: Boolean(privateKey),
+        address: null,
+        balanceCelo: null,
+        minimumBalanceCelo: formatEther(minimumBalanceWei),
+        funded: false,
+        matchesOwner: false,
+        error: null,
+      },
+      ready: false,
+    };
+    const publicClient = createChainClient();
+
+    try {
+      const [actualChainId, blockNumber] = await Promise.all([
+        publicClient.getChainId(),
+        publicClient.getBlockNumber(),
+      ]);
+      result.rpc.ok = actualChainId === celoSepolia.id;
+      result.rpc.actualChainId = actualChainId;
+      result.rpc.blockNumber = String(blockNumber);
+      if (!result.rpc.ok) {
+        result.rpc.error = `Expected chain ${celoSepolia.id}, received ${actualChainId}`;
+      }
+    } catch (error) {
+      result.rpc.error = String(error.message || error).slice(0, 300);
+    }
+
+    if (result.rpc.ok && result.contract.configured) {
+      try {
+        const address = getAddress(contractAddress);
+        const bytecode = await publicClient.getBytecode({ address });
+        result.contract.deployed = Boolean(bytecode && bytecode !== '0x');
+        if (result.contract.deployed) {
+          const [owner, contractPaused] = await Promise.all([
+            publicClient.readContract({
+              address,
+              abi: REWARD_TREASURY_ABI,
+              functionName: 'owner',
+            }),
+            publicClient.readContract({
+              address,
+              abi: REWARD_TREASURY_ABI,
+              functionName: 'paused',
+            }),
+          ]);
+          result.contract.owner = getAddress(owner);
+          result.contract.paused = contractPaused;
+        } else {
+          result.contract.error = 'No contract bytecode found at the configured address';
+        }
+      } catch (error) {
+        result.contract.error = String(error.message || error).slice(0, 300);
+      }
+    }
+
+    if (result.rpc.ok && privateKey) {
+      try {
+        const account = privateKeyToAccount(privateKey);
+        const balanceWei = await publicClient.getBalance({ address: account.address });
+        result.signer.address = account.address;
+        result.signer.balanceCelo = formatEther(balanceWei);
+        result.signer.funded = balanceWei >= minimumBalanceWei;
+        result.signer.matchesOwner = Boolean(
+          result.contract.owner
+          && result.contract.owner.toLowerCase() === account.address.toLowerCase()
+        );
+      } catch (error) {
+        result.signer.error = String(error.message || error).slice(0, 300);
+      }
+    }
+
+    result.ready = Boolean(
+      result.rpc.ok
+      && result.contract.deployed
+      && result.contract.paused === false
+      && result.signer.funded
+      && result.signer.matchesOwner
+    );
+    return result;
+  }
+
   return {
     broadcastPayment,
     chainId: celoSepolia.id,
@@ -190,6 +305,7 @@ function createCeloGateway(options = {}) {
     dryRun,
     enabled,
     getPaymentStatus,
+    inspectDeployment,
     isClaimPaid,
     requiredConfirmations:
       Number.isInteger(confirmations) && confirmations > 0 ? confirmations : 2,
