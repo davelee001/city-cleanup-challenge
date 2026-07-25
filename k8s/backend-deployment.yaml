@@ -111,6 +111,21 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: CELO_REQUIRED_CONFIRMATIONS
+        - name: WALLET_VERIFICATION_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: WALLET_VERIFICATION_DOMAIN
+        - name: WALLET_VERIFICATION_URI
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: WALLET_VERIFICATION_URI
+        - name: WALLET_CHALLENGE_TTL_MS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: WALLET_CHALLENGE_TTL_MS
         - name: CELO_TREASURY_PRIVATE_KEY
           valueFrom:
             secretKeyRef:
