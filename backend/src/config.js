@@ -28,6 +28,10 @@ const config = {
   api: {
     version: process.env.API_VERSION || 'v1',
     rateLimit: parseInt(process.env.API_RATE_LIMIT, 10) || 100,
+    authRateLimit: parseInt(process.env.AUTH_RATE_LIMIT, 10) || 20,
+    rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
+    jsonBodyLimitBytes: parseInt(process.env.JSON_BODY_LIMIT_BYTES, 10) || 1024 * 1024,
+    trustProxyHops: parseInt(process.env.TRUST_PROXY_HOPS, 10) || 0,
   },
 
   // JWT
