@@ -15,6 +15,8 @@ const {
   recordRewardAudit,
   setRewardPaused,
 } = require('../services/rewardOperations');
+const { runCeloPilotPreflight } = require('../services/celoPreflight');
+const metricsService = require('../services/metrics');
 
 function dbGet(db, sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -69,6 +71,32 @@ function createRewardRouter(db) {
         success: false,
         code: error.code || 'REWARD_QUEUE_FAILED',
         message: error.message || 'Unable to load reward queue',
+      });
+    }
+  });
+
+  router.post('/admin/preflight', requireAdmin, async (req, res) => {
+    try {
+      const preflight = await runCeloPilotPreflight(db);
+      metricsService.updateCeloPreflight(preflight);
+      await recordRewardAudit(db, {
+        actorUserId: req.user.id,
+        action: 'celo_preflight_run',
+        details: {
+          ready: preflight.ready,
+          checks: preflight.checks.map((check) => ({
+            name: check.name,
+            ok: check.ok,
+          })),
+        },
+      }).catch((error) => console.error('Unable to record reward audit:', error));
+      return res.json({ success: true, preflight });
+    } catch (error) {
+      metricsService.updateCeloPreflight({ ready: false, deployment: {} });
+      return res.status(502).json({
+        success: false,
+        code: 'CELO_PREFLIGHT_FAILED',
+        message: error.message || 'Unable to run Celo pilot preflight',
       });
     }
   });
