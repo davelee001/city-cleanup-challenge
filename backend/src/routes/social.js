@@ -805,7 +805,7 @@ router.post('/follow/:userId', authenticateUser, async (req, res) => {
 /**
  * GET /api/social/stats/:userId - Get user social statistics
  */
-router.get('/stats/:userId?', authenticateUser, async (req, res) => {
+router.get(['/stats', '/stats/:userId'], authenticateUser, async (req, res) => {
     try {
         const { userId } = req.params;
         const user_id = userId ? parseInt(userId) : req.user?.id;
