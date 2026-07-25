@@ -1,7 +1,7 @@
 const sharp = require('sharp');
 const exifr = require('exifr');
 
-const VERIFICATION_VERSION = 'phase4-v1';
+const VERIFICATION_VERSION = 'phase9-v2';
 function configuredNumber(name, fallback, minimum, maximum) {
   const parsed = Number(process.env[name]);
   return Number.isFinite(parsed) && parsed >= minimum && parsed <= maximum
@@ -11,7 +11,7 @@ function configuredNumber(name, fallback, minimum, maximum) {
 
 const PERCEPTUAL_DISTANCE_THRESHOLD = configuredNumber(
   'EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD',
-  8,
+  12,
   0,
   64
 );
