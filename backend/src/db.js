@@ -267,12 +267,51 @@ db.serialize(() => {
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS wallet_verification_challenges (
+    id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    wallet_address TEXT NOT NULL,
+    message TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    used_at TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS reward_controls (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    paused INTEGER NOT NULL DEFAULT 1,
+    pause_reason TEXT,
+    updated_by INTEGER,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (updated_by) REFERENCES users (id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS reward_audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payment_id INTEGER,
+    actor_user_id INTEGER,
+    action TEXT NOT NULL,
+    from_status TEXT,
+    to_status TEXT,
+    details TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES reward_payments (id) ON DELETE SET NULL,
+    FOREIGN KEY (actor_user_id) REFERENCES users (id)
+  )`);
+
+  db.run(`INSERT OR IGNORE INTO reward_controls (id, paused, pause_reason)
+    VALUES (1, 1, 'Rewards remain paused until the controlled testnet pilot is enabled')`);
+
   db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_submissions_user ON cleanup_submissions(user_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_submissions_status ON cleanup_submissions(status)');
   db.run('CREATE INDEX IF NOT EXISTS idx_cleanup_evidence_sha256 ON cleanup_evidence_files(sha256)');
   db.run('CREATE INDEX IF NOT EXISTS idx_submission_transitions_submission ON submission_transitions(submission_id)');
   db.run('CREATE INDEX IF NOT EXISTS idx_reward_payments_user_created ON reward_payments(user_id, created_at)');
   db.run('CREATE INDEX IF NOT EXISTS idx_reward_payments_wallet_created ON reward_payments(wallet_address, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_wallet_challenges_user_created ON wallet_verification_challenges(user_id, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_reward_audit_payment_created ON reward_audit_log(payment_id, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_reward_audit_actor_created ON reward_audit_log(actor_user_id, created_at)');
 
   ensureColumns('users', {
     celo_wallet_address: 'TEXT',
