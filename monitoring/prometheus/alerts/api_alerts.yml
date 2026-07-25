@@ -29,7 +29,7 @@ groups:
       # High CPU Usage
       - alert: HighCPUUsage
         expr: |
-          rate(process_cpu_seconds_total[5m]) > 0.8
+          rate(city_cleanup_process_cpu_seconds_total[5m]) > 0.8
         for: 10m
         labels:
           severity: warning
@@ -40,7 +40,7 @@ groups:
       # High Memory Usage
       - alert: HighMemoryUsage
         expr: |
-          process_resident_memory_bytes / 1024 / 1024 > 512
+          city_cleanup_process_resident_memory_bytes / 1024 / 1024 > 512
         for: 10m
         labels:
           severity: warning
@@ -90,3 +90,59 @@ groups:
         annotations:
           summary: "Low event creation rate"
           description: "Less than 1 event created per hour"
+
+      # Reward broadcast awaiting reconciliation
+      - alert: RewardBroadcastStuck
+        expr: city_cleanup_reward_oldest_broadcast_age_seconds > 900
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "A CELO reward broadcast is stuck"
+          description: "The oldest unconfirmed reward broadcast is {{ $value }} seconds old"
+
+      # Failed reward records require operator review
+      - alert: RewardFailuresPresent
+        expr: city_cleanup_reward_payments{status="failed"} > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Failed reward payments require review"
+          description: "{{ $value }} reward payment records are in failed state"
+
+      # Pilot safeguard: more than ten newly confirmed rewards in one hour
+      - alert: UnexpectedRewardVolume
+        expr: delta(city_cleanup_reward_payments{status="confirmed"}[1h]) > 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Unexpected CELO reward volume"
+          description: "{{ $value }} rewards were newly confirmed during the last hour"
+
+      # Most recent pilot readiness check failed
+      - alert: CeloPilotPreflightFailed
+        expr: |
+          (city_cleanup_celo_preflight_ready == 0)
+          and
+          (city_cleanup_celo_preflight_last_run_timestamp_seconds > 0)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Celo pilot preflight is not ready"
+          description: "The most recent read-only Celo pilot preflight did not pass"
+
+      # Treasury signer cannot cover the configured pilot minimum
+      - alert: CeloTreasuryBalanceLow
+        expr: |
+          (city_cleanup_celo_treasury_balance < 0.10)
+          and
+          (city_cleanup_celo_preflight_last_run_timestamp_seconds > 0)
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Celo Sepolia treasury balance is low"
+          description: "The configured treasury signer has {{ $value }} CELO"
