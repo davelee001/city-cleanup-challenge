@@ -65,6 +65,43 @@ class PrometheusMetrics {
       labelNames: ['event_id'],
       registers: [this.register],
     });
+
+    this.rewardPayments = new promClient.Gauge({
+      name: 'city_cleanup_reward_payments',
+      help: 'Current reward payment records by status',
+      labelNames: ['status'],
+      registers: [this.register],
+    });
+
+    this.rewardPaused = new promClient.Gauge({
+      name: 'city_cleanup_reward_payouts_paused',
+      help: 'Whether application-level reward payouts are paused',
+      registers: [this.register],
+    });
+
+    this.oldestBroadcastAge = new promClient.Gauge({
+      name: 'city_cleanup_reward_oldest_broadcast_age_seconds',
+      help: 'Age in seconds of the oldest unconfirmed reward broadcast',
+      registers: [this.register],
+    });
+
+    this.celoPreflightReady = new promClient.Gauge({
+      name: 'city_cleanup_celo_preflight_ready',
+      help: 'Whether the most recent Celo pilot preflight passed',
+      registers: [this.register],
+    });
+
+    this.celoPreflightLastRun = new promClient.Gauge({
+      name: 'city_cleanup_celo_preflight_last_run_timestamp_seconds',
+      help: 'Unix timestamp of the most recent Celo pilot preflight',
+      registers: [this.register],
+    });
+
+    this.celoTreasuryBalance = new promClient.Gauge({
+      name: 'city_cleanup_celo_treasury_balance',
+      help: 'Configured Celo treasury signer balance in CELO',
+      registers: [this.register],
+    });
   }
 
   /**
@@ -127,6 +164,44 @@ class PrometheusMetrics {
    */
   trackError(method, route, errorType) {
     this.httpRequestErrors.inc({ method, route, error_type: errorType });
+  }
+
+  async refreshRewardMetrics(db) {
+    const dbAll = (sql, params = []) => new Promise((resolve, reject) => {
+      db.all(sql, params, (error, rows) => {
+        if (error) reject(error);
+        else resolve(rows);
+      });
+    });
+    const dbGet = (sql, params = []) => new Promise((resolve, reject) => {
+      db.get(sql, params, (error, row) => {
+        if (error) reject(error);
+        else resolve(row);
+      });
+    });
+    const [statuses, controls, oldest] = await Promise.all([
+      dbAll('SELECT status, COUNT(*) AS total FROM reward_payments GROUP BY status'),
+      dbGet('SELECT paused FROM reward_controls WHERE id = 1'),
+      dbGet(
+        `SELECT broadcast_at FROM reward_payments
+         WHERE status = 'broadcast' AND broadcast_at IS NOT NULL
+         ORDER BY broadcast_at ASC LIMIT 1`
+      ),
+    ]);
+    this.rewardPayments.reset();
+    statuses.forEach((row) => this.rewardPayments.set({ status: row.status }, row.total));
+    this.rewardPaused.set(controls ? (controls.paused ? 1 : 0) : 1);
+    const broadcastAge = oldest?.broadcast_at
+      ? Math.max(0, (Date.now() - new Date(`${oldest.broadcast_at.replace(' ', 'T')}Z`).getTime()) / 1000)
+      : 0;
+    this.oldestBroadcastAge.set(Number.isFinite(broadcastAge) ? broadcastAge : 0);
+  }
+
+  updateCeloPreflight(preflight) {
+    this.celoPreflightReady.set(preflight?.ready ? 1 : 0);
+    this.celoPreflightLastRun.set(Date.now() / 1000);
+    const balance = Number(preflight?.deployment?.signer?.balanceCelo);
+    if (Number.isFinite(balance)) this.celoTreasuryBalance.set(balance);
   }
 
   /**
