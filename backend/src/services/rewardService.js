@@ -115,6 +115,19 @@ async function getRewardPayment(db, submissionId) {
   return serializePayment(row);
 }
 
+async function listUserRewardPayments(db, userId, limit = 50) {
+  const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 100);
+  const rows = await dbAll(
+    db,
+    `SELECT * FROM reward_payments
+     WHERE user_id = ?
+     ORDER BY created_at DESC, id DESC
+     LIMIT ?`,
+    [userId, safeLimit]
+  );
+  return rows.map(serializePayment);
+}
+
 async function reserveWithinCaps(db, submission, walletAddress, requestedWei, policy, now) {
   const reservedStatuses = [
     'pending',
@@ -242,6 +255,83 @@ async function ensureRewardClaim(db, submissionId, options = {}) {
   return getRewardPayment(db, submission.id);
 }
 
+async function reactivateWalletBlockedClaims(db, userId, walletAddress, options = {}) {
+  if (!walletAddress || !isAddress(walletAddress)) {
+    throw new RewardError(
+      'WALLET_NOT_VERIFIED',
+      'A valid verified wallet is required',
+      409
+    );
+  }
+  const policy = options.policy || createRewardPolicy();
+  const now = options.now || new Date();
+  const normalizedWallet = getAddress(walletAddress);
+  const rows = await dbAll(
+    db,
+    `SELECT submission_id
+     FROM reward_payments
+     WHERE user_id = ? AND status = 'blocked'
+       AND failure_code = 'WALLET_NOT_VERIFIED'
+     ORDER BY created_at ASC, id ASC`,
+    [userId]
+  );
+  let reactivated = 0;
+
+  for (const row of rows) {
+    const submission = await loadSubmission(db, row.submission_id);
+    if (!submission || submission.status !== 'approved') continue;
+    const calculation = calculateReward(submission, policy);
+    const amountWei = await reserveWithinCaps(
+      db,
+      submission,
+      normalizedWallet,
+      calculation.amountWei,
+      policy,
+      now
+    );
+    const status = amountWei === 0n
+      ? 'blocked'
+      : amountWei >= policy.manualApprovalThresholdWei
+        ? 'awaiting_manual_approval'
+        : 'pending';
+    const failureCode = amountWei === 0n ? 'PAYOUT_CAP_REACHED' : null;
+    const failureReason = amountWei === 0n
+      ? 'The account or wallet payout cap has been reached'
+      : null;
+    const calculationRecord = {
+      baseRewardWei: calculation.baseRewardWei.toString(),
+      category: calculation.category,
+      categoryMultiplierBps: calculation.categoryMultiplierBps,
+      impactMultiplierBps: calculation.impactMultiplierBps,
+      combinedMultiplierBps: calculation.combinedMultiplierBps,
+      calculatedWei: calculation.calculatedWei.toString(),
+      requestedWei: calculation.amountWei.toString(),
+      cappedBySubmissionLimit: calculation.capped,
+      cappedByPeriodLimit: amountWei < calculation.amountWei,
+    };
+    const updated = await dbRun(
+      db,
+      `UPDATE reward_payments
+       SET wallet_address = ?, amount_wei = ?, status = ?, calculation = ?,
+           failure_code = ?, failure_reason = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE submission_id = ? AND status = 'blocked'
+         AND failure_code = 'WALLET_NOT_VERIFIED'`,
+      [
+        normalizedWallet,
+        amountWei.toString(),
+        status,
+        JSON.stringify(calculationRecord),
+        failureCode,
+        failureReason,
+        submission.id,
+      ]
+    );
+    if (updated.changes === 1 && amountWei > 0n) reactivated += 1;
+  }
+
+  return { reactivated, examined: rows.length };
+}
+
 async function processRewardPayment(db, submissionId, options = {}) {
   const gateway = options.gateway || createCeloGateway();
   let payment = await ensureRewardClaim(db, submissionId, {
@@ -265,6 +355,11 @@ async function processRewardPayment(db, submissionId, options = {}) {
       409
     );
   }
+  const {
+    assertRewardsActive,
+    recordRewardAudit,
+  } = require('./rewardOperations');
+  await assertRewardsActive(db);
 
   if (await gateway.isClaimPaid(payment.claimId)) {
     await dbRun(
@@ -276,6 +371,14 @@ async function processRewardPayment(db, submissionId, options = {}) {
        WHERE id = ?`,
       [payment.id]
     );
+    await recordRewardAudit(db, {
+      paymentId: payment.id,
+      actorUserId: options.actorUserId || null,
+      action: 'duplicate_prevented',
+      fromStatus: payment.status,
+      toStatus: 'duplicate_prevented',
+      details: { claimId: payment.claimId },
+    }).catch((error) => console.error('Unable to record reward audit:', error));
     throw new RewardError(
       'CLAIM_ALREADY_PAID_ONCHAIN',
       'The reward contract already paid this claim',
@@ -319,8 +422,24 @@ async function processRewardPayment(db, submissionId, options = {}) {
          WHERE id = ?`,
         [payment.id]
       );
+      await recordRewardAudit(db, {
+        paymentId: payment.id,
+        actorUserId: options.actorUserId || null,
+        action: 'payment_simulated',
+        fromStatus: payment.status,
+        toStatus: 'simulated',
+        details: { transactionHash: broadcast.hash },
+      }).catch((error) => console.error('Unable to record reward audit:', error));
       return { payment: await getRewardPayment(db, submissionId), idempotent: false };
     }
+    await recordRewardAudit(db, {
+      paymentId: payment.id,
+      actorUserId: options.actorUserId || null,
+      action: 'payment_broadcast',
+      fromStatus: payment.status,
+      toStatus: 'broadcast',
+      details: { transactionHash: broadcast.hash },
+    }).catch((error) => console.error('Unable to record reward audit:', error));
   } catch (error) {
     await dbRun(
       db,
@@ -330,6 +449,14 @@ async function processRewardPayment(db, submissionId, options = {}) {
        WHERE id = ? AND transaction_hash IS NULL`,
       [String(error.message || error).slice(0, 500), payment.id]
     );
+    await recordRewardAudit(db, {
+      paymentId: payment.id,
+      actorUserId: options.actorUserId || null,
+      action: 'payment_broadcast_failed',
+      fromStatus: payment.status,
+      toStatus: 'failed',
+      details: { error: String(error.message || error).slice(0, 500) },
+    }).catch(() => {});
     throw new RewardError('BROADCAST_FAILED', 'Unable to broadcast the CELO payment', 502);
   }
 
@@ -346,6 +473,17 @@ async function processRewardPayment(db, submissionId, options = {}) {
        WHERE id = ? AND transaction_hash = ?`,
       [String(receipt.blockNumber), payment.id, broadcast.hash]
     );
+    await recordRewardAudit(db, {
+      paymentId: payment.id,
+      actorUserId: options.actorUserId || null,
+      action: 'payment_confirmed',
+      fromStatus: 'broadcast',
+      toStatus: 'confirmed',
+      details: {
+        transactionHash: broadcast.hash,
+        blockNumber: String(receipt.blockNumber),
+      },
+    }).catch((error) => console.error('Unable to record reward audit:', error));
     return { payment: await getRewardPayment(db, submissionId), idempotent: false };
   } catch (error) {
     await dbRun(
@@ -369,6 +507,8 @@ module.exports = {
   ensureRewardClaim,
   getRewardPayment,
   getRewardPolicy: () => publicPolicy(createRewardPolicy()),
+  listUserRewardPayments,
   processRewardPayment,
+  reactivateWalletBlockedClaims,
   serializePayment,
 };
