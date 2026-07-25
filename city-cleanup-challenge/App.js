@@ -20,6 +20,8 @@ import Evidence from './Evidence';
 import Dashboard from './Dashboard';
 import AdminPanel from './AdminPanel';
 import SubscriptionDashboard from './SubscriptionDashboard';
+import Wallet from './Wallet';
+import RewardAdmin from './RewardAdmin';
 import GamificationDashboard from './components/GamificationDashboard';
 import SocialDashboard from './components/SocialDashboard';
 import { getStoredUser, logoutAuthSession } from './apiConfig';
@@ -38,6 +40,7 @@ const homeItems = [
   { key: 'posts', icon: '▣', title: 'Community posts', hint: 'Share updates with the community', group: 'Connect' },
   { key: 'social', icon: '♢', title: 'Teams & community', hint: 'Collaborate around shared goals', group: 'Connect' },
   { key: 'gamification', icon: '★', title: 'Achievements', hint: 'View rewards, points, and badges', group: 'Rewards' },
+  { key: 'wallet', icon: 'CE', title: 'Wallet & payouts', hint: 'Verify your wallet and track CELO rewards', group: 'Rewards' },
   { key: 'dashboard', icon: '▥', title: 'Impact analytics', hint: 'Review activity and performance', group: 'Insights' },
   { key: 'chatbot', icon: '◌', title: 'Cleanup assistant', hint: 'Get guidance for your next cleanup', group: 'Support' },
   { key: 'profile', icon: '◎', title: 'Profile settings', hint: 'Manage account and personal details', group: 'Account' },
@@ -73,7 +76,11 @@ export default function App() {
 
   const renderHome = () => {
     const items = userRole === 'admin'
-      ? [...homeItems, { key: 'admin', icon: '⚙', title: 'Admin panel', hint: 'Manage users and content' }]
+      ? [
+        ...homeItems,
+        { key: 'reward-admin', icon: 'CE', title: 'Reward operations', hint: 'Control and audit CELO payouts', group: 'Admin' },
+        { key: 'admin', icon: '⚙', title: 'Admin panel', hint: 'Manage users and content', group: 'Admin' },
+      ]
       : homeItems;
 
     return (
@@ -226,6 +233,12 @@ export default function App() {
         break;
       case 'evidence':
         content = <Evidence userRole={userRole} />;
+        break;
+      case 'wallet':
+        content = <Wallet />;
+        break;
+      case 'reward-admin':
+        content = <RewardAdmin />;
         break;
       case 'dashboard':
         content = (
