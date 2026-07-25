@@ -1,6 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
-const AWS = require('aws-sdk');
+const { S3Client } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
 const exifr = require('exifr');
 const piexifjs = require('piexifjs');
@@ -10,14 +10,19 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
-// Configure AWS S3
-AWS.config.update({
+// Configure AWS S3 using the supported modular SDK. When explicit credentials
+// are absent, the default provider chain can use workload or instance identity.
+const s3Config = {
   region: process.env.AWS_REGION || 'us-east-1',
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-});
+};
+if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  };
+}
 
-const s3 = new AWS.S3();
+const s3 = new S3Client(s3Config);
 const useCloudStorage = process.env.USE_CLOUD_STORAGE === 'true';
 
 // Create upload directories if they don't exist (for local storage)
