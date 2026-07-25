@@ -56,11 +56,23 @@ This starts:
 - `city_cleanup_events_total` - Total cleanup events by status
 - `city_cleanup_participants_total` - Participants per event
 
+**Reward and Celo Pilot Metrics:**
+- `city_cleanup_reward_payments{status}` - Reward records by lifecycle state
+- `city_cleanup_reward_payouts_paused` - Application payout pause state
+- `city_cleanup_reward_oldest_broadcast_age_seconds` - Oldest unreconciled broadcast
+- `city_cleanup_celo_preflight_ready` - Result of the latest pilot preflight
+- `city_cleanup_celo_preflight_last_run_timestamp_seconds` - Latest preflight time
+- `city_cleanup_celo_treasury_balance` - Latest observed treasury CELO balance
+
+The backend exposes these at `GET /api/metrics`. Set `METRICS_ENABLED=false` to
+disable collection. If `METRICS_TOKEN` is configured, the scraper must send it
+as a bearer token; otherwise keep this endpoint on a private monitoring network.
+
 **System Metrics:**
-- `process_cpu_seconds_total` - CPU usage
-- `process_resident_memory_bytes` - Memory usage
-- `nodejs_heap_size_total_bytes` - Node.js heap size
-- `nodejs_eventloop_lag_seconds` - Event loop lag
+- `city_cleanup_process_cpu_seconds_total` - CPU usage
+- `city_cleanup_process_resident_memory_bytes` - Memory usage
+- `city_cleanup_nodejs_heap_size_total_bytes` - Node.js heap size
+- `city_cleanup_nodejs_eventloop_lag_seconds` - Event loop lag
 
 ### Custom Metrics
 
@@ -94,7 +106,7 @@ histogram_quantile(0.95, rate(city_cleanup_http_request_duration_seconds_bucket[
 rate(city_cleanup_http_request_errors_total[5m]) / rate(city_cleanup_http_requests_total[5m])
 
 # Memory usage
-process_resident_memory_bytes / 1024 / 1024
+city_cleanup_process_resident_memory_bytes / 1024 / 1024
 ```
 
 ## Grafana Dashboards
@@ -136,6 +148,11 @@ Located in `monitoring/prometheus/alerts/api_alerts.yml`
 - High memory usage (> 512MB)
 - Service down
 - Database connection issues
+- Reward broadcast awaiting reconciliation for more than 15 minutes
+- Failed reward records requiring operator review
+- More than ten newly confirmed rewards in one hour
+- Failed Celo pilot preflight
+- Celo Sepolia treasury below the configured pilot minimum
 
 ### Alert Configuration
 
@@ -400,10 +417,10 @@ uptimeMonitor.registerHealthCheck('external-api', async () => {
 
 ```promql
 # Check memory trends
-process_resident_memory_bytes
+city_cleanup_process_resident_memory_bytes
 
 # Heap usage
-nodejs_heap_size_used_bytes / nodejs_heap_size_total_bytes
+city_cleanup_nodejs_heap_size_used_bytes / city_cleanup_nodejs_heap_size_total_bytes
 ```
 
 ### Slow Requests
