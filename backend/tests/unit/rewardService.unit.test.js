@@ -3,7 +3,9 @@ const { parseEther } = require('viem');
 const {
   ensureRewardClaim,
   processRewardPayment,
+  reactivateWalletBlockedClaims,
 } = require('../../src/services/rewardService');
+const { reconcileRewardPayment } = require('../../src/services/rewardOperations');
 
 function run(db, sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -63,6 +65,8 @@ function testGateway(overrides = {}) {
       status: 'success',
       blockNumber: 123n,
     }),
+    getPaymentStatus: jest.fn().mockResolvedValue(null),
+    requiredConfirmations: 2,
     ...overrides,
   };
 }
@@ -74,6 +78,7 @@ describe('idempotent CELO reward payments', () => {
     db = new sqlite3.Database(':memory:');
     await run(db, `CREATE TABLE users (
       id INTEGER PRIMARY KEY,
+      username TEXT,
       celo_wallet_address TEXT,
       celo_wallet_verified_at TEXT
     )`);
@@ -107,10 +112,32 @@ describe('idempotent CELO reward payments', () => {
       broadcast_at TEXT,
       confirmed_at TEXT
     )`);
+    await run(db, `CREATE TABLE reward_controls (
+      id INTEGER PRIMARY KEY,
+      paused INTEGER NOT NULL,
+      pause_reason TEXT,
+      updated_by INTEGER,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`);
+    await run(db, `INSERT INTO reward_controls (id, paused) VALUES (1, 0)`);
+    await run(db, `CREATE TABLE reward_audit_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      payment_id INTEGER,
+      actor_user_id INTEGER,
+      action TEXT NOT NULL,
+      from_status TEXT,
+      to_status TEXT,
+      details TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`);
     await run(
       db,
-      `INSERT INTO users (id, celo_wallet_address, celo_wallet_verified_at)
-       VALUES (1, '0x0000000000000000000000000000000000000001', CURRENT_TIMESTAMP)`
+      `INSERT INTO users (id, username, celo_wallet_address, celo_wallet_verified_at)
+       VALUES (
+         1, 'reward-test-user',
+         '0x0000000000000000000000000000000000000001',
+         CURRENT_TIMESTAMP
+       )`
     );
     await run(
       db,
@@ -154,6 +181,27 @@ describe('idempotent CELO reward payments', () => {
     expect(gateway.broadcastPayment).toHaveBeenCalledTimes(1);
   });
 
+  it('blocks a payout while the operational reward switch is paused', async () => {
+    await run(
+      db,
+      `UPDATE reward_controls
+       SET paused = 1, pause_reason = 'Treasury maintenance'
+       WHERE id = 1`
+    );
+    const gateway = testGateway();
+
+    await expect(processRewardPayment(db, 10, {
+      gateway,
+      policy: testPolicy(),
+      approvedByAdmin: true,
+    })).rejects.toMatchObject({
+      code: 'REWARDS_PAUSED',
+      status: 423,
+      message: 'Treasury maintenance',
+    });
+    expect(gateway.broadcastPayment).not.toHaveBeenCalled();
+  });
+
   it('allows only one broadcast under concurrent payout requests', async () => {
     let releaseBroadcast;
     const gate = new Promise((resolve) => {
@@ -192,6 +240,36 @@ describe('idempotent CELO reward payments', () => {
     expect(row.status).toBe('duplicate_prevented');
   });
 
+  it('reconciles a previously broadcast payment after confirmation waiting fails', async () => {
+    const gateway = testGateway({
+      waitForPayment: jest.fn().mockRejectedValue(new Error('RPC timeout')),
+      getPaymentStatus: jest.fn().mockResolvedValue({
+        status: 'success',
+        blockNumber: 456n,
+        confirmations: 3,
+      }),
+    });
+    await expect(processRewardPayment(db, 10, {
+      gateway,
+      policy: testPolicy(),
+      approvedByAdmin: true,
+    })).rejects.toMatchObject({ code: 'CONFIRMATION_PENDING', status: 202 });
+
+    const broadcast = await get(
+      db,
+      'SELECT id, status FROM reward_payments WHERE submission_id = 10'
+    );
+    expect(broadcast.status).toBe('broadcast');
+    const reconciled = await reconcileRewardPayment(db, broadcast.id, {
+      gateway,
+      actorUserId: 99,
+    });
+
+    expect(reconciled.outcome).toBe('confirmed');
+    expect(reconciled.payment.status).toBe('confirmed');
+    expect(reconciled.payment.blockNumber).toBe('456');
+  });
+
   it('blocks payment until the user has a verified wallet', async () => {
     await run(db, 'UPDATE users SET celo_wallet_verified_at = NULL WHERE id = 1');
 
@@ -202,5 +280,35 @@ describe('idempotent CELO reward payments', () => {
 
     expect(payment.status).toBe('blocked');
     expect(payment.failureCode).toBe('WALLET_NOT_VERIFIED');
+  });
+
+  it('reactivates a wallet-blocked claim after ownership verification', async () => {
+    await run(db, 'UPDATE users SET celo_wallet_verified_at = NULL WHERE id = 1');
+    await ensureRewardClaim(db, 10, {
+      gateway: testGateway(),
+      policy: testPolicy(),
+    });
+    await run(
+      db,
+      'UPDATE users SET celo_wallet_verified_at = CURRENT_TIMESTAMP WHERE id = 1'
+    );
+
+    const result = await reactivateWalletBlockedClaims(
+      db,
+      1,
+      '0x0000000000000000000000000000000000000001',
+      { policy: testPolicy() }
+    );
+    const payment = await get(
+      db,
+      'SELECT status, failure_code, wallet_address FROM reward_payments WHERE submission_id = 10'
+    );
+
+    expect(result).toEqual({ reactivated: 1, examined: 1 });
+    expect(payment.status).toBe('pending');
+    expect(payment.failure_code).toBeNull();
+    expect(payment.wallet_address).toBe(
+      '0x0000000000000000000000000000000000000001'
+    );
   });
 });
