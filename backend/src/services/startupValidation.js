@@ -1,0 +1,130 @@
+const { isAddress } = require('viem');
+
+const PLACEHOLDER_PATTERNS = [
+  /^\$\{.+\}$/,
+  /example\.com/i,
+  /your[-_]/i,
+  /change[-_]?me/i,
+  /placeholder/i,
+];
+
+function isPlaceholder(value) {
+  return PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(String(value || '')));
+}
+
+function isBooleanString(value) {
+  return value === undefined || ['true', 'false'].includes(String(value).toLowerCase());
+}
+
+function isSecureUrl(value) {
+  try {
+    return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function validPrivateKey(value) {
+  return /^(0x)?[0-9a-fA-F]{64}$/.test(String(value || ''));
+}
+
+function validateRuntimeEnvironment(environment = process.env) {
+  const errors = [];
+  const warnings = [];
+  const production = environment.NODE_ENV === 'production';
+  const rewardsEnabled = String(environment.CELO_REWARDS_ENABLED).toLowerCase() === 'true';
+  const dryRun = environment.CELO_REWARD_DRY_RUN === undefined
+    || String(environment.CELO_REWARD_DRY_RUN).toLowerCase() === 'true';
+  const liveRewards = rewardsEnabled && !dryRun;
+
+  for (const name of ['CELO_REWARDS_ENABLED', 'CELO_REWARD_DRY_RUN', 'METRICS_ENABLED']) {
+    if (!isBooleanString(environment[name])) {
+      errors.push(`${name} must be true or false`);
+    }
+  }
+
+  if (environment.CELO_CHAIN_ID && Number(environment.CELO_CHAIN_ID) !== 11_142_220) {
+    errors.push('CELO_CHAIN_ID must be 11142220 for Celo Sepolia');
+  }
+  if (environment.WALLET_CHALLENGE_TTL_MS) {
+    const ttl = Number(environment.WALLET_CHALLENGE_TTL_MS);
+    if (!Number.isInteger(ttl) || ttl < 60_000 || ttl > 30 * 60_000) {
+      errors.push('WALLET_CHALLENGE_TTL_MS must be between 60000 and 1800000');
+    }
+  }
+  if (environment.CELO_REQUIRED_CONFIRMATIONS) {
+    const confirmations = Number(environment.CELO_REQUIRED_CONFIRMATIONS);
+    if (!Number.isInteger(confirmations) || confirmations < 1 || confirmations > 20) {
+      errors.push('CELO_REQUIRED_CONFIRMATIONS must be between 1 and 20');
+    }
+  }
+  if (environment.CELO_TREASURY_MIN_BALANCE) {
+    const minimumBalance = Number(environment.CELO_TREASURY_MIN_BALANCE);
+    if (!Number.isFinite(minimumBalance) || minimumBalance <= 0) {
+      errors.push('CELO_TREASURY_MIN_BALANCE must be a positive CELO amount');
+    }
+  }
+
+  if (production) {
+    for (const name of [
+      'DATABASE_PATH',
+      'CORS_ORIGIN',
+      'JWT_ACCESS_SECRET',
+      'JWT_REFRESH_SECRET',
+      'METRICS_TOKEN',
+    ]) {
+      if (environment[name] && isPlaceholder(environment[name])) {
+        errors.push(`${name} still contains a placeholder`);
+      }
+    }
+    for (const name of ['WALLET_VERIFICATION_DOMAIN', 'WALLET_VERIFICATION_URI']) {
+      if (!environment[name]) errors.push(`${name} is required in production`);
+      else if (isPlaceholder(environment[name])) errors.push(`${name} still contains a placeholder`);
+    }
+    if (
+      environment.WALLET_VERIFICATION_URI
+      && !isSecureUrl(environment.WALLET_VERIFICATION_URI)
+    ) {
+      errors.push('WALLET_VERIFICATION_URI must use HTTPS in production');
+    }
+  }
+
+  if (liveRewards) {
+    if (!isAddress(environment.CELO_REWARD_CONTRACT_ADDRESS || '')) {
+      errors.push('CELO_REWARD_CONTRACT_ADDRESS must be a valid deployed address');
+    }
+    if (!validPrivateKey(environment.CELO_TREASURY_PRIVATE_KEY)) {
+      errors.push('CELO_TREASURY_PRIVATE_KEY must be a 32-byte private key');
+    }
+    if (!isSecureUrl(environment.CELO_RPC_URL)) {
+      errors.push('CELO_RPC_URL must use HTTPS when live rewards are enabled');
+    }
+    if (Number(environment.CELO_CHAIN_ID || 11_142_220) !== 11_142_220) {
+      errors.push('Live rewards are restricted to Celo Sepolia');
+    }
+  }
+
+  if (!rewardsEnabled) warnings.push('CELO reward broadcasting is disabled');
+  else if (dryRun) warnings.push('CELO rewards are running in simulation mode');
+  if (
+    liveRewards
+    && String(environment.CELO_RPC_URL).includes('forno.celo-sepolia')
+  ) {
+    warnings.push('The public Forno RPC has no uptime SLA; configure a supported pilot provider');
+  }
+  if (production && String(environment.DATABASE_PATH || '').includes('.db')) {
+    warnings.push('Production is using SQLite; run only one backend replica');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    mode: liveRewards ? 'live-testnet' : rewardsEnabled ? 'simulation' : 'disabled',
+  };
+}
+
+module.exports = {
+  isPlaceholder,
+  validateRuntimeEnvironment,
+};
