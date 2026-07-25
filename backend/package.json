@@ -9,6 +9,8 @@
     "start": "node src/server.js",
     "dev": "nodemon --quiet src/server.js",
     "health": "node scripts/health-check.js",
+    "pilot:preflight": "node scripts/celo-pilot-preflight.js",
+    "pilot:smoke": "node scripts/pilot-smoke-test.js",
     "lint": "eslint . --ext .js,.jsx",
     "test": "jest",
     "test:unit": "jest --testPathPattern=tests/unit",
