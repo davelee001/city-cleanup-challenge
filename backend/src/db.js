@@ -8,10 +8,12 @@ const { runMigration: runEnhancedFeaturesMigration } = require('./migrations/enh
 
 const configuredDatabasePath = process.env.DATABASE_PATH;
 const databasePath = configuredDatabasePath
-  ? path.resolve(configuredDatabasePath)
+  ? (configuredDatabasePath === ':memory:' ? ':memory:' : path.resolve(configuredDatabasePath))
   : path.join(__dirname, '../city-cleanup.db');
 
-fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+if (databasePath !== ':memory:') {
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+}
 const db = new sqlite3.Database(databasePath);
 
 function ensureColumns(tableName, columns, afterStatements = []) {
