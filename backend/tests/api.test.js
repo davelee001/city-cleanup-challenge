@@ -25,6 +25,17 @@ describe('API Endpoints', () => {
     const res = await request(app).get('/health');
     expect(res.statusCode).toBe(200);
     expect(res.body.status).toBe('ok');
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
+    expect(res.headers['x-powered-by']).toBeUndefined();
+  });
+
+  it('rejects oversized JSON bodies with a stable API error', async () => {
+    const response = await request(app)
+      .post('/api/v1/signup')
+      .send({ payload: 'x'.repeat((1024 * 1024) + 1) });
+
+    expect(response.statusCode).toBe(413);
+    expect(response.body.code).toBe('REQUEST_BODY_TOO_LARGE');
   });
 
   it('should signup a new user', async () => {
@@ -487,7 +498,7 @@ describe('Phase 3 cleanup evidence workflow', () => {
     expect(response.body.success).toBe(true);
     expect(response.body.submission.status).toBe('manual_review');
     expect(response.body.submission.verification.exactDuplicate.matched).toBe(false);
-    expect(response.body.submission.verification.version).toBe('phase4-v1');
+    expect(response.body.submission.verification.version).toBe('phase9-v2');
     expect(['low', 'medium', 'high']).toContain(response.body.submission.riskLevel);
     createdSubmissionIds.push(response.body.submission.id);
 
