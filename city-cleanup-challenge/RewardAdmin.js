@@ -48,6 +48,8 @@ export default function RewardAdmin() {
   const [controlsBusy, setControlsBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [preflight, setPreflight] = useState(null);
+  const [preflightBusy, setPreflightBusy] = useState(false);
 
   const loadOperations = useCallback(async () => {
     setLoading(true);
@@ -118,6 +120,28 @@ export default function RewardAdmin() {
       setError(requestError.message);
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const runPreflight = async () => {
+    setPreflightBusy(true);
+    setError('');
+    setSuccess('');
+    try {
+      const data = await apiFetch(`${API_BASE_URL}/rewards/admin/preflight`, {
+        method: 'POST',
+      }).then(readJson);
+      setPreflight(data.preflight);
+      setSuccess(
+        data.preflight.ready
+          ? 'Celo Sepolia pilot preflight passed.'
+          : 'Preflight completed. Resolve the failed checks before enabling payouts.'
+      );
+      await loadOperations();
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setPreflightBusy(false);
     }
   };
 
@@ -215,8 +239,49 @@ export default function RewardAdmin() {
               value={String(gateway.requiredConfirmations || 2)}
               ready
             />
+            <TouchableOpacity
+              style={styles.preflightButton}
+              onPress={runPreflight}
+              disabled={preflightBusy}
+            >
+              <Text style={styles.preflightButtonText}>
+                {preflightBusy ? 'Running read-only checks…' : 'Run pilot preflight'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
+
+        {preflight ? (
+          <View style={styles.preflightPanel}>
+            <View style={styles.queueHeader}>
+              <View>
+                <Text style={styles.eyebrow}>PILOT PREFLIGHT</Text>
+                <Text style={styles.panelTitle}>
+                  {preflight.ready ? 'All checks passed' : 'Action required'}
+                </Text>
+              </View>
+              <View style={[styles.preflightResult, preflight.ready && styles.preflightResultReady]}>
+                <Text style={styles.preflightResultText}>
+                  {preflight.ready ? 'READY' : 'NOT READY'}
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.muted, styles.preflightTime]}>
+              Checked {new Date(preflight.checkedAt).toLocaleString()} · No transaction was signed
+            </Text>
+            {preflight.checks.map((check) => (
+              <View key={check.name} style={styles.checkRow}>
+                <View style={[styles.checkIcon, check.ok ? styles.checkPassed : styles.checkFailed]}>
+                  <Text style={styles.checkIconText}>{check.ok ? '✓' : '!'}</Text>
+                </View>
+                <View style={styles.checkCopy}>
+                  <Text style={styles.checkName}>{readable(check.name)}</Text>
+                  <Text style={styles.muted}>{check.detail}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.queuePanel}>
           <View style={styles.queueHeader}>
@@ -376,6 +441,20 @@ const styles = StyleSheet.create({
   smallDot: { width: 7, height: 7, borderRadius: 999 },
   smallDotReady: { backgroundColor: '#66D9CB' },
   smallDotPending: { backgroundColor: '#E4A84C' },
+  preflightButton: { alignItems: 'center', backgroundColor: '#245F9F', borderRadius: 11, padding: 13, marginTop: 17 },
+  preflightButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  preflightPanel: { backgroundColor: '#0D243D', borderColor: '#244B70', borderWidth: 1, borderRadius: 18, padding: Platform.OS === 'web' ? 23 : 18, marginTop: 18 },
+  preflightResult: { backgroundColor: '#3B2822', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
+  preflightResultReady: { backgroundColor: '#103E3A' },
+  preflightResultText: { color: '#E6F0F9', fontSize: 9, fontWeight: '700', letterSpacing: 1 },
+  preflightTime: { marginTop: 8, marginBottom: 12 },
+  checkRow: { flexDirection: 'row', gap: 11, borderTopColor: '#203E5B', borderTopWidth: 1, paddingVertical: 13 },
+  checkIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  checkPassed: { backgroundColor: '#12423E' },
+  checkFailed: { backgroundColor: '#482830' },
+  checkIconText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  checkCopy: { flex: 1 },
+  checkName: { color: '#DCE8F5', fontSize: 12, fontWeight: '600', textTransform: 'capitalize', marginBottom: 3 },
   queuePanel: { backgroundColor: '#0D243D', borderColor: '#244B70', borderWidth: 1, borderRadius: 18, padding: Platform.OS === 'web' ? 23 : 18, marginTop: 18 },
   queueHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14 },
   refresh: { backgroundColor: '#122E4A', borderColor: '#315574', borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
