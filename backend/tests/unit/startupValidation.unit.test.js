@@ -59,4 +59,33 @@ describe('runtime environment validation', () => {
     expect(result.valid).toBe(true);
     expect(result.mode).toBe('live-testnet');
   });
+
+  it('rejects unsafe HTTP protection limits', () => {
+    const result = validateRuntimeEnvironment({
+      API_RATE_LIMIT: '0',
+      AUTH_RATE_LIMIT: 'many',
+      RATE_LIMIT_WINDOW_MS: '500',
+      JSON_BODY_LIMIT_BYTES: '100',
+      TRUST_PROXY_HOPS: '20',
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(5);
+  });
+
+  it('rejects incomplete optional S3 storage configuration', () => {
+    const result = validateRuntimeEnvironment({
+      USE_CLOUD_STORAGE: 'true',
+      AWS_S3_BUCKET: 'INVALID_BUCKET',
+      AWS_REGION: '',
+      AWS_ACCESS_KEY_ID: 'only-one-half',
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toEqual(expect.arrayContaining([
+      'AWS_S3_BUCKET must be a valid bucket name when cloud storage is enabled',
+      'AWS_REGION is required when cloud storage is enabled',
+      'AWS access key ID and secret must be configured together',
+    ]));
+  });
 });
