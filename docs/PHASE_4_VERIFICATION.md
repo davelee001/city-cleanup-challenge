@@ -52,7 +52,7 @@ these heuristics are not proof an image is AI-generated.
 ## Configurable Thresholds
 
 ```env
-EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD=8
+EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD=12
 EVIDENCE_SCENE_HIGH_RISK_BELOW=0.30
 EVIDENCE_SCENE_MEDIUM_RISK_BELOW=0.48
 EVIDENCE_SYNTHETIC_HIGH_RISK_AT=0.60
@@ -61,6 +61,8 @@ EVIDENCE_SYNTHETIC_MEDIUM_RISK_AT=0.25
 
 The exact values are initial engineering defaults, not validated production
 policy. Threshold changes require version updates and a measured pilot dataset.
+Phase 9 recalibrated the distance from `8` to `12` after the Sharp 0.35 upgrade
+and records new analyses as `phase9-v2`.
 
 ## Decision Policy
 
