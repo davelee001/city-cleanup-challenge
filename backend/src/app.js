@@ -18,6 +18,7 @@ const {
 const { initializeGamificationAPI } = require('./routes/gamification');
 const { createEvidenceRouter } = require('./routes/evidence');
 const { createRewardRouter } = require('./routes/rewards');
+const { createWalletRouter } = require('./routes/wallets');
 const GamificationIntegration = require('./services/gamificationIntegration');
 const config = require('./config');
 const {
@@ -234,6 +235,7 @@ function createApp() {
 	apiRouter.use(authenticateUser);
 	apiRouter.use('/evidence', createEvidenceRouter(db));
 	apiRouter.use('/rewards', createRewardRouter(db));
+	apiRouter.use('/wallet', createWalletRouter(db));
 
 	app.get('/ready', (req, res) => {
 		db.get('SELECT 1 AS ready', (err) => {
