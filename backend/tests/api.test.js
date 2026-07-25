@@ -2,6 +2,7 @@ const request = require('supertest');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const { generatePrivateKey, privateKeyToAccount } = require('viem/accounts');
 const { createApp } = require('../src/app');
 const db = require('../src/db');
 const { EVIDENCE_ROOT } = require('../src/routes/evidence');
@@ -85,6 +86,8 @@ describe('JWT authentication and authorization', () => {
   let otherTokens;
   let adminTokens;
   let postId;
+  const walletAccount = privateKeyToAccount(generatePrivateKey());
+  const wrongWalletAccount = privateKeyToAccount(generatePrivateKey());
 
   beforeAll(async () => {
     await request(app).post('/api/v1/signup').send(signupData(owner));
@@ -178,6 +181,162 @@ describe('JWT authentication and authorization', () => {
       .post('/api/v1/rewards/submissions/999999/claim')
       .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
     expect(response.statusCode).toBe(403);
+  });
+
+  it('provides administrator-only reward pause controls and an audit trail', async () => {
+    const forbidden = await request(app)
+      .get('/api/v1/rewards/admin/summary')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(forbidden.statusCode).toBe(403);
+
+    const initial = await request(app)
+      .get('/api/v1/rewards/admin/summary')
+      .set('Authorization', `Bearer ${adminTokens.accessToken}`);
+    expect(initial.statusCode).toBe(200);
+    expect(initial.body.summary.controls.paused).toBe(true);
+
+    const resumed = await request(app)
+      .put('/api/v1/rewards/admin/controls')
+      .set('Authorization', `Bearer ${adminTokens.accessToken}`)
+      .send({ paused: false, reason: 'Controlled testnet operations test' });
+    expect(resumed.statusCode).toBe(200);
+    expect(resumed.body.controls.paused).toBe(false);
+
+    const invalidPause = await request(app)
+      .put('/api/v1/rewards/admin/controls')
+      .set('Authorization', `Bearer ${adminTokens.accessToken}`)
+      .send({ paused: true });
+    expect(invalidPause.statusCode).toBe(400);
+    expect(invalidPause.body.code).toBe('PAUSE_REASON_REQUIRED');
+
+    const paused = await request(app)
+      .put('/api/v1/rewards/admin/controls')
+      .set('Authorization', `Bearer ${adminTokens.accessToken}`)
+      .send({ paused: true, reason: 'End of automated operations test' });
+    expect(paused.statusCode).toBe(200);
+    expect(paused.body.controls.paused).toBe(true);
+
+    const audited = await request(app)
+      .get('/api/v1/rewards/admin/summary')
+      .set('Authorization', `Bearer ${adminTokens.accessToken}`);
+    expect(audited.body.summary.recentAudit.map((entry) => entry.action)).toEqual(
+      expect.arrayContaining(['rewards_resumed', 'rewards_paused'])
+    );
+  });
+
+  it('verifies wallet ownership with a one-time signed challenge', async () => {
+    const unverified = await request(app)
+      .get('/api/v1/wallet')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(unverified.statusCode).toBe(200);
+    expect(unverified.body.wallet.verified).toBe(false);
+
+    const challengeResponse = await request(app)
+      .post('/api/v1/wallet/challenge')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`)
+      .send({ address: walletAccount.address });
+    expect(challengeResponse.statusCode).toBe(201);
+    expect(challengeResponse.body.challenge.chainId).toBe(11_142_220);
+    const { challengeId, message } = challengeResponse.body.challenge;
+
+    const wrongSignature = await wrongWalletAccount.signMessage({ message });
+    const rejected = await request(app)
+      .post('/api/v1/wallet/verify')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`)
+      .send({ challengeId, signature: wrongSignature });
+    expect(rejected.statusCode).toBe(401);
+    expect(rejected.body.code).toBe('SIGNATURE_MISMATCH');
+
+    const signature = await walletAccount.signMessage({ message });
+    const [firstAttempt, secondAttempt] = await Promise.all([
+      request(app)
+        .post('/api/v1/wallet/verify')
+        .set('Authorization', `Bearer ${ownerTokens.accessToken}`)
+        .send({ challengeId, signature }),
+      request(app)
+        .post('/api/v1/wallet/verify')
+        .set('Authorization', `Bearer ${ownerTokens.accessToken}`)
+        .send({ challengeId, signature }),
+    ]);
+    expect([firstAttempt.statusCode, secondAttempt.statusCode].sort()).toEqual([200, 409]);
+    const verified = firstAttempt.statusCode === 200 ? firstAttempt : secondAttempt;
+    expect(verified.statusCode).toBe(200);
+    expect(verified.body.wallet).toMatchObject({
+      address: walletAccount.address,
+      verified: true,
+      chainId: 11_142_220,
+    });
+
+    const replay = await request(app)
+      .post('/api/v1/wallet/verify')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`)
+      .send({ challengeId, signature });
+    expect(replay.statusCode).toBe(409);
+    expect(replay.body.code).toBe('CHALLENGE_USED');
+  });
+
+  it('prevents a verified wallet from being shared across accounts', async () => {
+    const response = await request(app)
+      .post('/api/v1/wallet/challenge')
+      .set('Authorization', `Bearer ${otherTokens.accessToken}`)
+      .send({ address: walletAccount.address });
+    expect(response.statusCode).toBe(409);
+    expect(response.body.code).toBe('WALLET_ALREADY_LINKED');
+  });
+
+  it('returns member reward history and safely removes an idle wallet', async () => {
+    const rewards = await request(app)
+      .get('/api/v1/rewards/mine')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(rewards.statusCode).toBe(200);
+    expect(rewards.body.payments).toEqual([]);
+
+    const ownerRecord = await new Promise((resolve, reject) => {
+      db.get('SELECT id FROM users WHERE username = ?', [owner], (error, row) => {
+        if (error) reject(error);
+        else resolve(row);
+      });
+    });
+    const temporaryPaymentId = await new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO reward_payments (
+          claim_id, submission_id, user_id, wallet_address, policy_version,
+          calculation, amount_wei, status, chain_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          `0x${'f'.repeat(63)}1`,
+          999_991,
+          ownerRecord.id,
+          walletAccount.address,
+          'wallet-unlink-test',
+          '{}',
+          '10000000000000000',
+          'pending',
+          11_142_220,
+        ],
+        function inserted(error) {
+          if (error) reject(error);
+          else resolve(this.lastID);
+        }
+      );
+    });
+    const blocked = await request(app)
+      .delete('/api/v1/wallet')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.body.code).toBe('WALLET_UNLINK_BLOCKED');
+    await new Promise((resolve, reject) => {
+      db.run('DELETE FROM reward_payments WHERE id = ?', [temporaryPaymentId], (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const removed = await request(app)
+      .delete('/api/v1/wallet')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(removed.statusCode).toBe(200);
+    expect(removed.body.wallet.verified).toBe(false);
   });
 
   it('rotates refresh tokens and rejects reuse of the old token', async () => {
