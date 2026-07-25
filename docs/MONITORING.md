@@ -7,7 +7,6 @@ Comprehensive monitoring stack for the City Cleanup Challenge application includ
 - **Grafana**: Visualization and dashboards
 - **Loki**: Log aggregation
 - **Sentry**: Error tracking
-- **Application Insights**: APM and performance monitoring
 - **Uptime Monitoring**: Health checks and availability
 
 ## Quick Start
@@ -237,51 +236,6 @@ sentryService.addBreadcrumb({
 });
 ```
 
-## Application Insights (APM)
-
-### Setup
-
-```bash
-# Create Application Insights in Azure
-az monitor app-insights component create \
-  --app city-cleanup-insights \
-  --location eastus \
-  --resource-group city-cleanup-rg
-```
-
-Add to environment:
-
-```env
-APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=xxx;...
-```
-
-### Features
-
-- Automatic request tracking
-- Dependency tracking (database, HTTP calls)
-- Exception tracking
-- Performance monitoring
-- Live metrics
-- Application map
-
-### Custom Tracking
-
-```javascript
-const apmService = require('./services/apm');
-
-// Track event
-apmService.trackEvent('UserSignup', { plan: 'premium' });
-
-// Track metric
-apmService.trackMetric('QueueLength', 42);
-
-// Track dependency
-apmService.trackDependency('Redis', 'GET user:123', 45, true);
-
-// Track business metric
-apmService.trackBusinessMetric('EventsCreated', 1, { city: 'NYC' });
-```
-
 ## Log Aggregation (Loki)
 
 ### Viewing Logs
@@ -452,7 +406,6 @@ Check logs:
 - [ ] Grafana dashboards configured
 - [ ] Alerts configured and tested
 - [ ] Sentry capturing errors
-- [ ] Application Insights tracking performance
 - [ ] Logs flowing to Loki
 - [ ] Health checks working
 - [ ] Notification channels tested
@@ -464,5 +417,4 @@ Check logs:
 - [Prometheus Documentation](https://prometheus.io/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
 - [Sentry Documentation](https://docs.sentry.io/)
-- [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
 - [Loki Documentation](https://grafana.com/docs/loki/)
