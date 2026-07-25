@@ -28,6 +28,13 @@ spec:
         prometheus.io/path: "/api/metrics"
         prometheus.io/port: "3001"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: backend
         image: citycleanup.azurecr.io/backend:latest
@@ -137,6 +144,36 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: WALLET_CHALLENGE_TTL_MS
+        - name: API_RATE_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: API_RATE_LIMIT
+        - name: AUTH_RATE_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: AUTH_RATE_LIMIT
+        - name: RATE_LIMIT_WINDOW_MS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: RATE_LIMIT_WINDOW_MS
+        - name: JSON_BODY_LIMIT_BYTES
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: JSON_BODY_LIMIT_BYTES
+        - name: TRUST_PROXY_HOPS
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: TRUST_PROXY_HOPS
+        - name: USE_CLOUD_STORAGE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: USE_CLOUD_STORAGE
         - name: METRICS_ENABLED
           valueFrom:
             configMapKeyRef:
@@ -165,6 +202,11 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /health
