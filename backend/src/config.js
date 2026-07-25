@@ -4,6 +4,7 @@
  */
 
 require('dotenv').config();
+const { validateRuntimeEnvironment } = require('./services/startupValidation');
 
 const config = {
   // Server
@@ -117,5 +118,18 @@ if (
   console.error('JWT access and refresh secrets must be different and at least 32 characters in production');
   process.exit(1);
 }
+
+const runtimeValidation = validateRuntimeEnvironment(process.env);
+if (config.env !== 'test') {
+  runtimeValidation.warnings.forEach((warning) => {
+    console.warn(`Configuration warning: ${warning}`);
+  });
+}
+if (!runtimeValidation.valid) {
+  console.error('Invalid runtime configuration:', runtimeValidation.errors);
+  process.exit(1);
+}
+
+config.runtimeValidation = runtimeValidation;
 
 module.exports = config;
