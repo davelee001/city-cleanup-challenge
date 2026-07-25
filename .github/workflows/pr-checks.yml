@@ -42,6 +42,7 @@ jobs:
         working-directory: ./backend
         run: |
           npm ci
+          npm run audit:prod
           npm test -- --passWithNoTests
 
   build:
