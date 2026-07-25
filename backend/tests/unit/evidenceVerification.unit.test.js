@@ -69,7 +69,7 @@ describe('Phase 4 evidence verification', () => {
       afterBuffer: generatedMetadataImage,
     });
 
-    expect(verification.version).toBe('phase4-v1');
+    expect(verification.version).toBe('phase9-v2');
     expect(verification.sceneConsistency.score).toBeGreaterThanOrEqual(0);
     expect(verification.sceneConsistency.score).toBeLessThanOrEqual(1);
     expect(verification.syntheticImageRisk.level).toBe('high');
