@@ -23,6 +23,9 @@ services:
       - CELO_RPC_URL=https://forno.celo-sepolia.celo-testnet.org
       - CELO_CHAIN_ID=11142220
       - CELO_REQUIRED_CONFIRMATIONS=2
+      - WALLET_VERIFICATION_DOMAIN=localhost
+      - WALLET_VERIFICATION_URI=http://localhost
+      - WALLET_CHALLENGE_TTL_MS=600000
     volumes:
       - ./backend:/app
       - /app/node_modules
