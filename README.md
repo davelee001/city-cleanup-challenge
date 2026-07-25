@@ -5,8 +5,9 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 ## Current Build Status (July 24, 2026)
 
 Phase 1, Phase 2, Phase 3 evidence submission, the Phase 4 advanced
-verification foundation, and the Phase 5 Celo Sepolia reward foundation of the
-current MVP build are complete.
+verification foundation, the Phase 5 Celo Sepolia reward foundation, the Phase
+6 wallet ownership experience, and the Phase 7 reward operations foundation of
+the current MVP build are complete.
 
 ### Phase 1 - Product Foundation
 
@@ -92,6 +93,39 @@ thresholds, decision policy, limitations, and pilot requirements.
 See [Phase 5 Celo Rewards](docs/PHASE_5_CELO_REWARDS.md) for the policy,
 idempotency model, API, configuration, and deployment safeguards.
 
+### Phase 6 - Wallet Ownership and Reward Experience
+
+- Added expiring, one-time signed challenges that prove control of a Celo wallet
+  without requesting private keys or sending transactions.
+- Enforced one wallet per account and prevented wallet changes while payouts are
+  active.
+- Automatically recalculated and reactivated claims blocked by missing wallet
+  verification.
+- Added authenticated wallet status, challenge, verification, removal, and
+  member reward-history APIs.
+- Added a professional logged-in wallet workspace with browser-wallet
+  connection, Celo Sepolia network switching, a manual signature fallback,
+  payout policy, reward states, and explorer links.
+
+See [Phase 6 Wallet Experience](docs/PHASE_6_WALLET_EXPERIENCE.md) for the
+security model, API, frontend flow, and remaining native-wallet deployment work.
+
+### Phase 7 - Reward Operations and Reconciliation
+
+- Added a persistent reward pause that defaults to paused and blocks new
+  broadcasts independently from environment configuration.
+- Added an administrator payout queue, operational totals, status filtering,
+  gateway-readiness checks, and emergency controls.
+- Added receipt reconciliation for broadcast transactions that survive a
+  restart or confirmation timeout.
+- Added an immutable reward audit trail for control changes, broadcasts,
+  confirmations, failures, and duplicate-prevention decisions.
+- Added a professional administrator reward-operations workspace with safe
+  processing and reconciliation actions.
+
+See [Phase 7 Reward Operations](docs/PHASE_7_REWARD_OPERATIONS.md) for the
+control model, reconciliation behavior, API, audit coverage, and pilot runbook.
+
 ### Phase 4 Delivery Snapshot
 
 - Delivered the verification foundation as 20 focused commits on `main`.
@@ -130,9 +164,9 @@ idempotency model, API, configuration, and deployment safeguards.
   `main`; `Dashboard.js` received separate redesign and accessibility commits.
 
 The application is still **pre-deployment**. Verification threshold calibration,
-production cloud storage, dependency security remediation, wallet ownership
-verification, contract deployment/funding, and a controlled Celo Sepolia pilot
-remain release blockers.
+production cloud storage, dependency security remediation, native wallet
+connector testing, contract deployment/funding, and a controlled Celo Sepolia
+pilot remain release blockers.
 
 ## 🚀 Latest Updates (v2.9 - March 3, 2026)
 
