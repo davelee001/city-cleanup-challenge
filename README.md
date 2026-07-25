@@ -6,8 +6,9 @@ A comprehensive location-based cleanup event platform with React Native (Expo) f
 
 Phase 1, Phase 2, Phase 3 evidence submission, the Phase 4 advanced
 verification foundation, the Phase 5 Celo Sepolia reward foundation, the Phase
-6 wallet ownership experience, and the Phase 7 reward operations foundation of
-the current MVP build are complete.
+6 wallet ownership experience, the Phase 7 reward operations foundation, and
+the Phase 8 Celo pilot-readiness foundation of the current MVP build are
+complete.
 
 ### Phase 1 - Product Foundation
 
@@ -125,6 +126,22 @@ security model, API, frontend flow, and remaining native-wallet deployment work.
 
 See [Phase 7 Reward Operations](docs/PHASE_7_REWARD_OPERATIONS.md) for the
 control model, reconciliation behavior, API, audit coverage, and pilot runbook.
+
+### Phase 8 - Celo Pilot Readiness
+
+- Added fail-fast production and live-reward configuration validation.
+- Added a read-only administrator preflight for the Celo Sepolia RPC, deployed
+  treasury contract, owner signer, balance, and application pause.
+- Exposed live HTTP, reward, treasury, and preflight Prometheus metrics.
+- Added alerts for stuck broadcasts, reward failures, failed preflight checks,
+  and low treasury balance.
+- Added local and deployed-environment pilot smoke commands and kept Kubernetes
+  at one replica while the backend uses SQLite.
+- Kept live payouts disabled: this phase deploys no contract and sends no CELO.
+
+See [Phase 8 Celo Pilot Readiness](docs/PHASE_8_CELO_PILOT_READINESS.md) for
+configuration rules, preflight usage, monitoring, and the controlled pilot
+sequence.
 
 ### Phase 6 and Phase 7 Delivery Snapshot
 
