@@ -1,0 +1,6 @@
+# Require repository-owner review for production-sensitive changes.
+/.github/ @davelee001
+/backend/src/database/ @davelee001
+/backend/src/services/reward* @davelee001
+/blockchain/ @davelee001
+/k8s/ @davelee001
