@@ -145,7 +145,7 @@ function createApp() {
 
 	// Health check endpoint
 	app.get('/health', (req, res) => {
-		db.get('SELECT name FROM sqlite_master WHERE type="table"', (err) => {
+		db.get('SELECT 1 AS healthy', (err) => {
 			if (err) {
 				return res.status(500).json({ status: 'error', message: 'Database connection failed' });
 			}
@@ -1276,13 +1276,15 @@ function createApp() {
 
 	app.use('/api/v1', apiRouter);
 
-	// Initialize and mount gamification API routes
-	const gamificationRouter = initializeGamificationAPI(db);
-	app.use('/api/v1/gamification', gamificationRouter);
+	if (config.features.gamification) {
+		const gamificationRouter = initializeGamificationAPI(db);
+		app.use('/api/v1/gamification', gamificationRouter);
+	}
 
-	// Initialize and mount social features API routes
-	const socialRouter = require('./routes/social');
-	app.use('/api/v1/social', socialRouter);
+	if (config.features.social) {
+		const socialRouter = require('./routes/social');
+		app.use('/api/v1/social', socialRouter);
+	}
 
 	app.use((error, req, res, next) => {
 		if (error?.type === 'entity.too.large') {
