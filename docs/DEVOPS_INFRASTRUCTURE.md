@@ -293,7 +293,8 @@ npx playwright test --ui
 ### Backend Environment Variables
 
 **Development:** `backend/.env.example`
-**Production:** `backend/.env.production`
+**Production template:** `backend/.env.production.example` (copy to an
+untracked environment file or inject values through the deployment platform)
 
 **Key variables:**
 - `NODE_ENV` - Environment (development/production)
@@ -307,7 +308,7 @@ npx playwright test --ui
 ### Frontend Environment Variables
 
 **Development:** `city-cleanup-challenge/.env.example`
-**Production:** `city-cleanup-challenge/.env.production`
+**Production template:** `city-cleanup-challenge/.env.production.example`
 
 **Key variables:**
 - `REACT_APP_API_URL` - Backend API URL
