@@ -1,4 +1,11 @@
 {
+  "private": true,
+  "scripts": {
+    "release:render": "node scripts/render-release-config.js",
+    "release:validate": "node scripts/validate-release-config.js",
+    "staging:smoke": "node scripts/staging-smoke.js",
+    "staging:load": "node scripts/load-test.js"
+  },
   "dependencies": {
     "sqlite3": "^5.1.7"
   }
