@@ -1,335 +1,335 @@
-name: CI/CD Pipeline
+name: CI, Security, and Release
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: city-cleanup-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   REGISTRY: citycleanup.azurecr.io
-  BACKEND_IMAGE_NAME: backend
-  FRONTEND_IMAGE_NAME: frontend
+  BACKEND_IMAGE: citycleanup.azurecr.io/backend
+  FRONTEND_IMAGE: citycleanup.azurecr.io/frontend
   AKS_CLUSTER_NAME: city-cleanup-aks
   AKS_RESOURCE_GROUP: city-cleanup-rg
   NAMESPACE: city-cleanup
+  RELEASE_TAG: sha-${{ github.sha }}
 
 jobs:
-  # Job 1: Code Quality and Linting
-  code-quality:
-    name: Code Quality Checks
+  quality:
+    name: Tests, coverage, lint, and builds
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies - Backend
-        working-directory: ./backend
-        run: npm ci
-
-      - name: Install dependencies - Frontend
-        working-directory: ./city-cleanup-challenge
-        run: npm ci
-
-      - name: Run ESLint - Backend
-        working-directory: ./backend
-        run: npm run lint
-
-      - name: Audit production dependencies
-        working-directory: ./backend
-        run: npm run audit:prod
-
-      - name: Run ESLint - Frontend
-        working-directory: ./city-cleanup-challenge
-        run: npm run lint
-
-  # Job 2: Unit Tests
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: code-quality
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            city-cleanup-challenge/package-lock.json
 
       - name: Install backend dependencies
-        working-directory: ./backend
+        working-directory: backend
         run: npm ci
 
-      - name: Run backend unit tests
-        working-directory: ./backend
-        run: npm test -- --coverage --passWithNoTests
+      - name: Verify backend
+        working-directory: backend
+        run: |
+          npm run lint
+          npm run audit:prod
+          npm run test:coverage -- --runInBand
 
-      - name: Upload backend coverage
-        uses: codecov/codecov-action@v3
+      - name: Validate release manifest structure
+        run: node scripts/validate-release-config.js
+
+      - name: Install frontend dependencies
+        working-directory: city-cleanup-challenge
+        run: npm ci
+
+      - name: Verify frontend
+        working-directory: city-cleanup-challenge
+        env:
+          EXPO_PUBLIC_API_URL: https://api.staging.city-cleanup.invalid/api/v1
+        run: |
+          npm run lint
+          npm run test:coverage
+          npm run build:web
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          files: ./backend/coverage/lcov.info
-          flags: backend
-          name: backend-coverage
+          name: coverage-${{ github.run_id }}
+          path: |
+            backend/coverage
+            city-cleanup-challenge/coverage
+          if-no-files-found: error
+          retention-days: 14
 
-  # Job 3: Integration Tests
-  integration-tests:
-    name: Integration Tests
+  postgres:
+    name: PostgreSQL migration and API suite
     runs-on: ubuntu-latest
-    needs: unit-tests
+    timeout-minutes: 20
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17.10-alpine3.23
         env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          POSTGRES_DB: city_cleanup_test
+          POSTGRES_USER: cleanup_test
+          POSTGRES_PASSWORD: test-only-password
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cleanup_test -d city_cleanup_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Install backend dependencies
-        working-directory: ./backend
+      - working-directory: backend
         run: npm ci
 
-      - name: Run integration tests
-        working-directory: ./backend
-        run: npm run test:integration
+      - name: Run migrations and all API tests on PostgreSQL
+        working-directory: backend
         env:
-          DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
           NODE_ENV: test
+          DATABASE_CLIENT: postgres
+          DATABASE_URL: postgresql://cleanup_test:test-only-password@localhost:5432/city_cleanup_test
+        run: |
+          npm run db:verify
+          npm test -- --runInBand
 
-  # Job 4: Build and Push Docker Images
-  build-and-push:
-    name: Build and Push Docker Images
+  images:
+    name: Build immutable images
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
+    needs: [quality, postgres]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 35
     outputs:
-      backend-image-tag: ${{ steps.meta-backend.outputs.tags }}
-      frontend-image-tag: ${{ steps.meta-frontend.outputs.tags }}
+      backend: ${{ steps.release.outputs.backend }}
+      frontend: ${{ steps.release.outputs.frontend }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Azure Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Extract metadata - Backend
-        id: meta-backend
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Record immutable release references
+        id: release
+        shell: bash
+        run: |
+          echo "backend=${BACKEND_IMAGE}:${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "frontend=${FRONTEND_IMAGE}:${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push Backend image
-        uses: docker/build-push-action@v5
+      - name: Build and push backend
+        uses: docker/build-push-action@v7
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: backend
           push: true
-          tags: ${{ steps.meta-backend.outputs.tags }}
-          labels: ${{ steps.meta-backend.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:buildcache,mode=max
+          tags: ${{ env.BACKEND_IMAGE }}:${{ env.RELEASE_TAG }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache,mode=max
 
-      - name: Extract metadata - Frontend
-        id: meta-frontend
-        uses: docker/metadata-action@v5
+      - name: Build and push frontend
+        uses: docker/build-push-action@v7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./city-cleanup-challenge
-          file: ./city-cleanup-challenge/Dockerfile
+          context: city-cleanup-challenge
           push: true
-          tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max
+          tags: ${{ env.FRONTEND_IMAGE }}:${{ env.RELEASE_TAG }}
+          build-args: EXPO_PUBLIC_API_URL=${{ vars.PUBLIC_API_URL }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache,mode=max
 
-  # Job 5: Security Scanning
-  security-scan:
-    name: Security Scanning
+  security:
+    name: Block vulnerable release images
     runs-on: ubuntu-latest
-    needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: images
+    permissions:
+      contents: read
+      security-events: write
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [backend, frontend]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner - Backend
-        uses: aquasecurity/trivy-action@master
+      - uses: docker/login-action@v3
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest
-          format: 'sarif'
-          output: 'trivy-backend-results.sarif'
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Upload Trivy results to GitHub Security
+      - name: Scan ${{ matrix.image }} image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ matrix.image }}:${{ env.RELEASE_TAG }}
+          version: v0.69.3
+          format: sarif
+          output: trivy-${{ matrix.image }}.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          limit-severities-for-sarif: true
+
+      - name: Upload scan result
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'trivy-backend-results.sarif'
+          sarif_file: trivy-${{ matrix.image }}.sarif
+          category: trivy-${{ matrix.image }}
 
-      - name: Run Trivy vulnerability scanner - Frontend
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
-          format: 'sarif'
-          output: 'trivy-frontend-results.sarif'
-
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-frontend-results.sarif'
-
-  # Job 6: Deploy to AKS
-  deploy:
-    name: Deploy to AKS
+  staging:
+    name: Staging deployment and smoke test
     runs-on: ubuntu-latest
-    needs: [build-and-push, security-scan]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [images, security]
+    timeout-minutes: 20
     environment:
-      name: production
-      url: https://city-cleanup.example.com
+      name: staging
+      url: ${{ vars.PUBLIC_APP_URL }}
+    concurrency:
+      group: city-cleanup-staging
+      cancel-in-progress: true
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Set AKS context
-        uses: azure/aks-set-context@v3
+      - uses: azure/aks-set-context@v4
         with:
           cluster-name: ${{ env.AKS_CLUSTER_NAME }}
           resource-group: ${{ env.AKS_RESOURCE_GROUP }}
 
-      - name: Create namespace if not exists
-        run: |
-          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Create ACR secret
-        run: |
-          kubectl create secret docker-registry acr-secret \
-            --namespace=${{ env.NAMESPACE }} \
-            --docker-server=${{ env.REGISTRY }} \
-            --docker-username=${{ secrets.ACR_USERNAME }} \
-            --docker-password=${{ secrets.ACR_PASSWORD }} \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Deploy Kubernetes manifests
-        run: |
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/persistent-volume.yaml
-          kubectl apply -f k8s/backend-deployment.yaml
-          kubectl apply -f k8s/frontend-deployment.yaml
-          kubectl apply -f k8s/ingress.yaml
-
-      - name: Update deployment images
-        run: |
-          kubectl set image deployment/backend backend=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest -n ${{ env.NAMESPACE }}
-          kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest -n ${{ env.NAMESPACE }}
-
-      - name: Wait for rollout
-        run: |
-          kubectl rollout status deployment/backend -n ${{ env.NAMESPACE }} --timeout=5m
-          kubectl rollout status deployment/frontend -n ${{ env.NAMESPACE }} --timeout=5m
-
-      - name: Verify deployment
-        run: |
-          kubectl get pods -n ${{ env.NAMESPACE }}
-          kubectl get services -n ${{ env.NAMESPACE }}
-          kubectl get ingress -n ${{ env.NAMESPACE }}
-
-  # Job 7: E2E Tests (Post-deployment)
-  e2e-tests:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install Playwright
-        run: |
-          npm install -D @playwright/test
-          npx playwright install --with-deps
-
-      - name: Run E2E tests
-        run: npx playwright test
+      - name: Render staging release
         env:
-          BASE_URL: https://city-cleanup.example.com
-          API_BASE_URL: https://api.city-cleanup.example.com
+          DEPLOY_NAMESPACE: city-cleanup-staging
+          PUBLIC_APP_HOST: ${{ vars.PUBLIC_APP_HOST }}
+          PUBLIC_API_HOST: ${{ vars.PUBLIC_API_HOST }}
+          TLS_CONTACT_EMAIL: ${{ vars.TLS_CONTACT_EMAIL }}
+          AZURE_WORKLOAD_IDENTITY_CLIENT_ID: ${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}
+          AZURE_KEY_VAULT_NAME: ${{ vars.AZURE_KEY_VAULT_NAME }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          EVIDENCE_S3_BUCKET: ${{ vars.EVIDENCE_S3_BUCKET }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          BACKEND_RELEASE_IMAGE: ${{ needs.images.outputs.backend }}
+          FRONTEND_RELEASE_IMAGE: ${{ needs.images.outputs.frontend }}
+        run: |
+          node scripts/render-release-config.js
+          node scripts/validate-release-config.js --rendered --directory=rendered-k8s
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report/
+      - name: Apply staging manifests
+        run: |
+          kubectl apply -k rendered-k8s
+          kubectl rollout status deployment/backend -n city-cleanup-staging --timeout=5m
+          kubectl rollout status deployment/frontend -n city-cleanup-staging --timeout=5m
 
-  # Job 8: Notify
-  notify:
-    name: Notify Deployment Status
+      - name: Run staging smoke test
+        env:
+          SMOKE_BASE_URL: ${{ vars.PUBLIC_APP_URL }}
+          SMOKE_API_URL: ${{ vars.PUBLIC_API_URL }}
+        run: node scripts/staging-smoke.js
+
+      - name: Roll back failed staging rollout
+        if: failure()
+        run: |
+          kubectl rollout undo deployment/backend -n city-cleanup-staging
+          kubectl rollout undo deployment/frontend -n city-cleanup-staging
+
+  deploy:
+    name: Approved production deployment
     runs-on: ubuntu-latest
-    needs: [deploy, e2e-tests]
-    if: always()
+    needs: [images, security, staging]
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.PUBLIC_APP_URL }}
+    concurrency:
+      group: city-cleanup-production
+      cancel-in-progress: false
     steps:
-      - name: Notify success
-        if: needs.deploy.result == 'success' && needs.e2e-tests.result == 'success'
-        run: echo "Deployment successful!"
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-      - name: Notify failure
-        if: needs.deploy.result == 'failure' || needs.e2e-tests.result == 'failure'
-        run: echo "Deployment failed!"
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: azure/aks-set-context@v4
+        with:
+          cluster-name: ${{ env.AKS_CLUSTER_NAME }}
+          resource-group: ${{ env.AKS_RESOURCE_GROUP }}
+
+      - name: Render production release
+        env:
+          DEPLOY_NAMESPACE: city-cleanup
+          PUBLIC_APP_HOST: ${{ vars.PUBLIC_APP_HOST }}
+          PUBLIC_API_HOST: ${{ vars.PUBLIC_API_HOST }}
+          TLS_CONTACT_EMAIL: ${{ vars.TLS_CONTACT_EMAIL }}
+          AZURE_WORKLOAD_IDENTITY_CLIENT_ID: ${{ vars.AZURE_WORKLOAD_IDENTITY_CLIENT_ID }}
+          AZURE_KEY_VAULT_NAME: ${{ vars.AZURE_KEY_VAULT_NAME }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          EVIDENCE_S3_BUCKET: ${{ vars.EVIDENCE_S3_BUCKET }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          BACKEND_RELEASE_IMAGE: ${{ needs.images.outputs.backend }}
+          FRONTEND_RELEASE_IMAGE: ${{ needs.images.outputs.frontend }}
+        run: |
+          node scripts/render-release-config.js
+          node scripts/validate-release-config.js --rendered --directory=rendered-k8s
+          kubectl kustomize rendered-k8s >/dev/null
+
+      - name: Apply manifests and wait for safe rollout
+        run: |
+          kubectl apply -k rendered-k8s
+          kubectl rollout status deployment/backend -n "$NAMESPACE" --timeout=5m
+          kubectl rollout status deployment/frontend -n "$NAMESPACE" --timeout=5m
+
+      - name: Run production smoke test
+        env:
+          SMOKE_BASE_URL: ${{ vars.PUBLIC_APP_URL }}
+          SMOKE_API_URL: ${{ vars.PUBLIC_API_URL }}
+        run: node scripts/staging-smoke.js
+
+      - name: Roll back failed rollout
+        if: failure()
+        run: |
+          kubectl rollout undo deployment/backend -n "$NAMESPACE"
+          kubectl rollout undo deployment/frontend -n "$NAMESPACE"
+          kubectl rollout status deployment/backend -n "$NAMESPACE" --timeout=5m
+          kubectl rollout status deployment/frontend -n "$NAMESPACE" --timeout=5m
