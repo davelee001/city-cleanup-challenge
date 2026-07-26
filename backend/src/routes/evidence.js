@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const multer = require('multer');
@@ -9,10 +8,8 @@ const {
   verifyEvidencePair,
 } = require('../services/evidenceVerification');
 const { ensureRewardClaim } = require('../services/rewardService');
-
-const EVIDENCE_ROOT = path.resolve(
-  process.env.EVIDENCE_STORAGE_PATH || path.join(__dirname, '../../data/evidence')
-);
+const evidenceStorage = require('../services/evidenceStorage');
+const { EVIDENCE_ROOT } = evidenceStorage;
 const ALLOWED_CATEGORIES = new Set(['plastic', 'glass', 'metal', 'paper', 'mixed']);
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const IMAGE_TYPES = {
@@ -20,8 +17,6 @@ const IMAGE_TYPES = {
   'image/png': '.png',
   'image/webp': '.webp',
 };
-
-fs.mkdirSync(EVIDENCE_ROOT, { recursive: true });
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -285,108 +280,107 @@ function createEvidenceRouter(db) {
       const storedFiles = [];
 
       try {
-        await dbRun(db, 'BEGIN IMMEDIATE');
-        const created = await dbRun(
-          db,
-          `INSERT INTO cleanup_submissions (
-             user_id, waste_category, item_count, estimated_weight, notes,
-             latitude, longitude, location_accuracy, captured_before_at,
-             captured_after_at, status, duplicate_of, verification_summary,
-             verification_version, risk_level, rejection_reason, updated_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-          [
-            req.user.id,
-            values.wasteCategory,
-            values.itemCount,
-            values.estimatedWeight,
-            values.notes,
-            values.latitude,
-            values.longitude,
-            values.locationAccuracy,
-            values.capturedBeforeAt,
-            values.capturedAfterAt,
-            finalStatus,
-            duplicateOf,
-            verificationSummary,
-            verification.version,
-            verification.overallRisk,
-            rejectionReason,
-          ]
-        );
-
-        const submissionDir = path.join(EVIDENCE_ROOT, String(created.lastID));
-        fs.mkdirSync(submissionDir, { recursive: true });
-        for (const [kind, file, image] of [
-          ['before', beforeFile, beforeImage],
-          ['after', afterFile, afterImage],
-        ]) {
-          const filename = `${kind}-${crypto.randomUUID()}${IMAGE_TYPES[image.mimeType]}`;
-          const storagePath = path.join(submissionDir, filename);
-          fs.writeFileSync(storagePath, file.buffer, { flag: 'wx' });
-          storedFiles.push(storagePath);
-          await dbRun(
-            db,
-            `INSERT INTO cleanup_evidence_files (
-               submission_id, kind, storage_path, sha256, perceptual_hash,
-               image_metadata, mime_type, byte_size, original_name
-             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        let submissionId;
+        await db.transaction(async (transactionDb) => {
+          const created = await dbRun(
+            transactionDb,
+            `INSERT INTO cleanup_submissions (
+               user_id, waste_category, item_count, estimated_weight, notes,
+               latitude, longitude, location_accuracy, captured_before_at,
+               captured_after_at, status, duplicate_of, verification_summary,
+               verification_version, risk_level, rejection_reason, updated_at
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
             [
-              created.lastID,
-              kind,
-              storagePath,
-              image.hash,
-              verification.images[kind].perceptualHash,
-              JSON.stringify(verification.images[kind]),
-              image.mimeType,
-              file.size,
-              path.basename(file.originalname || `${kind}.image`),
+              req.user.id,
+              values.wasteCategory,
+              values.itemCount,
+              values.estimatedWeight,
+              values.notes,
+              values.latitude,
+              values.longitude,
+              values.locationAccuracy,
+              values.capturedBeforeAt,
+              values.capturedAfterAt,
+              finalStatus,
+              duplicateOf,
+              verificationSummary,
+              verification.version,
+              verification.overallRisk,
+              rejectionReason,
             ]
           );
-        }
+          submissionId = created.lastID;
 
-        await dbRun(
-          db,
-          `INSERT INTO submission_transitions
-             (submission_id, actor_user_id, from_status, to_status, reason)
-           VALUES (?, ?, 'draft', 'submitted', 'Evidence submitted by user')`,
-          [created.lastID, req.user.id]
-        );
-        await dbRun(
-          db,
-          `INSERT INTO submission_transitions
-             (submission_id, actor_user_id, from_status, to_status, reason)
-           VALUES (?, NULL, 'submitted', 'automated_review', 'Exact duplicate check completed')`,
-          [created.lastID]
-        );
-        await dbRun(
-          db,
-          `INSERT INTO submission_transitions
-             (submission_id, actor_user_id, from_status, to_status, reason)
-           VALUES (?, NULL, 'automated_review', ?, ?)`,
-          [
-            created.lastID,
-            finalStatus,
-            isDuplicate
-              ? rejectionReason
-              : `Awaiting human verification (${verification.overallRisk} risk: ${
-                verification.reviewReasons.join(', ') || 'no elevated signals'
-              })`,
-          ]
-        );
-        await dbRun(db, 'COMMIT');
+          for (const [kind, file, image] of [
+            ['before', beforeFile, beforeImage],
+            ['after', afterFile, afterImage],
+          ]) {
+            const filename = `${kind}-${crypto.randomUUID()}${IMAGE_TYPES[image.mimeType]}`;
+            const storagePath = await evidenceStorage.put({
+              submissionId,
+              filename,
+              buffer: file.buffer,
+              mimeType: image.mimeType,
+            });
+            storedFiles.push(storagePath);
+            await dbRun(
+              transactionDb,
+              `INSERT INTO cleanup_evidence_files (
+                 submission_id, kind, storage_path, sha256, perceptual_hash,
+                 image_metadata, mime_type, byte_size, original_name
+               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                submissionId,
+                kind,
+                storagePath,
+                image.hash,
+                verification.images[kind].perceptualHash,
+                JSON.stringify(verification.images[kind]),
+                image.mimeType,
+                file.size,
+                path.basename(file.originalname || `${kind}.image`),
+              ]
+            );
+          }
 
-        const submission = await getSubmission(db, created.lastID);
+          await dbRun(
+            transactionDb,
+            `INSERT INTO submission_transitions
+               (submission_id, actor_user_id, from_status, to_status, reason)
+             VALUES (?, ?, 'draft', 'submitted', 'Evidence submitted by user')`,
+            [submissionId, req.user.id]
+          );
+          await dbRun(
+            transactionDb,
+            `INSERT INTO submission_transitions
+               (submission_id, actor_user_id, from_status, to_status, reason)
+             VALUES (?, NULL, 'submitted', 'automated_review', 'Exact duplicate check completed')`,
+            [submissionId]
+          );
+          await dbRun(
+            transactionDb,
+            `INSERT INTO submission_transitions
+               (submission_id, actor_user_id, from_status, to_status, reason)
+             VALUES (?, NULL, 'automated_review', ?, ?)`,
+            [
+              submissionId,
+              finalStatus,
+              isDuplicate
+                ? rejectionReason
+                : `Awaiting human verification (${verification.overallRisk} risk: ${
+                  verification.reviewReasons.join(', ') || 'no elevated signals'
+                })`,
+            ]
+          );
+        });
+
+        const submission = await getSubmission(db, submissionId);
         return res.status(201).json({
           success: true,
           submission: serializeSubmission(submission),
         });
       } catch (error) {
-        await dbRun(db, 'ROLLBACK').catch(() => {});
-        storedFiles.forEach((file) => {
-          try {
-            fs.unlinkSync(file);
-          } catch {}
-        });
+        await Promise.allSettled(storedFiles.map((file) => evidenceStorage.remove(file)));
         return res.status(500).json({ success: false, message: 'Unable to save cleanup evidence' });
       }
     }
@@ -469,12 +463,16 @@ function createEvidenceRouter(db) {
          WHERE submission_id = ? AND kind = ?`,
         [submission.id, req.params.kind]
       );
-      if (!image || !fs.existsSync(image.storage_path)) {
+      if (!image) {
         return res.status(404).json({ success: false, message: 'Evidence image not found' });
       }
       res.type(image.mime_type);
       res.set('Cache-Control', 'private, no-store');
-      return res.sendFile(path.resolve(image.storage_path));
+      const found = await evidenceStorage.send(image.storage_path, res);
+      if (!found) {
+        return res.status(404).json({ success: false, message: 'Evidence image not found' });
+      }
+      return undefined;
     } catch {
       return res.status(500).json({ success: false, message: 'Unable to load evidence image' });
     }
