@@ -88,4 +88,25 @@ describe('runtime environment validation', () => {
       'AWS access key ID and secret must be configured together',
     ]));
   });
+
+  it('accepts a PostgreSQL connection URL', () => {
+    const result = validateRuntimeEnvironment({
+      DATABASE_CLIENT: 'postgres',
+      DATABASE_URL: 'postgresql://cleanup:secret@database.internal/city_cleanup',
+    });
+
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects an invalid PostgreSQL connection URL', () => {
+    const result = validateRuntimeEnvironment({
+      DATABASE_CLIENT: 'postgres',
+      DATABASE_URL: 'https://database.internal/city_cleanup',
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain(
+      'DATABASE_URL must use the postgres or postgresql protocol'
+    );
+  });
 });
