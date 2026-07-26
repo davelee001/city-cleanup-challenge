@@ -4,6 +4,10 @@ node_modules/
 # Expo
 .expo/
 dist/
+rendered-k8s/
+coverage/
+.npm-cache-*/
+.expo-*/
 
 # Database
 *.db
@@ -14,6 +18,9 @@ dist/
 
 # Environment files
 .env
+.env.*
+!.env.example
+!.env.*.example
 
 # IDE files
 .vscode/
