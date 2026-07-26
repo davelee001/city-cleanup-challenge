@@ -1,5 +1,5 @@
 # Backend Dockerfile
-FROM node:22-alpine
+FROM node:22.23.1-alpine3.24
 
 # Set working directory
 WORKDIR /app
@@ -17,6 +17,7 @@ COPY --chown=node:node scripts ./scripts
 # Create writable runtime directories, then drop root privileges
 RUN mkdir -p /app/data /app/uploads \
   && chown -R node:node /app/data /app/uploads
+ENV DATABASE_PATH=/app/data/city-cleanup.db
 USER node
 
 # Expose port
