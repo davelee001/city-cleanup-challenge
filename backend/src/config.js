@@ -14,8 +14,10 @@ const config = {
 
   // Database
   database: {
+    client: (process.env.DATABASE_CLIENT || 'sqlite').toLowerCase(),
     path: process.env.DATABASE_PATH || './data/city-cleanup.db',
     url: process.env.DATABASE_URL,
+    poolMax: parseInt(process.env.DATABASE_POOL_MAX, 10) || 10,
   },
 
   // CORS
@@ -91,6 +93,7 @@ const config = {
     notifications: process.env.ENABLE_NOTIFICATIONS === 'true',
     cache: process.env.ENABLE_CACHE === 'true',
     gamification: process.env.ENABLE_GAMIFICATION === 'true',
+    social: process.env.ENABLE_SOCIAL === 'true',
   },
 
   // Development
@@ -102,7 +105,13 @@ const config = {
 
 // Validation
 const requiredEnvVars = config.env === 'production'
-  ? ['NODE_ENV', 'DATABASE_PATH', 'CORS_ORIGIN', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET']
+  ? [
+    'NODE_ENV',
+    config.database.client === 'postgres' ? 'DATABASE_URL' : 'DATABASE_PATH',
+    'CORS_ORIGIN',
+    'JWT_ACCESS_SECRET',
+    'JWT_REFRESH_SECRET',
+  ]
   : [];
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
