@@ -8,7 +8,9 @@ Phase 1, Phase 2, Phase 3 evidence submission, the Phase 4 advanced
 verification foundation, the Phase 5 Celo Sepolia reward foundation, the Phase
 6 wallet ownership experience, the Phase 7 reward operations foundation, the
 Phase 8 Celo pilot-readiness foundation, and the Phase 9 production-security
-foundation of the current MVP build are complete.
+foundation are complete. Phase 10 production data, Phase 11 test quality, Phase
+12 secure release automation, and Phase 13 staging operations are now also
+implemented and ready for environment-specific validation.
 
 ### Phase 1 - Product Foundation
 
@@ -158,6 +160,49 @@ sequence.
 
 See [Phase 9 Production Security](docs/PHASE_9_PRODUCTION_SECURITY.md) for the
 controls, configuration, audit boundary, and remaining deployment work.
+
+### Phase 10 - Production Data and Evidence
+
+- Added a PostgreSQL adapter and ordered, transactional production migrations
+  while preserving SQLite for local development.
+- Added database verification, SQLite-to-PostgreSQL import, PostgreSQL backup,
+  and guarded restore commands.
+- Added private S3 evidence storage with authenticated streaming and removed
+  replica-local production uploads.
+- Added PostgreSQL, S3, and production orchestration configuration plus database
+  and evidence recovery operations.
+
+See [Database and Evidence Operations](docs/DATABASE_AND_EVIDENCE_OPERATIONS.md).
+
+### Phase 11 - Test Quality and Supported Frontend
+
+- Upgraded the frontend to Expo SDK 56, React Native 0.85, and React 19.2.
+- Added sign-in and signup component tests, API-configuration integration tests,
+  and enforced frontend and backend coverage thresholds.
+- Enforced clean lint, test, coverage, and web-export gates in CI.
+- Removed unused vulnerable document-generation dependencies from the frontend.
+
+### Phase 12 - Secure Release Automation
+
+- Added current Node and Nginx runtime images, immutable commit-addressed image
+  releases, SBOMs, provenance, and authenticated final-image vulnerability
+  scanning.
+- Added PostgreSQL CI, dependency updates, code ownership, protected production
+  governance, external secret injection, and non-root Kubernetes workloads.
+- Added environment rendering that refuses missing values, placeholders,
+  mutable image tags, wildcard CORS, and missing baseline workload protections.
+
+See [Release Governance](docs/RELEASE_GOVERNANCE.md).
+
+### Phase 13 - Staging, Load, and Rollback Readiness
+
+- Added an automatic staging rollout before the protected production approval.
+- Added HTTPS smoke tests for health, readiness, authentication, metrics, and
+  CORS boundaries.
+- Added a bounded, read-only load runner with error-rate and p95 latency gates.
+- Added a read-only AKS dependency preflight and a repeatable rollback drill.
+
+See [Staging, Load, and Rollback Operations](docs/STAGING_LOAD_AND_ROLLBACK.md).
 
 ### Phase 6 and Phase 7 Delivery Snapshot
 
@@ -1250,12 +1295,12 @@ defined in [Product Rules](docs/PRODUCT_RULES.md).
 - [x] Implement JWT access and rotating refresh tokens with verification, expiration, and revocation.
 - [x] Protect private and state-changing API endpoints with authentication.
 - [x] Enforce administrator roles and resource ownership checks.
-- [ ] Choose a production database architecture: one SQLite replica temporarily, or a complete PostgreSQL migration.
+- [x] Choose and implement PostgreSQL as the production database architecture.
 - [ ] Run and verify every database migration in staging.
 - [ ] Replace placeholder domains, CORS origins, certificate email addresses, and Kubernetes secrets.
-- [ ] Store production credentials in Azure Key Vault or Kubernetes Secrets and connect them to the backend.
-- [ ] Validate every required production environment variable during backend startup.
-- [ ] Inject frontend configuration during the static build or through a runtime configuration file.
+- [x] Connect Azure Key Vault CSI secrets to the backend workload.
+- [x] Validate every required production environment variable during backend startup.
+- [x] Inject frontend configuration during the static build.
 - [x] Complete clean dependency installs and verify the backend tests and production frontend build.
 - [x] Make lint, integration, and end-to-end test failures fail CI.
 - [x] Correct end-to-end API paths.
@@ -1264,21 +1309,21 @@ defined in [Product Rules](docs/PRODUCT_RULES.md).
 ### Medium Priority - Required Before Public Release
 
 - [x] Upgrade Node.js to version 22 and verify the backend and Expo web build.
-- [ ] Pin production container image versions or digests instead of deploying `latest`.
-- [ ] Run dependency and container scans and resolve all critical and high-severity vulnerabilities.
+- [x] Pin runtime bases and deploy immutable commit-addressed images instead of `latest`.
+- [x] Gate final release images with authenticated high/critical vulnerability scans.
 - [x] Remove tracked `node_modules` files and commit synchronized lockfiles.
-- [ ] Stop tracking real production environment files and rotate any previously committed credentials.
+- [x] Track production templates only and ignore real production environment files.
 - [x] Add explicit frontend build and lint scripts.
-- [ ] Add frontend component-test and integration-test scripts.
-- [ ] Add authentication, authorization, upload, validation, rate-limit, and migration tests.
-- [ ] Establish and enforce a meaningful coverage threshold.
-- [ ] Upgrade retired GitHub Actions, including `actions/upload-artifact@v3` and `github/codeql-action@v2`.
-- [ ] Authenticate the security-scan job with Azure Container Registry.
-- [ ] Protect `main` and require approval before production deployment.
-- [ ] Configure and test database and uploaded-image backup restoration.
+- [x] Add frontend component-test and integration-test scripts.
+- [x] Add authentication, authorization, upload, validation, rate-limit, and migration tests.
+- [x] Establish and enforce backend and frontend coverage thresholds.
+- [x] Upgrade retired GitHub Actions.
+- [x] Authenticate the security-scan job with Azure Container Registry.
+- [x] Define protected-main and required production-approval governance.
+- [x] Add guarded database backup/restore and private evidence recovery operations.
 - [ ] Test rolling updates, graceful shutdown, autoscaling, TLS, CORS, uploads, and rate limiting.
-- [ ] Load-test API traffic, database writes, image processing, and uploads.
-- [ ] Document and test rollback procedures while retaining a known-good image.
+- [x] Add a bounded read-only load gate; write/upload load remains an environment exercise.
+- [x] Document and automate rollback procedures while retaining immutable known-good images.
 
 ### Operational and Product Readiness
 
