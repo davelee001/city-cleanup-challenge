@@ -316,6 +316,28 @@ describe('JWT authentication and authorization', () => {
         else resolve(row);
       });
     });
+    const temporarySubmissionId = await new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO cleanup_submissions (
+          user_id, waste_category, latitude, longitude, location_accuracy,
+          captured_before_at, captured_after_at, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          ownerRecord.id,
+          'plastic',
+          0.3476,
+          32.5825,
+          8,
+          new Date(Date.now() - 60_000).toISOString(),
+          new Date().toISOString(),
+          'approved',
+        ],
+        function inserted(error) {
+          if (error) reject(error);
+          else resolve(this.lastID);
+        }
+      );
+    });
     const temporaryPaymentId = await new Promise((resolve, reject) => {
       db.run(
         `INSERT INTO reward_payments (
@@ -324,7 +346,7 @@ describe('JWT authentication and authorization', () => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           `0x${'f'.repeat(63)}1`,
-          999_991,
+          temporarySubmissionId,
           ownerRecord.id,
           walletAccount.address,
           'wallet-unlink-test',
@@ -349,6 +371,16 @@ describe('JWT authentication and authorization', () => {
         if (error) reject(error);
         else resolve();
       });
+    });
+    await new Promise((resolve, reject) => {
+      db.run(
+        'DELETE FROM cleanup_submissions WHERE id = ?',
+        [temporarySubmissionId],
+        (error) => {
+          if (error) reject(error);
+          else resolve();
+        }
+      );
     });
 
     const removed = await request(app)
