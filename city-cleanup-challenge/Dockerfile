@@ -1,5 +1,5 @@
 # Frontend Dockerfile for React Native Web
-FROM node:22.23.1-alpine3.24 AS builder
+FROM node:26.5.0-alpine3.24 AS builder
 
 ARG EXPO_PUBLIC_API_URL
 ENV EXPO_PUBLIC_API_URL=${EXPO_PUBLIC_API_URL}
