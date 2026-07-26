@@ -6,8 +6,10 @@ metadata:
 data:
   NODE_ENV: "production"
   PORT: "3001"
-  DATABASE_PATH: "/app/data/city-cleanup.db"
-  EVIDENCE_STORAGE_PATH: "/app/data/evidence"
+  DATABASE_CLIENT: "postgres"
+  DATABASE_POOL_MAX: "20"
+  DATABASE_SSL: "true"
+  DATABASE_SSL_REJECT_UNAUTHORIZED: "true"
   EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD: "12"
   EVIDENCE_SCENE_HIGH_RISK_BELOW: "0.30"
   EVIDENCE_SCENE_MEDIUM_RISK_BELOW: "0.48"
@@ -29,7 +31,10 @@ data:
   RATE_LIMIT_WINDOW_MS: "900000"
   JSON_BODY_LIMIT_BYTES: "1048576"
   TRUST_PROXY_HOPS: "1"
-  USE_CLOUD_STORAGE: "false"
+  USE_CLOUD_STORAGE: "true"
+  AWS_S3_BUCKET: "replace-with-private-evidence-bucket"
+  AWS_REGION: "replace-with-aws-region"
+  EVIDENCE_S3_PREFIX: "evidence"
   CORS_ORIGIN: "https://city-cleanup.example.com"
 ---
 apiVersion: v1
