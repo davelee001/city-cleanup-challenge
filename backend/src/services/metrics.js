@@ -189,10 +189,15 @@ class PrometheusMetrics {
       ),
     ]);
     this.rewardPayments.reset();
-    statuses.forEach((row) => this.rewardPayments.set({ status: row.status }, row.total));
+    statuses.forEach((row) => this.rewardPayments.set({ status: row.status }, Number(row.total)));
     this.rewardPaused.set(controls ? (controls.paused ? 1 : 0) : 1);
-    const broadcastAge = oldest?.broadcast_at
-      ? Math.max(0, (Date.now() - new Date(`${oldest.broadcast_at.replace(' ', 'T')}Z`).getTime()) / 1000)
+    const broadcastTimestamp = oldest?.broadcast_at instanceof Date
+      ? oldest.broadcast_at
+      : oldest?.broadcast_at
+        ? new Date(`${String(oldest.broadcast_at).replace(' ', 'T')}Z`)
+        : null;
+    const broadcastAge = broadcastTimestamp
+      ? Math.max(0, (Date.now() - broadcastTimestamp.getTime()) / 1000)
       : 0;
     this.oldestBroadcastAge.set(Number.isFinite(broadcastAge) ? broadcastAge : 0);
   }
