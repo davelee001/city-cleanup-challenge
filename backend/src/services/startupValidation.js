@@ -5,6 +5,7 @@ const PLACEHOLDER_PATTERNS = [
   /example\.com/i,
   /your[-_]/i,
   /change[-_]?me/i,
+  /replace[-_]?with/i,
   /placeholder/i,
 ];
 
@@ -36,6 +37,21 @@ function validateRuntimeEnvironment(environment = process.env) {
   const dryRun = environment.CELO_REWARD_DRY_RUN === undefined
     || String(environment.CELO_REWARD_DRY_RUN).toLowerCase() === 'true';
   const liveRewards = rewardsEnabled && !dryRun;
+  const databaseClient = String(environment.DATABASE_CLIENT || 'sqlite').toLowerCase();
+
+  if (!['sqlite', 'postgres'].includes(databaseClient)) {
+    errors.push('DATABASE_CLIENT must be sqlite or postgres');
+  }
+  if (databaseClient === 'postgres') {
+    try {
+      const databaseUrl = new URL(environment.DATABASE_URL);
+      if (!['postgres:', 'postgresql:'].includes(databaseUrl.protocol)) {
+        errors.push('DATABASE_URL must use the postgres or postgresql protocol');
+      }
+    } catch {
+      errors.push('DATABASE_URL must be a valid PostgreSQL connection URL');
+    }
+  }
 
   for (const name of [
     'CELO_REWARDS_ENABLED',
@@ -101,7 +117,7 @@ function validateRuntimeEnvironment(environment = process.env) {
 
   if (production) {
     for (const name of [
-      'DATABASE_PATH',
+      databaseClient === 'postgres' ? 'DATABASE_URL' : 'DATABASE_PATH',
       'CORS_ORIGIN',
       'JWT_ACCESS_SECRET',
       'JWT_REFRESH_SECRET',
@@ -146,7 +162,7 @@ function validateRuntimeEnvironment(environment = process.env) {
   ) {
     warnings.push('The public Forno RPC has no uptime SLA; configure a supported pilot provider');
   }
-  if (production && String(environment.DATABASE_PATH || '').includes('.db')) {
+  if (production && databaseClient === 'sqlite') {
     warnings.push('Production is using SQLite; run only one backend replica');
   }
 
