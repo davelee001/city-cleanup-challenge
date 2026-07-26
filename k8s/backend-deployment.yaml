@@ -7,27 +7,27 @@ metadata:
     app: backend
     version: v1
 spec:
-  # SQLite requires a single writer. Increase this only after migrating to a
-  # shared production database and validating multi-replica reward locking.
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: backend
   template:
     metadata:
-      labels:
-        app: backend
-        version: v1
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/api/metrics"
         prometheus.io/port: "3001"
+      labels:
+        app: backend
+        version: v1
+        azure.workload.identity/use: "true"
     spec:
+      serviceAccountName: city-cleanup-backend
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -37,7 +37,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: backend
-        image: citycleanup.azurecr.io/backend:latest
+        image: citycleanup.azurecr.io/backend:sha-replaced-by-release-pipeline
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
@@ -54,16 +54,26 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: PORT
-        - name: DATABASE_PATH
+        - name: DATABASE_CLIENT
           valueFrom:
             configMapKeyRef:
               name: backend-config
-              key: DATABASE_PATH
-        - name: EVIDENCE_STORAGE_PATH
+              key: DATABASE_CLIENT
+        - name: DATABASE_POOL_MAX
           valueFrom:
             configMapKeyRef:
               name: backend-config
-              key: EVIDENCE_STORAGE_PATH
+              key: DATABASE_POOL_MAX
+        - name: DATABASE_SSL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: DATABASE_SSL
+        - name: DATABASE_SSL_REJECT_UNAUTHORIZED
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: DATABASE_SSL_REJECT_UNAUTHORIZED
         - name: EVIDENCE_PERCEPTUAL_DISTANCE_THRESHOLD
           valueFrom:
             configMapKeyRef:
@@ -174,6 +184,21 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: USE_CLOUD_STORAGE
+        - name: AWS_S3_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: AWS_S3_BUCKET
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: AWS_REGION
+        - name: EVIDENCE_S3_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: EVIDENCE_S3_PREFIX
         - name: METRICS_ENABLED
           valueFrom:
             configMapKeyRef:
@@ -195,6 +220,28 @@ spec:
             secretKeyRef:
               name: city-cleanup-secrets
               key: JWT_REFRESH_SECRET
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: DATABASE_URL
+        - name: METRICS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: METRICS_TOKEN
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: AWS_ACCESS_KEY_ID
+              optional: true
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: AWS_SECRET_ACCESS_KEY
+              optional: true
         resources:
           requests:
             memory: "256Mi"
@@ -224,12 +271,16 @@ spec:
           timeoutSeconds: 3
           failureThreshold: 3
         volumeMounts:
-        - name: backend-data
-          mountPath: /app/data
+        - name: key-vault-secrets
+          mountPath: /mnt/secrets-store
+          readOnly: true
       volumes:
-      - name: backend-data
-        persistentVolumeClaim:
-          claimName: backend-data-pvc
+      - name: key-vault-secrets
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: city-cleanup-key-vault
       imagePullSecrets:
       - name: acr-secret
 ---
@@ -256,13 +307,12 @@ metadata:
   name: backend-hpa
   namespace: city-cleanup
 spec:
-  # Deliberately fixed at one while SQLite is the persistence layer.
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: backend
-  minReplicas: 1
-  maxReplicas: 1
+  minReplicas: 2
+  maxReplicas: 6
   metrics:
   - type: Resource
     resource:
