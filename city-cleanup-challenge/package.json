@@ -8,29 +8,54 @@
   "scripts": {
     "start": "expo start",
     "build:web": "expo export -p web",
-    "lint": "eslint . --ext .js,.jsx"
+    "lint": "eslint . --ext .js,.jsx",
+    "test": "jest --runInBand",
+    "test:components": "jest --runInBand tests/components",
+    "test:integration": "jest --runInBand tests/integration",
+    "test:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~3.1.3",
-    "@react-native-async-storage/async-storage": "1.21.0",
+    "@expo/metro-runtime": "~56.0.18",
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "chart.js": "^4.4.0",
     "d3": "^7.8.5",
-    "expo": "^50.0.0",
-    "expo-image-picker": "~14.7.1",
-    "expo-linear-gradient": "~12.7.2",
-    "expo-location": "~16.5.5",
-    "jspdf": "^2.5.1",
+    "expo": "~56.0.17",
+    "expo-image-picker": "~56.0.22",
+    "expo-linear-gradient": "~56.0.4",
+    "expo-location": "~56.0.22",
     "leaflet": "^1.9.4",
-    "react": "^18.2.0",
+    "react": "19.2.3",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "18.2.0",
+    "react-dom": "19.2.3",
     "react-hot-toast": "^2.4.1",
-    "react-native": "0.73.6",
-    "react-native-maps": "1.10.0",
-    "react-native-web": "~0.19.6",
-    "xlsx": "^0.18.5"
+    "react-native": "0.85.3",
+    "react-native-maps": "1.27.2",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
-    "eslint": "^8.57.1"
+    "@testing-library/react-native": "^13.3.3",
+    "eslint": "^8.57.1",
+    "jest-expo": "~56.0.5",
+    "react-test-renderer": "19.2.3"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "collectCoverageFrom": [
+      "Login.js",
+      "Signup.js",
+      "apiConfig.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 45,
+        "functions": 50,
+        "lines": 60,
+        "statements": 60
+      }
+    }
   }
 }
