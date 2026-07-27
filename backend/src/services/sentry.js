@@ -4,7 +4,17 @@
  */
 
 const Sentry = require('@sentry/node');
-const { ProfilingIntegration } = require('@sentry/profiling-node');
+
+function profilingIntegration(sampleRate) {
+  if (sampleRate <= 0) return [];
+  try {
+    const { ProfilingIntegration } = require('@sentry/profiling-node');
+    return [new ProfilingIntegration()];
+  } catch (error) {
+    console.warn(`Sentry profiling unavailable; continuing without it: ${error.message}`);
+    return [];
+  }
+}
 
 class SentryService {
   constructor() {
@@ -16,30 +26,44 @@ class SentryService {
    */
   initialize(app) {
     const dsn = process.env.SENTRY_DSN;
+    if (String(process.env.SENTRY_ENABLED).toLowerCase() === 'false') {
+      return false;
+    }
     
     if (!dsn) {
-      console.warn('Sentry DSN not configured. Error tracking disabled.');
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('Sentry DSN not configured. Error tracking disabled.');
+      }
       return false;
     }
 
+    const profilesSampleRate = parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE || '0');
     Sentry.init({
       dsn,
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
       
       // Release tracking
-      release: process.env.APP_VERSION || 'unknown',
+      release: process.env.SENTRY_RELEASE || process.env.APP_VERSION || 'unknown',
+      sendDefaultPii: false,
       
       // Performance monitoring
       tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.1'),
       
       // Profiling
-      profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE || '0.1'),
-      integrations: [
-        new ProfilingIntegration(),
-      ],
+      profilesSampleRate,
+      integrations: profilingIntegration(profilesSampleRate),
       
       // Error filtering
       beforeSend(event, hint) {
+        if (event.request?.headers) {
+          delete event.request.headers.authorization;
+          delete event.request.headers.cookie;
+          delete event.request.headers['x-api-key'];
+        }
+        if (event.request) {
+          delete event.request.cookies;
+          delete event.request.data;
+        }
         // Don't send certain errors
         if (event.exception) {
           const error = hint.originalException;
@@ -85,14 +109,13 @@ class SentryService {
    * Error handler middleware (must be used after all routes)
    */
   errorHandler() {
+    if (!this.initialized) {
+      return (error, req, res, next) => next(error);
+    }
     return Sentry.Handlers.errorHandler({
       shouldHandleError(error) {
-        // Capture all errors with status >= 500
-        if (error.status >= 500) {
-          return true;
-        }
-        // Capture specific error types
-        return error.isOperational === false;
+        const status = Number(error.status || error.statusCode || 500);
+        return status >= 500 || error.isOperational === false;
       },
     });
   }
@@ -143,7 +166,6 @@ class SentryService {
     
     Sentry.setUser({
       id: user.id,
-      email: user.email,
       username: user.username,
     });
   }
@@ -190,7 +212,7 @@ class SentryService {
   async close(timeout = 2000) {
     if (!this.initialized) return;
     
-    await Sentry.close(timeout);
+    await Sentry.flush(timeout);
   }
 }
 
