@@ -27,6 +27,8 @@ function completeEnvironment() {
     CELO_TREASURY_MIN_BALANCE: '0.1',
     WALLET_VERIFICATION_DOMAIN: 'cleanup.community',
     WALLET_VERIFICATION_URI: 'https://cleanup.community',
+    SENTRY_ENABLED: 'false',
+    AUDIT_IP_HASH_SECRET: 'a'.repeat(32),
   };
 }
 
