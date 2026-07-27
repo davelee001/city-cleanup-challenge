@@ -21,7 +21,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "chart.js": "^4.4.0",
     "d3": "^7.8.5",
-    "expo": "~56.0.17",
+    "expo": "~57.0.8",
     "expo-image-picker": "~56.0.22",
     "expo-linear-gradient": "~56.0.4",
     "expo-location": "~56.0.22",
