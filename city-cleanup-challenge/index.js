@@ -24,6 +24,18 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
     }
   `;
   document.head.appendChild(typographyStyles);
+
+  if (
+    process.env.NODE_ENV === 'production'
+    && 'serviceWorker' in navigator
+    && window.isSecureContext
+  ) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js').catch((error) => {
+        console.warn('Offline support could not be enabled:', error);
+      });
+    });
+  }
 }
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);
