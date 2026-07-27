@@ -391,6 +391,7 @@ class GamificationService extends EventEmitter {
             return {
                 username,
                 totalPoints: points,
+                totalAchievements: achievements.length,
                 achievementsCount: achievements.length,
                 currentStreak: streak,
                 longestStreak: await this.getLongestStreak(username),
@@ -583,6 +584,189 @@ class GamificationService extends EventEmitter {
                 }
             );
         });
+    }
+
+    /**
+     * Get the most recently earned achievements for a user
+     * @param {string} username
+     * @param {number} limit
+     * @returns {Promise<Array>}
+     */
+    async getRecentAchievements(username, limit = 5) {
+        return new Promise((resolve, reject) => {
+            this.db.all(
+                'SELECT * FROM user_achievements WHERE username = ? ORDER BY earnedAt DESC LIMIT ?',
+                [username, limit],
+                (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows || []);
+                }
+            );
+        });
+    }
+
+    /**
+     * Get streak info for a user
+     * @param {string} username
+     * @returns {Promise<object>}
+     */
+    async getStreakInfo(username) {
+        return new Promise((resolve, reject) => {
+            this.db.get(
+                'SELECT currentStreak, longestStreak, lastActiveDate FROM user_streaks WHERE username = ?',
+                [username],
+                (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row || { currentStreak: 0, longestStreak: 0, lastActiveDate: null });
+                }
+            );
+        });
+    }
+
+    /**
+     * Get aggregated environmental impact totals for a user
+     * @param {string} username
+     * @returns {Promise<object>}
+     */
+    async getEnvironmentalImpact(username) {
+        const progress = await this.getUserProgressStats(username);
+        const impact = this.calculateEnvironmentalImpact(progress.totalWasteCollected) || {
+            co2Saved: 0,
+            waterSaved: 0,
+            energySaved: 0,
+            carbonValue: 0
+        };
+
+        return {
+            totalWasteCollected: progress.totalWasteCollected || 0,
+            totalCO2Saved: impact.co2Saved || 0,
+            totalWaterSaved: impact.waterSaved || 0,
+            totalEnergySaved: impact.energySaved || 0,
+            carbonValue: impact.carbonValue || 0
+        };
+    }
+
+    /**
+     * Get the current level/progress info for a user
+     * @param {string} username
+     * @returns {Promise<object>}
+     */
+    async getCurrentLevel(username) {
+        const points = await this.getUserPoints(username);
+        const levelData = this.calculateUserLevel(points);
+
+        return {
+            currentLevel: levelData.level,
+            levelTitle: levelData.title,
+            levelIcon: levelData.icon,
+            currentPoints: points,
+            pointsToNext: levelData.pointsToNext,
+            levelProgress: levelData.progress
+        };
+    }
+
+    /**
+     * Get a user's rank on the points leaderboard
+     * @param {string} username
+     * @returns {Promise<number|null>}
+     */
+    async getUserLeaderboardRank(username) {
+        return this.getUserRank(username);
+    }
+
+    /**
+     * Get the master list of available achievements
+     * @param {string} [category]
+     * @returns {Promise<Array>}
+     */
+    async getAvailableAchievements(category) {
+        return new Promise((resolve, reject) => {
+            const query = category
+                ? 'SELECT * FROM achievements_master WHERE isActive = 1 AND achievementCategory = ? ORDER BY pointsReward ASC'
+                : 'SELECT * FROM achievements_master WHERE isActive = 1 ORDER BY achievementCategory, pointsReward ASC';
+            const params = category ? [category] : [];
+
+            this.db.all(query, params, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows || []);
+            });
+        });
+    }
+
+    /**
+     * Get a leaderboard ranking for the given type
+     * @param {string} type - 'points' | 'waste' | 'streak' | 'achievements'
+     * @param {string} timeframe - reserved for future time-windowed leaderboards
+     * @param {number} limit
+     * @param {number} page
+     * @returns {Promise<object>}
+     */
+    async getLeaderboard(type = 'points', timeframe = 'all-time', limit = 50, page = 1) {
+        const safeLimit = Math.max(1, Math.min(parseInt(limit, 10) || 50, 100));
+        const safePage = Math.max(1, parseInt(page, 10) || 1);
+        const offset = (safePage - 1) * safeLimit;
+
+        let query;
+        switch (type) {
+            case 'waste':
+                query = `
+                    SELECT username, COALESCE(SUM(wasteCollected), 0) as score
+                    FROM cleanup_progress
+                    GROUP BY username
+                    HAVING score > 0
+                    ORDER BY score DESC
+                    LIMIT ? OFFSET ?
+                `;
+                break;
+            case 'streak':
+                query = `
+                    SELECT username, currentStreak as score
+                    FROM user_streaks
+                    WHERE currentStreak > 0
+                    ORDER BY currentStreak DESC
+                    LIMIT ? OFFSET ?
+                `;
+                break;
+            case 'achievements':
+                query = `
+                    SELECT username, COUNT(*) as score
+                    FROM user_achievements
+                    GROUP BY username
+                    ORDER BY score DESC
+                    LIMIT ? OFFSET ?
+                `;
+                break;
+            case 'points':
+            default:
+                query = `
+                    SELECT username, COALESCE(SUM(pointsEarned), 0) as score
+                    FROM user_points
+                    GROUP BY username
+                    HAVING score > 0
+                    ORDER BY score DESC
+                    LIMIT ? OFFSET ?
+                `;
+                break;
+        }
+
+        const rows = await new Promise((resolve, reject) => {
+            this.db.all(query, [safeLimit, offset], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows || []);
+            });
+        });
+
+        const rankings = rows.map((row, index) => ({
+            rank: offset + index + 1,
+            username: row.username,
+            score: row.score
+        }));
+
+        return {
+            rankings,
+            pagination: { page: safePage, limit: safeLimit, total: rankings.length },
+            metadata: { type, timeframe }
+        };
     }
 }
 
