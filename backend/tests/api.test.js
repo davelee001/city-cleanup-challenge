@@ -180,6 +180,26 @@ describe('JWT authentication and authorization', () => {
     expect(response.body.success).toBe(true);
   });
 
+  it('records authentication and administrative activity in the system audit log', async () => {
+    const forbidden = await request(app)
+      .get('/api/v1/admin/audit-events')
+      .set('Authorization', `Bearer ${ownerTokens.accessToken}`);
+    expect(forbidden.statusCode).toBe(403);
+
+    const response = await request(app)
+      .get('/api/v1/admin/audit-events?category=authentication&limit=100')
+      .set('Authorization', `Bearer ${adminTokens.accessToken}`);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        actor_username: adminUser,
+        category: 'authentication',
+        outcome: 'success',
+      }),
+    ]));
+    expect(JSON.stringify(response.body.events)).not.toContain('test-password');
+  });
+
   it('protects the reward policy and exposes it to authenticated users', async () => {
     const unauthenticated = await request(app).get('/api/v1/rewards/policy');
     expect(unauthenticated.statusCode).toBe(401);
