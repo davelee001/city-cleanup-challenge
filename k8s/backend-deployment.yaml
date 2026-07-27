@@ -204,6 +204,31 @@ spec:
             configMapKeyRef:
               name: backend-config
               key: METRICS_ENABLED
+        - name: SENTRY_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: SENTRY_ENABLED
+        - name: SENTRY_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: SENTRY_ENVIRONMENT
+        - name: SENTRY_RELEASE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: SENTRY_RELEASE
+        - name: SENTRY_TRACES_SAMPLE_RATE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: SENTRY_TRACES_SAMPLE_RATE
+        - name: SENTRY_PROFILES_SAMPLE_RATE
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: SENTRY_PROFILES_SAMPLE_RATE
         - name: CELO_TREASURY_PRIVATE_KEY
           valueFrom:
             secretKeyRef:
@@ -230,6 +255,16 @@ spec:
             secretKeyRef:
               name: city-cleanup-secrets
               key: METRICS_TOKEN
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: SENTRY_DSN
+        - name: AUDIT_IP_HASH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: city-cleanup-secrets
+              key: AUDIT_IP_HASH_SECRET
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
