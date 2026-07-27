@@ -10,7 +10,11 @@ verification foundation, the Phase 5 Celo Sepolia reward foundation, the Phase
 Phase 8 Celo pilot-readiness foundation, and the Phase 9 production-security
 foundation are complete. Phase 10 production data, Phase 11 test quality, Phase
 12 secure release automation, and Phase 13 staging operations are now also
-implemented and ready for environment-specific validation.
+implemented. The Phase 14 live-staging, Phase 15 monitoring/audit, Phase 16
+product/device, Phase 17 privacy/legal/support, and Phase 18 controlled-CELO
+foundations are implemented. Credentialed staging validation, physical-device
+acceptance, legal review, production support configuration, and the explicitly
+approved Celo Sepolia pilot remain external release gates.
 
 ### Phase 1 - Product Foundation
 
@@ -1349,12 +1353,12 @@ defined in [Product Rules](docs/PRODUCT_RULES.md).
 - [ ] Verify AKS, ACR, ingress-nginx, cert-manager, Metrics Server, managed identity, CSI secrets, and storage.
 - [ ] Configure Sentry, Prometheus alerts, and real Alertmanager receivers.
 - [ ] Replace default monitoring credentials and restrict monitoring services from public access.
-- [ ] Add audit logs for authentication, administrative, moderation, and destructive actions.
-- [ ] Complete or hide unfinished social-dashboard sections.
+- [x] Add audit logs for authentication, administrative, moderation, and destructive actions.
+- [x] Hide unfinished social-dashboard sections and simulated analytics from the release surface.
 - [ ] Complete blockchain tests and secure contract deployment keys if blockchain features are included.
 - [ ] Test maps, GPS permissions, uploads, email, notifications, analytics, offline mode, and PWA behavior.
-- [ ] Define privacy, GPS/photo retention, deletion, incident-response, and production support policies.
-- [ ] Add terms of service, a privacy policy, support contact, release notes, and an appropriate license.
+- [x] Define privacy, GPS/photo retention, deletion, incident-response, and production support policies.
+- [x] Add terms of service, a privacy policy, support route, release notes, and an MIT license.
 
 ## Remaining Delivery Phases
 
@@ -1381,7 +1385,8 @@ The implementation roadmap continues in priority order:
 
 ### Phase 16 - Product and Device Completion
 
-- Complete or hide unfinished social-dashboard areas.
+- Hide unfinished social and simulated dashboard areas from the release
+  surface. See [Phase 16 Product and Device Completion](docs/PHASE_16_PRODUCT_DEVICE.md).
 - Test maps, GPS permissions, image uploads, email, notifications, analytics,
   offline behavior, and PWA installation across supported devices.
 - Complete approved database-write, image-processing, and upload load tests in
@@ -1389,14 +1394,24 @@ The implementation roadmap continues in priority order:
 
 ### Phase 17 - Privacy, Legal, and Support Readiness
 
-- Define GPS and photo retention, user deletion, incident response, and
-  production support procedures.
-- Add terms of service, a privacy policy, a support contact, release notes, and
-  an appropriate project license.
+- Defined GPS and photo retention, user deletion, incident response, and
+  production support procedures. See
+  [Privacy Retention and Deletion](docs/PRIVACY_RETENTION_AND_DELETION.md) and
+  [Incident Response](docs/INCIDENT_RESPONSE.md).
+- Published [Terms](TERMS.md), [Privacy](PRIVACY.md), [Support](SUPPORT.md),
+  [Release Notes](RELEASE_NOTES.md), and the [MIT License](LICENSE).
+- Added privacy, terms, and support access to the unauthenticated application.
+- A project legal entity, governing jurisdiction, minimum age, and monitored
+  private support channel must still be approved and configured before launch.
 
 ### Phase 18 - Controlled CELO Launch
 
-- Complete smart-contract tests and review the contract deployment process.
+- Completed smart-contract tests and added a guarded contract deployment
+  process. See [Phase 18 Controlled CELO Launch](docs/PHASE_18_CONTROLLED_CELO_LAUNCH.md).
+- Added an immutable per-payment ceiling, paused-by-default deployment,
+  duplicate-claim protection, and two-step treasury ownership transfer.
+- Added an explicitly confirmed one-payment pilot with pause, reconciliation,
+  duplicate retry, and final-pause checks.
 - Secure and fund a dedicated Celo Sepolia treasury, then deploy and verify the
   reward contract.
 - Run duplicate-payout, pause, reconciliation, restart, and alert drills during
