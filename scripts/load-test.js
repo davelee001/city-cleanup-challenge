@@ -18,8 +18,16 @@ if (
   console.error('Use 1-600 seconds and 1-200 concurrent workers.');
   process.exit(2);
 }
-if (new URL(target).search || !/\/(health|ready)\/?$/.test(new URL(target).pathname)) {
-  console.error('LOAD_URL must be a query-free /health or /ready endpoint.');
+const targetUrl = new URL(target);
+if (
+  targetUrl.search
+  || !/\/(health|ready)\/?$/.test(targetUrl.pathname)
+  || (
+    targetUrl.protocol !== 'https:'
+    && !['localhost', '127.0.0.1'].includes(targetUrl.hostname)
+  )
+) {
+  console.error('LOAD_URL must be an HTTPS, query-free /health or /ready endpoint.');
   process.exit(2);
 }
 
