@@ -11,6 +11,7 @@ const REQUIRED_TABLES = [
   'reward_controls',
   'reward_audit_log',
   'wallet_verification_challenges',
+  'system_audit_events',
 ];
 
 function all(sql, params = []) {
