@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
 
 import { API_BASE_URL, apiFetch } from './apiConfig';
+import { colors } from './theme';
+import ThemedButton from './components/ThemedButton';
 
 export default function Chatbot() {
   const [messages, setMessages] = useState([
@@ -45,20 +47,29 @@ export default function Chatbot() {
           value={input}
           onChangeText={setInput}
           placeholder="Type your question..."
+          placeholderTextColor={colors.textMuted}
           editable={!loading}
         />
-        <Button title="Send" onPress={sendMessage} disabled={loading} />
+        <ThemedButton title="Send" onPress={sendMessage} disabled={loading} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: '600', marginBottom: 12 },
+  container: { flex: 1, padding: 24, backgroundColor: colors.pageBackground },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 12, color: colors.textPrimary },
   chat: { flex: 1, marginBottom: 12 },
-  bot: { color: '#EAF2FF', backgroundColor: '#213752', padding: 8, borderRadius: 6, marginBottom: 4 },
-  user: { color: '#fff', backgroundColor: '#007AFF', padding: 8, borderRadius: 6, alignSelf: 'flex-end', marginBottom: 4 },
-  inputRow: { flexDirection: 'row', alignItems: 'center' },
-  input: { flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 10, marginRight: 8 }
+  bot: { color: colors.textPrimary, backgroundColor: colors.cardAlt, padding: 8, borderRadius: 8, marginBottom: 4 },
+  user: { color: colors.white, backgroundColor: colors.accentBlue, padding: 8, borderRadius: 8, alignSelf: 'flex-end', marginBottom: 4 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: colors.cardDeep,
+    color: colors.textPrimary
+  }
 });
