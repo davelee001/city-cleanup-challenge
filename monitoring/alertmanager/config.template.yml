@@ -1,0 +1,67 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: '__SMTP_SMARTHOST__'
+  smtp_from: '__SMTP_FROM__'
+  smtp_auth_username: '__SMTP_USERNAME__'
+  smtp_auth_password: '__SMTP_PASSWORD__'
+  smtp_require_tls: true
+
+route:
+  receiver: team-email
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers:
+        - severity="critical"
+      receiver: oncall-email-and-slack
+      continue: true
+      repeat_interval: 30m
+    - matchers:
+        - severity="warning"
+      receiver: team-email-and-slack
+    - matchers:
+        - severity="info"
+      receiver: team-email
+
+receivers:
+  - name: team-email
+    email_configs:
+      - to: '__TEAM_EMAIL__'
+        send_resolved: true
+        headers:
+          subject: '[City Cleanup] Alert: {{ .GroupLabels.alertname }}'
+
+  - name: oncall-email-and-slack
+    email_configs:
+      - to: '__ONCALL_EMAIL__'
+        send_resolved: true
+        headers:
+          subject: '[CRITICAL] City Cleanup Alert: {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - api_url: '__SLACK_WEBHOOK_URL__'
+        channel: '__SLACK_CRITICAL_CHANNEL__'
+        send_resolved: true
+        title: 'Critical Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+  - name: team-email-and-slack
+    email_configs:
+      - to: '__TEAM_EMAIL__'
+        send_resolved: true
+        headers:
+          subject: '[WARNING] City Cleanup Alert: {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - api_url: '__SLACK_WEBHOOK_URL__'
+        channel: '__SLACK_WARNING_CHANNEL__'
+        send_resolved: true
+        title: 'Warning: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ['alertname', 'cluster', 'service']
