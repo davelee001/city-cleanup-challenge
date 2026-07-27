@@ -11,10 +11,21 @@
         {
           "locationAlwaysAndWhenInUsePermission": "This app needs location access to help you find and check into cleanup events near you."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow City Cleanup to select cleanup evidence from your photo library.",
+          "cameraPermission": "Allow City Cleanup to take before and after cleanup evidence photos."
+        }
       ]
     ],
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "name": "City Cleanup Challenge",
+      "shortName": "City Cleanup",
+      "themeColor": "#07182D",
+      "backgroundColor": "#07182D"
     }
   }
 }
