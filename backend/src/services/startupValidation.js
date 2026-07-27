@@ -58,6 +58,7 @@ function validateRuntimeEnvironment(environment = process.env) {
     'CELO_REWARD_DRY_RUN',
     'METRICS_ENABLED',
     'USE_CLOUD_STORAGE',
+    'SENTRY_ENABLED',
   ]) {
     if (!isBooleanString(environment[name])) {
       errors.push(`${name} must be true or false`);
@@ -100,6 +101,14 @@ function validateRuntimeEnvironment(environment = process.env) {
       }
     }
   }
+  for (const name of ['SENTRY_TRACES_SAMPLE_RATE', 'SENTRY_PROFILES_SAMPLE_RATE']) {
+    if (environment[name] !== undefined && environment[name] !== '') {
+      const value = Number(environment[name]);
+      if (!Number.isFinite(value) || value < 0 || value > 1) {
+        errors.push(`${name} must be a number between 0 and 1`);
+      }
+    }
+  }
   const cloudStorageEnabled = String(environment.USE_CLOUD_STORAGE).toLowerCase() === 'true';
   if (cloudStorageEnabled) {
     if (!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(environment.AWS_S3_BUCKET || '')) {
@@ -122,10 +131,38 @@ function validateRuntimeEnvironment(environment = process.env) {
       'JWT_ACCESS_SECRET',
       'JWT_REFRESH_SECRET',
       'METRICS_TOKEN',
+      'AUDIT_IP_HASH_SECRET',
     ]) {
       if (environment[name] && isPlaceholder(environment[name])) {
         errors.push(`${name} still contains a placeholder`);
       }
+    }
+    const sentryEnabled = String(environment.SENTRY_ENABLED).toLowerCase() === 'true';
+    if (sentryEnabled) {
+      if (!environment.SENTRY_DSN) errors.push('SENTRY_DSN is required when Sentry is enabled');
+      else if (isPlaceholder(environment.SENTRY_DSN)) {
+        errors.push('SENTRY_DSN still contains a placeholder');
+      } else if (!isSecureUrl(environment.SENTRY_DSN)) {
+        errors.push('SENTRY_DSN must use HTTPS in production');
+      }
+    }
+    const metricsEnabled = String(environment.METRICS_ENABLED).toLowerCase() === 'true';
+    if (metricsEnabled && (
+      !environment.METRICS_TOKEN
+      || isPlaceholder(environment.METRICS_TOKEN)
+      || environment.METRICS_TOKEN.length < 32
+    )) {
+      errors.push(
+        'METRICS_TOKEN must be a non-placeholder value of at least 32 characters when metrics are enabled',
+      );
+    }
+    if (!environment.AUDIT_IP_HASH_SECRET) {
+      errors.push('AUDIT_IP_HASH_SECRET is required in production');
+    } else if (
+      isPlaceholder(environment.AUDIT_IP_HASH_SECRET)
+      || environment.AUDIT_IP_HASH_SECRET.length < 32
+    ) {
+      errors.push('AUDIT_IP_HASH_SECRET must be a non-placeholder value of at least 32 characters');
     }
     for (const name of ['WALLET_VERIFICATION_DOMAIN', 'WALLET_VERIFICATION_URI']) {
       if (!environment[name]) errors.push(`${name} is required in production`);
