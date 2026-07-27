@@ -9,7 +9,10 @@ const path = require('path');
 const { runGamificationMigration } = require('../src/migrations/gamification-system');
 
 async function runMigration() {
-    const dbPath = path.join(__dirname, '../database.sqlite');
+    const configuredDatabasePath = process.env.DATABASE_PATH;
+    const dbPath = configuredDatabasePath
+        ? path.resolve(process.cwd(), configuredDatabasePath)
+        : path.join(__dirname, '../city-cleanup.db');
     
     console.log('🔄 Starting Gamification System Migration...');
     console.log('Database path:', dbPath);
