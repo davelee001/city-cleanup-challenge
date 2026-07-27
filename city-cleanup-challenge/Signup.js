@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { API_BASE_URL } from './apiConfig';
 
-export default function Signup({ onSignup, onSwitchToLogin }) {
+export default function Signup({ onSignup, onSwitchToLogin, onViewLegal }) {
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -249,6 +249,13 @@ export default function Signup({ onSignup, onSwitchToLogin }) {
             <Text style={styles.privacyNote}>
               Your contact details stay private and are used for account and cleanup updates.
             </Text>
+            <TouchableOpacity
+              onPress={onViewLegal}
+              accessibilityRole="button"
+              accessibilityLabel="View privacy terms and support"
+            >
+              <Text style={styles.legalLink}>Privacy, terms, and support</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -432,4 +439,5 @@ const styles = StyleSheet.create({
     marginTop: 18,
     textAlign: 'center',
   },
+  legalLink: { color: '#8DBDFF', fontSize: 12, fontWeight: '600', marginTop: 10, textAlign: 'center' },
 });
