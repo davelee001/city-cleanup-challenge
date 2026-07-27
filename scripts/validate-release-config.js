@@ -26,7 +26,7 @@ function read(relativePath) {
 
 const sourceFiles = fs.readdirSync(k8sDirectory)
   .filter((file) => file.endsWith('.yaml'))
-  .map((file) => `k8s/${file}`);
+  .map((file) => path.relative(root, path.join(k8sDirectory, file)));
 const source = sourceFiles.map((file) => read(file)).join('\n');
 
 if (/image:\s*\S+:latest(?:\s|$)/m.test(source)) {
