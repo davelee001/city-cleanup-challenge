@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import ProgressPhotoUploader from './components/ProgressPhotoUploader';
 import EnhancedImageUploader from './components/EnhancedImageUploader';
 
 import { API_BASE_URL, apiFetch } from './apiConfig';
+import { colors } from './theme';
+import ThemedButton from './components/ThemedButton';
 
 export default function Progress({ username }) {
   const [userProgress, setUserProgress] = useState([]);
@@ -165,7 +167,7 @@ export default function Progress({ username }) {
         {enhancedMode && aggregateAIStats && (
           <View style={styles.enhancedSummary}>
             <View style={styles.aiStatRow}>
-              <FontAwesome5 name="brain" size={16} color="#FFF" />
+              <FontAwesome5 name="brain" size={16} color={colors.accentTeal} />
               <Text style={styles.aiStatText}>
                 AI Impact Score: {(aggregateAIStats.averageImpactScore * 100).toFixed(1)}%
               </Text>
@@ -186,7 +188,7 @@ export default function Progress({ username }) {
           <MaterialIcons 
             name="assessment" 
             size={18} 
-            color={!enhancedMode ? '#FFF' : '#007AFF'} 
+            color={!enhancedMode ? colors.white : colors.accentBlue} 
           />
           <Text style={[styles.modeToggleText, !enhancedMode && styles.modeToggleTextActive]}>
             Basic View
@@ -200,7 +202,7 @@ export default function Progress({ username }) {
           <FontAwesome5 
             name="brain" 
             size={16} 
-            color={enhancedMode ? '#FFF' : '#007AFF'} 
+            color={enhancedMode ? colors.white : colors.accentBlue} 
           />
           <Text style={[styles.modeToggleText, enhancedMode && styles.modeToggleTextActive]}>
             Enhanced View
@@ -223,6 +225,7 @@ export default function Progress({ username }) {
                   <TextInput
                     style={styles.input}
                     placeholder="Waste collected (kg)"
+                    placeholderTextColor={colors.textMuted}
                     value={progressData.wasteCollected}
                     onChangeText={(text) => setProgressData({ ...progressData, wasteCollected: text })}
                     keyboardType="numeric"
@@ -230,32 +233,34 @@ export default function Progress({ username }) {
                   <TextInput
                     style={styles.input}
                     placeholder="Type of waste (e.g., plastic, paper, general)"
+                    placeholderTextColor={colors.textMuted}
                     value={progressData.wasteType}
                     onChangeText={(text) => setProgressData({ ...progressData, wasteType: text })}
                   />
                   <TextInput
                     style={styles.input}
                     placeholder="Notes (optional)"
+                    placeholderTextColor={colors.textMuted}
                     value={progressData.notes}
                     onChangeText={(text) => setProgressData({ ...progressData, notes: text })}
                     multiline
                   />
                   <View style={styles.buttonRow}>
-                    <Button 
-                      title="Save Progress" 
+                    <ThemedButton
+                      title="Save Progress"
                       onPress={() => handleUpdateProgress(checkin.eventId)}
                       disabled={loading}
                     />
-                    <Button 
-                      title="Cancel" 
+                    <ThemedButton
+                      title="Cancel"
                       onPress={() => setShowProgressForm(null)}
-                      color="#6c757d"
+                      variant="secondary"
                     />
                   </View>
                 </View>
               ) : (
                 <View style={styles.actionButtons}>
-                  <Button
+                  <ThemedButton
                     title="Track Progress"
                     onPress={() => setShowProgressForm(checkin.eventId)}
                   />
@@ -271,7 +276,7 @@ export default function Progress({ username }) {
                       style={[styles.photoButton, styles.enhancedButton]}
                       onPress={() => setShowEnhancedUploader(checkin.eventId)}
                     >
-                      <FontAwesome5 name="brain" size={14} color="#FFF" />
+                      <FontAwesome5 name="brain" size={14} color={colors.white} />
                       <Text style={[styles.photoButtonText, { marginLeft: 8 }]}>
                         Enhanced Upload
                       </Text>
@@ -292,10 +297,10 @@ export default function Progress({ username }) {
                       Alert.alert('Success', 'Progress and photos uploaded successfully!');
                     }}
                   />
-                  <Button 
-                    title="Close" 
+                  <ThemedButton
+                    title="Close"
                     onPress={() => setShowPhotoUploader(null)}
-                    color="#6c757d"
+                    variant="secondary"
                   />
                 </View>
               )}
@@ -362,10 +367,10 @@ export default function Progress({ username }) {
                     />
                   </View>
                   
-                  <Button 
-                    title="Close Enhanced Uploader" 
+                  <ThemedButton
+                    title="Close Enhanced Uploader"
                     onPress={() => setShowEnhancedUploader(null)}
-                    color="#6c757d"
+                    variant="secondary"
                   />
                 </View>
               )}
@@ -386,7 +391,7 @@ export default function Progress({ username }) {
           {enhancedMode ? (
             enhancedProgress.length === 0 && !loading ? (
               <View style={styles.emptyEnhanced}>
-                <FontAwesome5 name="brain" size={32} color="#CCC" />
+                <FontAwesome5 name="brain" size={32} color={colors.textMuted} />
                 <Text style={styles.empty}>
                   No AI-enhanced progress yet.
                 </Text>
@@ -466,7 +471,7 @@ export default function Progress({ username }) {
                         <View style={styles.locationValidation}>
                           <Text style={[
                             styles.locationValidationText,
-                            { color: progress.impactAnalysis.locationValidation.valid ? '#4CAF50' : '#F44336' }
+                            { color: progress.impactAnalysis.locationValidation.valid ? colors.success : colors.danger }
                           ]}>
                             {progress.impactAnalysis.locationValidation.valid ? '✅' : '❌'} Location: {progress.impactAnalysis.locationValidation.message}
                           </Text>
@@ -526,24 +531,28 @@ export default function Progress({ username }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: '600', marginBottom: 16 },
-  summaryCard: { 
-    backgroundColor: '#28a745', 
-    padding: 20, 
-    borderRadius: 12, 
+  container: { flex: 1, padding: 24, backgroundColor: colors.pageBackground },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 16, color: colors.textPrimary },
+  summaryCard: {
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 20,
+    borderRadius: 16,
     alignItems: 'center',
-    marginBottom: 24 
+    marginBottom: 24
   },
-  summaryTitle: { color: '#fff', fontSize: 18, fontWeight: '600' },
-  totalWaste: { color: '#fff', fontSize: 36, fontWeight: '600', marginVertical: 8 },
-  summarySubtext: { color: '#fff', fontSize: 14, opacity: 0.9 },
-  
+  summaryTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '600' },
+  totalWaste: { color: colors.accentTeal, fontSize: 36, fontWeight: '600', marginVertical: 8 },
+  summarySubtext: { color: colors.textSecondary, fontSize: 14 },
+
   // Enhanced Summary Styles
   enhancedSummary: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: colors.cardDeep,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
     borderRadius: 8,
     alignSelf: 'stretch'
   },
@@ -554,22 +563,21 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
   aiStatText: {
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8
   },
   aiStatSubtext: {
-    color: '#fff',
+    color: colors.textSecondary,
     fontSize: 12,
-    opacity: 0.8,
     textAlign: 'center'
   },
   
   // Mode Toggle Styles
   modeToggleContainer: {
     flexDirection: 'row',
-    backgroundColor: '#07182D',
+    backgroundColor: colors.pageBackground,
     borderRadius: 25,
     padding: 4,
     marginBottom: 20
@@ -584,8 +592,8 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   modeToggleActive: {
-    backgroundColor: '#007AFF',
-    shadowColor: '#007AFF',
+    backgroundColor: colors.accentBlue,
+    shadowColor: colors.accentBlue,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -595,54 +603,57 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     fontWeight: '600',
-    color: '#007AFF'
+    color: colors.accentBlue
   },
   modeToggleTextActive: {
-    color: '#FFF'
+    color: colors.white
   },
   
   section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
-  eventCard: { 
-    backgroundColor: '#0B1E36',
-    padding: 16, 
-    borderRadius: 8, 
-    marginBottom: 12 
+  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: colors.textPrimary },
+  eventCard: {
+    backgroundColor: colors.cardDeeper,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12
   },
-  eventTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  eventLocation: { fontSize: 14, color: '#AFC0D4', marginBottom: 2 },
-  eventDate: { fontSize: 14, color: '#AFC0D4', marginBottom: 12 },
+  eventTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, color: colors.textPrimary },
+  eventLocation: { fontSize: 14, color: colors.textFaint, marginBottom: 2 },
+  eventDate: { fontSize: 14, color: colors.textFaint, marginBottom: 12 },
   progressForm: { marginTop: 12 },
-  input: { 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
-    borderRadius: 4, 
-    padding: 10, 
+  input: {
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    borderRadius: 8,
+    padding: 10,
     marginBottom: 12,
-    backgroundColor: '#10243E'
+    backgroundColor: colors.cardDeep,
+    color: colors.textPrimary
   },
-  buttonRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  buttonRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   actionButtons: { 
     flexDirection: 'column',
     gap: 8,
   },
   photoButton: {
-    backgroundColor: '#20c997',
+    backgroundColor: colors.accentTeal,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 6,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
   },
   photoButtonText: {
-    color: '#fff',
+    color: colors.pageBackground,
     fontSize: 14,
     fontWeight: '600',
   },
   
   // Enhanced Button Styles
   enhancedButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.accentBlue,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center'
@@ -651,44 +662,43 @@ const styles = StyleSheet.create({
   photoUploaderWrapper: {
     marginTop: 16,
     padding: 16,
-    backgroundColor: '#0B1E36',
-    borderRadius: 8,
+    backgroundColor: colors.cardDeeper,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#dee2e6',
+    borderColor: colors.borderSoft,
   },
   
   // Enhanced Uploader Styles
   enhancedUploaderWrapper: {
-    backgroundColor: '#142F4D',
-    borderColor: '#2196F3',
+    backgroundColor: colors.cardAlt,
+    borderColor: colors.accentBlueSoft,
     borderWidth: 2
   },
   enhancedUploaderTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#69B4FF',
+    color: colors.accentBlueSoft,
     textAlign: 'center',
     marginBottom: 4
   },
   enhancedUploaderSubtitle: {
     fontSize: 12,
-    color: '#69B4FF',
+    color: colors.accentBlueSoft,
     textAlign: 'center',
     marginBottom: 16,
-    opacity: 0.8
   },
   enhancedPhotoSection: {
     marginBottom: 16,
     padding: 12,
-    backgroundColor: '#10243E',
+    backgroundColor: colors.card,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#244B70'
+    borderColor: colors.border
   },
   enhancedPhotoLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#EAF2FF',
+    color: colors.textPrimary,
     marginBottom: 8,
     textAlign: 'center'
   },
@@ -697,19 +707,19 @@ const styles = StyleSheet.create({
   },
   
   progressList: { flex: 1 },
-  progressCard: { 
-    backgroundColor: '#123B3D',
-    padding: 16, 
-    borderRadius: 8, 
+  progressCard: {
+    backgroundColor: colors.successBg,
+    padding: 16,
+    borderRadius: 12,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#28a745'
+    borderLeftColor: colors.success
   },
   
   // Enhanced Progress Card Styles
   enhancedProgressCard: {
-    backgroundColor: '#142F4D',
-    borderLeftColor: '#007AFF'
+    backgroundColor: colors.cardAlt,
+    borderLeftColor: colors.accentBlue
   },
   enhancedProgressHeader: {
     flexDirection: 'row',
@@ -718,16 +728,16 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
   
-  progressEventTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  progressLocation: { fontSize: 14, color: '#AFC0D4', marginBottom: 2 },
-  progressDate: { fontSize: 14, color: '#AFC0D4', marginBottom: 8 },
+  progressEventTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4, color: colors.textPrimary },
+  progressLocation: { fontSize: 14, color: colors.textFaint, marginBottom: 2 },
+  progressDate: { fontSize: 14, color: colors.textFaint, marginBottom: 8 },
   progressStats: { marginBottom: 8 },
-  progressAmount: { fontSize: 16, fontWeight: '600', color: '#28a745' },
-  progressType: { fontSize: 14, color: '#AFC0D4', marginTop: 2 },
+  progressAmount: { fontSize: 16, fontWeight: '600', color: colors.success },
+  progressType: { fontSize: 14, color: colors.textFaint, marginTop: 2 },
   
   // GPS Section Styles
   gpsSection: {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    backgroundColor: colors.successBg,
     padding: 8,
     borderRadius: 6,
     marginBottom: 8
@@ -735,18 +745,20 @@ const styles = StyleSheet.create({
   gpsSectionTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4CAF50',
+    color: colors.success,
     marginBottom: 4
   },
   gpsCoordinates: {
     fontSize: 11,
-    color: '#4CAF50',
+    color: colors.success,
     fontFamily: 'monospace'
   },
   
   // AI Analysis Section Styles
   aiAnalysisSection: {
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    backgroundColor: colors.cardDeep,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
     padding: 12,
     borderRadius: 8,
     marginBottom: 8
@@ -754,7 +766,7 @@ const styles = StyleSheet.create({
   aiAnalysisTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#007AFF',
+    color: colors.accentBlue,
     marginBottom: 8
   },
   impactScoreContainer: {
@@ -763,18 +775,18 @@ const styles = StyleSheet.create({
   impactScoreText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#007AFF',
+    color: colors.accentBlue,
     marginBottom: 4
   },
   impactScoreBar: {
     height: 6,
-    backgroundColor: 'rgba(0, 122, 255, 0.2)',
+    backgroundColor: colors.cardDeeper,
     borderRadius: 3,
     overflow: 'hidden'
   },
   impactScoreProgress: {
     height: '100%',
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.accentBlue,
     borderRadius: 3
   },
   progressReportSection: {
@@ -783,12 +795,12 @@ const styles = StyleSheet.create({
   progressReportTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#007AFF',
+    color: colors.accentBlue,
     marginBottom: 4
   },
   progressReportText: {
     fontSize: 11,
-    color: '#B8C7D9',
+    color: colors.textFaint,
     lineHeight: 16
   },
   locationValidation: {
@@ -802,13 +814,13 @@ const styles = StyleSheet.create({
   progressNotes: { 
     fontSize: 14, 
     fontStyle: 'italic', 
-    color: '#AFC0D4',
+    color: colors.textFaint,
     marginBottom: 8
   },
-  progressUpdated: { fontSize: 12, color: '#8EA4BC' },
-  error: { color: 'red', marginBottom: 8, textAlign: 'center' },
+  progressUpdated: { fontSize: 12, color: colors.textMuted },
+  error: { color: colors.danger, marginBottom: 8, textAlign: 'center' },
   empty: { 
-    color: '#8EA4BC',
+    color: colors.textMuted,
     textAlign: 'center', 
     marginTop: 20,
     fontStyle: 'italic'
@@ -820,7 +832,7 @@ const styles = StyleSheet.create({
     paddingVertical: 32
   },
   emptySubtext: {
-    color: '#AAA',
+    color: colors.textMuted,
     textAlign: 'center',
     fontSize: 12,
     marginTop: 8,
