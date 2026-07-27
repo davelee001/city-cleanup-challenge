@@ -167,7 +167,7 @@ jobs:
           context: city-cleanup-challenge
           push: true
           tags: ${{ env.FRONTEND_IMAGE }}:${{ env.RELEASE_TAG }}
-          build-args: EXPO_PUBLIC_API_URL=${{ vars.PUBLIC_API_URL }}
+          build-args: EXPO_PUBLIC_API_URL=/api/v1
           provenance: mode=max
           sbom: true
           cache-from: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache
@@ -249,6 +249,7 @@ jobs:
           AWS_REGION: ${{ vars.AWS_REGION }}
           BACKEND_RELEASE_IMAGE: ${{ needs.images.outputs.backend }}
           FRONTEND_RELEASE_IMAGE: ${{ needs.images.outputs.frontend }}
+          SENTRY_RELEASE: ${{ github.sha }}
         run: |
           node scripts/render-release-config.js
           node scripts/validate-release-config.js --rendered --directory=rendered-k8s
@@ -309,6 +310,7 @@ jobs:
           AWS_REGION: ${{ vars.AWS_REGION }}
           BACKEND_RELEASE_IMAGE: ${{ needs.images.outputs.backend }}
           FRONTEND_RELEASE_IMAGE: ${{ needs.images.outputs.frontend }}
+          SENTRY_RELEASE: ${{ github.sha }}
         run: |
           node scripts/render-release-config.js
           node scripts/validate-release-config.js --rendered --directory=rendered-k8s
