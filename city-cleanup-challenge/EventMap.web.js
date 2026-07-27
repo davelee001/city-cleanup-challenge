@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from 'react-native';
 
@@ -63,15 +62,9 @@ export default function EventMapWeb({ username }) {
             <Text style={styles.eventMeta}>
               {event.date} {event.time ? `at ${event.time}` : ''}
             </Text>
-            <TouchableOpacity
-              accessibilityRole="button"
-              style={styles.button}
-              onPress={() => {}}
-            >
-              <Text style={styles.buttonText}>
-                {username ? 'Open event details' : 'Sign in to participate'}
-              </Text>
-            </TouchableOpacity>
+            <Text style={styles.viewOnly}>
+              {username ? 'Use the mobile app for GPS check-in.' : 'Sign in to participate.'}
+            </Text>
           </View>
         ))
       )}
@@ -134,16 +127,5 @@ const styles = StyleSheet.create({
     color: '#93A9C0',
     marginBottom: 4
   },
-  button: {
-    alignSelf: 'flex-start',
-    backgroundcolor: '#72D7CA',
-    borderRadius: 8,
-    marginTop: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '600'
-  }
+  viewOnly: { color: '#8DBDFF', fontSize: 12, marginTop: 10 }
 });
