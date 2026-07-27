@@ -121,7 +121,9 @@ fraud rate, and transaction cost.
   on-chain.
 - Images are stored privately and accessed through expiring URLs.
 - The user must consent before location collection.
-- Retention and deletion periods must be documented before a public launch.
+- Retention and deletion periods are defined in
+  `docs/PRIVACY_RETENTION_AND_DELETION.md` and require launch-jurisdiction
+  approval before public release.
 
 ## 9. MVP Success Criteria
 
@@ -141,7 +143,8 @@ The MVP is ready for a controlled testnet pilot when:
 - Confirm or revise the pilot reward, multiplier, and payout-cap values.
 - Eligible geographic areas.
 - Minimum age and identity requirements.
-- Evidence and account retention periods.
+- Confirm the documented evidence and account retention periods with counsel in
+  each launch jurisdiction.
 - Appeal response time.
 - Treasury ownership and multisig signers.
 - Confirm or revise the two-confirmation policy.
