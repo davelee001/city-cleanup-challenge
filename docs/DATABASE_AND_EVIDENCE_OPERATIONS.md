@@ -23,6 +23,20 @@ The command fails when a required core table is absent or startup migration
 fails. Run the full API integration suite against the staging database before
 promoting the image.
 
+Audit retained password values before accepting traffic:
+
+```powershell
+npm run db:migrate-passwords
+$env:PASSWORD_MIGRATION_CONFIRM = "MIGRATE_RETAINED_PLAINTEXT_PASSWORDS"
+npm run db:migrate-passwords -- --apply
+npm run db:migrate-passwords
+```
+
+The first and last commands are dry-run audits. The guarded apply hashes only
+values that are not already supported bcrypt hashes and uses a conditional
+update so a concurrent password change is not overwritten. Record counts only;
+never copy password values into a ticket or terminal transcript.
+
 ## Importing an existing SQLite database
 
 Take a copy of the SQLite file while the old API is stopped. Point
@@ -91,3 +105,9 @@ the authenticated evidence endpoint, and deleting only the isolated test copy.
 6. Resume traffic, then rewards, while monitoring errors and payout metrics.
 
 Record recovery point and recovery time results after every drill.
+
+For a staging drill, record the backup SHA-256, source snapshot time, isolated
+restore database name, migration verification output, representative table
+counts, authenticated smoke result, RPO, RTO, operator, and cleanup approval.
+The restore target must be isolated and disposable, never the active staging or
+production database.
