@@ -7,7 +7,8 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "build:web": "expo export -p web",
+    "build:web": "expo export -p web && node scripts/prepare-web-build.js && node scripts/validate-pwa.js",
+    "validate:pwa": "node scripts/validate-pwa.js",
     "lint": "eslint . --ext .js,.jsx",
     "test": "jest --runInBand",
     "test:components": "jest --runInBand tests/components",
@@ -47,6 +48,7 @@
     "collectCoverageFrom": [
       "Login.js",
       "Signup.js",
+      "Legal.js",
       "apiConfig.js"
     ],
     "coverageThreshold": {
