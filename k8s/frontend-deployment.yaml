@@ -42,11 +42,11 @@ spec:
             configMapKeyRef:
               name: frontend-config
               key: NODE_ENV
-        - name: REACT_APP_API_URL
+        - name: EXPO_PUBLIC_API_URL
           valueFrom:
             configMapKeyRef:
               name: frontend-config
-              key: REACT_APP_API_URL
+              key: EXPO_PUBLIC_API_URL
         resources:
           requests:
             memory: "128Mi"
