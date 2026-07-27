@@ -16,18 +16,47 @@ Configure the GitHub `production` environment with:
 
 - at least one required reviewer who is not the change author;
 - deployment limited to the protected `main` branch;
-- `PUBLIC_APP_URL` and `PUBLIC_API_URL` environment variables;
+- `PUBLIC_APP_URL` and `PUBLIC_API_URL` environment variables for smoke tests;
 - short-lived Azure authentication where available;
 - ACR and Azure credentials stored only as environment secrets.
 
 These controls are external GitHub settings and cannot be enforced by files in
 the repository alone.
 
+Inspect the current controls with a repository-administration token:
+
+```powershell
+$env:GITHUB_REPOSITORY = "davelee001/city-cleanup-challenge"
+$env:GITHUB_ADMIN_TOKEN = "<fine-grained-administration-token>"
+npm run github:governance
+```
+
+To apply the declared controls, also provide a trusted production reviewer
+different from the repository owner, all `STAGING_*` and `PRODUCTION_*`
+environment values listed in `docs/STAGING_LOAD_AND_ROLLBACK.md`, then run:
+
+```powershell
+$env:GITHUB_PRODUCTION_REVIEWER = "<trusted-reviewer>"
+$env:GITHUB_GOVERNANCE_CONFIRM = "APPLY_CITY_CLEANUP_GITHUB_GOVERNANCE"
+npm run github:governance -- --apply
+```
+
+The script configures required CI checks, code-owner review, administrator
+enforcement, conversation resolution, linear history, force-push/deletion
+blocking, protected-branch deployments, production self-review prevention, and
+environment variables. Azure credentials and application secrets remain
+environment secrets and are not written by this script.
+
 ## Release identity
 
 Every image is published once as `sha-<full-git-commit>`. Production manifests
 are rendered with those immutable tags. The release workflow does not publish
 or deploy `latest`.
+
+The immutable web image uses same-origin `/api/v1` routing. The ingress sends
+that path to the backend, allowing the exact same frontend image to pass through
+staging and production without baking either environment's hostname into the
+bundle. Native builds still require their environment-specific absolute API URL.
 
 Each image build emits provenance and an SBOM. Both final images must pass the
 high and critical vulnerability gate before the protected production
