@@ -193,7 +193,7 @@ jobs:
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Scan ${{ matrix.image }} image
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ matrix.image }}:${{ env.RELEASE_TAG }}
           version: v0.69.3
