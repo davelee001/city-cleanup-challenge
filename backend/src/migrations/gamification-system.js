@@ -23,9 +23,7 @@ async function runGamificationMigration(db) {
             bonuses TEXT,
             earnedAt TEXT DEFAULT CURRENT_TIMESTAMP,
             metadata TEXT,
-            FOREIGN KEY(username) REFERENCES users(username),
-            INDEX(username),
-            INDEX(earnedAt)
+            FOREIGN KEY(username) REFERENCES users(username)
         )`,
 
         // User achievements table
@@ -41,10 +39,7 @@ async function runGamificationMigration(db) {
             earnedAt TEXT DEFAULT CURRENT_TIMESTAMP,
             metadata TEXT,
             FOREIGN KEY(username) REFERENCES users(username),
-            UNIQUE(username, achievementId),
-            INDEX(username),
-            INDEX(achievementCategory),
-            INDEX(earnedAt)
+            UNIQUE(username, achievementId)
         )`,
 
         // User streaks table
@@ -57,10 +52,7 @@ async function runGamificationMigration(db) {
             streakStartDate TEXT,
             streakEndDate TEXT,
             updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(username) REFERENCES users(username),
-            INDEX(currentStreak),
-            INDEX(longestStreak),
-            INDEX(lastActiveDate)
+            FOREIGN KEY(username) REFERENCES users(username)
         )`,
 
         // User actions tracking for first-time bonuses
@@ -73,10 +65,7 @@ async function runGamificationMigration(db) {
             eventId INTEGER,
             metadata TEXT,
             FOREIGN KEY(username) REFERENCES users(username),
-            FOREIGN KEY(eventId) REFERENCES events(id),
-            INDEX(username),
-            INDEX(action),
-            INDEX(performedAt)
+            FOREIGN KEY(eventId) REFERENCES events(id)
         )`,
 
         // Environmental impact tracking table
@@ -95,10 +84,7 @@ async function runGamificationMigration(db) {
             metadata TEXT,
             FOREIGN KEY(username) REFERENCES users(username),
             FOREIGN KEY(eventId) REFERENCES events(id),
-            FOREIGN KEY(progressId) REFERENCES cleanup_progress(id),
-            INDEX(username),
-            INDEX(eventId),
-            INDEX(impactCalculatedAt)
+            FOREIGN KEY(progressId) REFERENCES cleanup_progress(id)
         )`,
 
         // Leaderboard cache table for performance 
@@ -113,10 +99,7 @@ async function runGamificationMigration(db) {
             lastUpdated TEXT DEFAULT CURRENT_TIMESTAMP,
             expiresAt TEXT,
             FOREIGN KEY(username) REFERENCES users(username),
-            UNIQUE(leaderboardType, timeframe, username),
-            INDEX(leaderboardType, timeframe),
-            INDEX(rank),
-            INDEX(lastUpdated)
+            UNIQUE(leaderboardType, timeframe, username)
         )`,
 
         // Badge collections table
@@ -135,11 +118,7 @@ async function runGamificationMigration(db) {
             isVisible INTEGER DEFAULT 1,
             metadata TEXT,
             FOREIGN KEY(username) REFERENCES users(username),
-            UNIQUE(username, badgeId),
-            INDEX(username),
-            INDEX(badgeCategory),
-            INDEX(earnedAt),
-            INDEX(displayOrder)
+            UNIQUE(username, badgeId)
         )`,
 
         // Seasonal challenges table
@@ -158,10 +137,7 @@ async function runGamificationMigration(db) {
             isActive INTEGER DEFAULT 1,
             participant_count INTEGER DEFAULT 0,
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-            metadata TEXT,
-            INDEX(challengeId),
-            INDEX(isActive),
-            INDEX(startDate, endDate)
+            metadata TEXT
         )`,
 
         // User participation in seasonal challenges
@@ -177,10 +153,7 @@ async function runGamificationMigration(db) {
             metadata TEXT,
             FOREIGN KEY(challengeId) REFERENCES seasonal_challenges(challengeId),
             FOREIGN KEY(username) REFERENCES users(username),
-            UNIQUE(challengeId, username),
-            INDEX(challengeId),
-            INDEX(username),
-            INDEX(isCompleted)
+            UNIQUE(challengeId, username)
         )`,
 
         // User level progression table
@@ -196,10 +169,7 @@ async function runGamificationMigration(db) {
             levelUpAt TEXT,
             totalLevelUps INTEGER DEFAULT 0,
             updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(username) REFERENCES users(username),
-            INDEX(currentLevel),
-            INDEX(currentPoints),
-            INDEX(levelUpAt)
+            FOREIGN KEY(username) REFERENCES users(username)
         )`,
 
         // Daily/Weekly goals table
@@ -216,11 +186,7 @@ async function runGamificationMigration(db) {
             periodEnd TEXT NOT NULL,
             rewardPoints INTEGER DEFAULT 0,
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(username) REFERENCES users(username),
-            INDEX(username),
-            INDEX(goalType),
-            INDEX(goalPeriod),
-            INDEX(isCompleted)
+            FOREIGN KEY(username) REFERENCES users(username)
         )`
     ];
 
@@ -247,6 +213,54 @@ async function runGamificationMigration(db) {
             console.error(`Failed to execute migration ${i + 1}:`, error);
             throw error;
         }
+    }
+
+    // Create indexes separately (SQLite does not support inline INDEX(...)
+    // clauses inside CREATE TABLE like MySQL does)
+    const indexStatements = [
+        `CREATE INDEX IF NOT EXISTS idx_user_points_username ON user_points(username)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_points_earnedAt ON user_points(earnedAt)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_achievements_username ON user_achievements(username)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_achievements_category ON user_achievements(achievementCategory)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_achievements_earnedAt ON user_achievements(earnedAt)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_streaks_currentStreak ON user_streaks(currentStreak)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_streaks_longestStreak ON user_streaks(longestStreak)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_streaks_lastActiveDate ON user_streaks(lastActiveDate)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_actions_username ON user_actions(username)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_actions_action ON user_actions(action)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_actions_performedAt ON user_actions(performedAt)`,
+        `CREATE INDEX IF NOT EXISTS idx_environmental_impact_username ON environmental_impact(username)`,
+        `CREATE INDEX IF NOT EXISTS idx_environmental_impact_eventId ON environmental_impact(eventId)`,
+        `CREATE INDEX IF NOT EXISTS idx_environmental_impact_calculatedAt ON environmental_impact(impactCalculatedAt)`,
+        `CREATE INDEX IF NOT EXISTS idx_leaderboard_cache_type_timeframe ON leaderboard_cache(leaderboardType, timeframe)`,
+        `CREATE INDEX IF NOT EXISTS idx_leaderboard_cache_rank ON leaderboard_cache(rank)`,
+        `CREATE INDEX IF NOT EXISTS idx_leaderboard_cache_lastUpdated ON leaderboard_cache(lastUpdated)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_badges_username ON user_badges(username)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_badges_category ON user_badges(badgeCategory)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_badges_earnedAt ON user_badges(earnedAt)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_badges_displayOrder ON user_badges(displayOrder)`,
+        `CREATE INDEX IF NOT EXISTS idx_seasonal_challenges_challengeId ON seasonal_challenges(challengeId)`,
+        `CREATE INDEX IF NOT EXISTS idx_seasonal_challenges_isActive ON seasonal_challenges(isActive)`,
+        `CREATE INDEX IF NOT EXISTS idx_seasonal_challenges_dates ON seasonal_challenges(startDate, endDate)`,
+        `CREATE INDEX IF NOT EXISTS idx_challenge_participation_challengeId ON challenge_participation(challengeId)`,
+        `CREATE INDEX IF NOT EXISTS idx_challenge_participation_username ON challenge_participation(username)`,
+        `CREATE INDEX IF NOT EXISTS idx_challenge_participation_isCompleted ON challenge_participation(isCompleted)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_levels_currentLevel ON user_levels(currentLevel)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_levels_currentPoints ON user_levels(currentPoints)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_levels_levelUpAt ON user_levels(levelUpAt)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_goals_username ON user_goals(username)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_goals_goalType ON user_goals(goalType)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_goals_goalPeriod ON user_goals(goalPeriod)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_goals_isCompleted ON user_goals(isCompleted)`,
+    ];
+
+    for (const indexSql of indexStatements) {
+        await new Promise((resolve, reject) => {
+            db.run(indexSql, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
     }
 
     // Insert default achievements
