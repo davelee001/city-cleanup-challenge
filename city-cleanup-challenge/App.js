@@ -22,8 +22,8 @@ import AdminPanel from './AdminPanel';
 import SubscriptionDashboard from './SubscriptionDashboard';
 import Wallet from './Wallet';
 import RewardAdmin from './RewardAdmin';
+import Legal from './Legal';
 import GamificationDashboard from './components/GamificationDashboard';
-import SocialDashboard from './components/SocialDashboard';
 import { getStoredUser, logoutAuthSession } from './apiConfig';
 
 const BackButton = ({ label = 'Back to home', onPress }) => (
@@ -38,10 +38,8 @@ const homeItems = [
   { key: 'events', icon: '◈', title: 'Cleanup events', hint: 'Find and join nearby activities', group: 'Discover' },
   { key: 'map', icon: '⌖', title: 'Location map', hint: 'Explore cleanup activity by area', group: 'Discover' },
   { key: 'posts', icon: '▣', title: 'Community posts', hint: 'Share updates with the community', group: 'Connect' },
-  { key: 'social', icon: '♢', title: 'Teams & community', hint: 'Collaborate around shared goals', group: 'Connect' },
   { key: 'gamification', icon: '★', title: 'Achievements', hint: 'View rewards, points, and badges', group: 'Rewards' },
   { key: 'wallet', icon: 'CE', title: 'Wallet & payouts', hint: 'Verify your wallet and track CELO rewards', group: 'Rewards' },
-  { key: 'dashboard', icon: '▥', title: 'Impact analytics', hint: 'Review activity and performance', group: 'Insights' },
   { key: 'chatbot', icon: '◌', title: 'Cleanup assistant', hint: 'Get guidance for your next cleanup', group: 'Support' },
   { key: 'profile', icon: '◎', title: 'Profile settings', hint: 'Manage account and personal details', group: 'Account' },
   { key: 'subscription', icon: '◇', title: 'Subscription', hint: 'Review and manage your plan', group: 'Account' },
@@ -51,6 +49,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState('user');
   const [showSignup, setShowSignup] = useState(false);
+  const [showLegal, setShowLegal] = useState(false);
   const [activeView, setActiveView] = useState('home');
 
   useEffect(() => {
@@ -78,6 +77,7 @@ export default function App() {
     const items = userRole === 'admin'
       ? [
         ...homeItems,
+        { key: 'dashboard', icon: '▥', title: 'Impact analytics', hint: 'Review verified platform performance', group: 'Admin' },
         { key: 'reward-admin', icon: 'CE', title: 'Reward operations', hint: 'Control and audit CELO payouts', group: 'Admin' },
         { key: 'admin', icon: '⚙', title: 'Admin panel', hint: 'Manage users and content', group: 'Admin' },
       ]
@@ -193,16 +193,6 @@ export default function App() {
     if (activeView === 'gamification') {
       return <GamificationDashboard username={user} onClose={() => setActiveView('home')} />;
     }
-    if (activeView === 'social') {
-      return (
-        <SocialDashboard
-          username={user}
-          onClose={() => setActiveView('home')}
-          navigation={{ goBack: () => setActiveView('home') }}
-        />
-      );
-    }
-
     let content;
     let backLabel = 'Back to home';
     switch (activeView) {
@@ -272,11 +262,21 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {!user ? (
+      {!user && showLegal ? (
+        <Legal onClose={() => setShowLegal(false)} />
+      ) : !user ? (
         showSignup ? (
-          <Signup onSignup={() => setShowSignup(false)} onSwitchToLogin={() => setShowSignup(false)} />
+          <Signup
+            onSignup={() => setShowSignup(false)}
+            onSwitchToLogin={() => setShowSignup(false)}
+            onViewLegal={() => setShowLegal(true)}
+          />
         ) : (
-          <Login onLogin={handleLogin} onSwitchToSignup={() => setShowSignup(true)} />
+          <Login
+            onLogin={handleLogin}
+            onSwitchToSignup={() => setShowSignup(true)}
+            onViewLegal={() => setShowLegal(true)}
+          />
         )
       ) : (
         renderActiveView()
