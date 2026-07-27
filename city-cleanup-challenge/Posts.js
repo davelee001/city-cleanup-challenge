@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 
 import { API_BASE_URL, apiFetch } from './apiConfig';
+import { colors } from './theme';
+import ThemedButton from './components/ThemedButton';
 
 export default function Posts({ username }) {
   const [posts, setPosts] = useState([]);
@@ -59,8 +61,9 @@ export default function Posts({ username }) {
           value={content}
           onChangeText={setContent}
           placeholder="Write a new post..."
+          placeholderTextColor={colors.textMuted}
         />
-        <Button title="Post" onPress={handleCreate} disabled={loading} />
+        <ThemedButton title="Post" onPress={handleCreate} disabled={loading} />
       </View>
       {loading && <ActivityIndicator style={{ margin: 10 }} />}
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -71,7 +74,7 @@ export default function Posts({ username }) {
           posts.slice().reverse().map(post => (
             <View key={post.id} style={styles.post}>
               <Text style={styles.author}>{post.username}</Text>
-              <Text>{post.content}</Text>
+              <Text style={styles.postContent}>{post.content}</Text>
               <Text style={styles.date}>{new Date(post.createdAt).toLocaleString()}</Text>
             </View>
           ))
@@ -82,14 +85,30 @@ export default function Posts({ username }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: '600', marginBottom: 12 },
-  form: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  input: { flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 4, padding: 10, marginRight: 8 },
+  container: { flex: 1, padding: 24, backgroundColor: colors.pageBackground },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 12, color: colors.textPrimary },
+  form: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 8 },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: colors.cardDeep,
+    color: colors.textPrimary
+  },
   posts: { flex: 1 },
-  post: { backgroundColor: '#132A46', padding: 12, borderRadius: 6, marginBottom: 8 },
-  author: { fontWeight: '600', marginBottom: 2 },
-  date: { fontSize: 12, color: '#8EA4BC', marginTop: 4 },
-  error: { color: 'red', marginBottom: 8 },
-  empty: { color: '#8EA4BC', textAlign: 'center', marginTop: 20 }
+  post: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 8
+  },
+  author: { fontWeight: '600', marginBottom: 2, color: colors.textPrimary },
+  postContent: { color: colors.textPrimary },
+  date: { fontSize: 12, color: colors.textMuted, marginTop: 4 },
+  error: { color: colors.danger, marginBottom: 8 },
+  empty: { color: colors.textMuted, textAlign: 'center', marginTop: 20 }
 });
