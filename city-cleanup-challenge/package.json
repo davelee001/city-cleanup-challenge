@@ -24,7 +24,7 @@
     "expo": "~56.0.17",
     "expo-image-picker": "~56.0.22",
     "expo-linear-gradient": "~56.0.4",
-    "expo-location": "~56.0.22",
+    "expo-location": "~57.0.6",
     "leaflet": "^1.9.4",
     "react": "19.2.3",
     "react-chartjs-2": "^5.2.0",
