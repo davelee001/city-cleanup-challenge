@@ -54,10 +54,48 @@ describe('runtime environment validation', () => {
       WALLET_VERIFICATION_URI: 'https://cleanup.community',
       WALLET_CHALLENGE_TTL_MS: '600000',
       METRICS_ENABLED: 'true',
+      METRICS_TOKEN: 'm'.repeat(32),
+      SENTRY_ENABLED: 'false',
+      AUDIT_IP_HASH_SECRET: 'a'.repeat(32),
     });
 
     expect(result.valid).toBe(true);
     expect(result.mode).toBe('live-testnet');
+  });
+
+  it('requires secure Sentry and audit secrets in production', () => {
+    const result = validateRuntimeEnvironment({
+      NODE_ENV: 'production',
+      DATABASE_PATH: '/app/data/city-cleanup.db',
+      WALLET_VERIFICATION_DOMAIN: 'cleanup.community',
+      WALLET_VERIFICATION_URI: 'https://cleanup.community',
+      SENTRY_ENABLED: 'true',
+      SENTRY_DSN: 'http://unsafe-sentry.test/1',
+      AUDIT_IP_HASH_SECRET: 'short',
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toEqual(expect.arrayContaining([
+      'SENTRY_DSN must use HTTPS in production',
+      'AUDIT_IP_HASH_SECRET must be a non-placeholder value of at least 32 characters',
+    ]));
+  });
+
+  it('requires protected metrics in production', () => {
+    const result = validateRuntimeEnvironment({
+      NODE_ENV: 'production',
+      DATABASE_PATH: '/app/data/city-cleanup.db',
+      WALLET_VERIFICATION_DOMAIN: 'cleanup.community',
+      WALLET_VERIFICATION_URI: 'https://cleanup.community',
+      SENTRY_ENABLED: 'false',
+      METRICS_ENABLED: 'true',
+      METRICS_TOKEN: 'short',
+      AUDIT_IP_HASH_SECRET: 'a'.repeat(32),
+    });
+
+    expect(result.errors).toContain(
+      'METRICS_TOKEN must be a non-placeholder value of at least 32 characters when metrics are enabled',
+    );
   });
 
   it('rejects unsafe HTTP protection limits', () => {
@@ -71,6 +109,18 @@ describe('runtime environment validation', () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors).toHaveLength(5);
+  });
+
+  it('rejects invalid Sentry sampling rates', () => {
+    const result = validateRuntimeEnvironment({
+      SENTRY_TRACES_SAMPLE_RATE: '1.1',
+      SENTRY_PROFILES_SAMPLE_RATE: 'not-a-number',
+    });
+
+    expect(result.errors).toEqual(expect.arrayContaining([
+      'SENTRY_TRACES_SAMPLE_RATE must be a number between 0 and 1',
+      'SENTRY_PROFILES_SAMPLE_RATE must be a number between 0 and 1',
+    ]));
   });
 
   it('rejects incomplete optional S3 storage configuration', () => {
