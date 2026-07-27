@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
-import Toast from 'react-hot-toast';
-import RealTimeChart from './components/RealTimeChart';
-import InteractiveMap from './components/InteractiveMap';
-import LoadingState from './components/LoadingState';
-import SearchFilter from './components/SearchFilter';
-import DataExport from './components/DataExport';
 
 import { API_BASE_URL, apiFetch } from './apiConfig';
 
 const Dashboard = ({ username, userRole, onAdminPanel }) => {
-  const [loading, setLoading] = useState(false);
   const [adminAnalytics, setAdminAnalytics] = useState(null);
   const [systemStats, setSystemStats] = useState({
     totalEvents: 0,
@@ -19,7 +12,6 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
     totalWaste: 0
   });
 
-  const theme = { card: styles.surface, text: styles.bodyText };
   const isAdmin = userRole === 'admin';
 
   useEffect(() => {
@@ -52,7 +44,6 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
 
   const fetchSystemStats = async () => {
     try {
-      // Simulate API calls for system stats
       const statsPromises = [
         apiFetch(`${API_BASE_URL}/events`).then(r => r.json()),
         apiFetch(`${API_BASE_URL}/admin/analytics/summary?username=${username}`).then(r => r.json())
@@ -71,22 +62,6 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
     } catch (error) {
       console.error('Failed to fetch system stats:', error);
     }
-  };
-
-  const handleExport = (format) => {
-    setLoading(true);
-    setTimeout(() => {
-      Toast.success(`Data exported as ${format.toUpperCase()}!`);
-      setLoading(false);
-    }, 1000);
-  };
-
-  const handleSearch = (query) => {
-    if (query.trim()) Toast.success(`Searching for: ${query}`);
-  };
-
-  const handleFilterChange = (newFilters) => {
-    if (newFilters.length) Toast.success('Filters applied');
   };
 
   return (
@@ -116,23 +91,6 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
           </View>
         )}
       </View>
-
-      <View style={styles.searchSection}>
-        <View style={styles.sectionHeading}>
-          <View>
-            <Text style={styles.sectionEyebrow}>EXPLORE</Text>
-            <Text style={styles.sectionTitle}>Find cleanup records</Text>
-          </View>
-          <Text style={styles.sectionHint}>Search and filter activity across the platform</Text>
-        </View>
-        <SearchFilter
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-          theme={theme}
-        />
-      </View>
-
-      {loading && <LoadingState theme={theme} />}
 
       {isAdmin && (
         <View style={styles.section}>
@@ -205,53 +163,6 @@ const Dashboard = ({ username, userRole, onAdminPanel }) => {
         </View>
       )}
 
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.cardEyebrow}>ACTIVITY TREND</Text>
-            <Text style={styles.cardTitle}>Cleanup momentum</Text>
-            <Text style={styles.cardSubtitle}>A live view of recent platform activity.</Text>
-          </View>
-          <View style={styles.liveBadge}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveBadgeText}>Live</Text>
-          </View>
-        </View>
-        <RealTimeChart theme={theme} />
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.cardEyebrow}>LOCATION OVERVIEW</Text>
-            <Text style={styles.cardTitle}>Cleanup activity map</Text>
-            <Text style={styles.cardSubtitle}>See where community action is taking place.</Text>
-          </View>
-        </View>
-        <InteractiveMap theme={theme} />
-      </View>
-
-      <View style={styles.bottomGrid}>
-        <View style={[styles.card, styles.bottomCard]}>
-          <Text style={styles.cardEyebrow}>REPORTING</Text>
-          <Text style={styles.cardTitle}>Export impact data</Text>
-          <Text style={styles.cardSubtitle}>Prepare records for review or reporting.</Text>
-          <DataExport onExport={handleExport} theme={theme} />
-        </View>
-        <View style={[styles.card, styles.bottomCard]}>
-          <Text style={styles.cardEyebrow}>SYSTEM STATUS</Text>
-          <Text style={styles.cardTitle}>All services operational</Text>
-          <View style={styles.systemStatus}>
-            <View style={styles.statusCheck}><Text style={styles.statusCheckText}>✓</Text></View>
-            <View style={styles.statusCopy}>
-              <Text style={styles.statusTitle}>Connected and ready</Text>
-              <Text style={styles.statusDescription}>
-                Platform services and protected account access are available.
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
     </ScrollView>
   );
 };
