@@ -53,7 +53,25 @@ npm run staging:smoke
 ```
 
 It verifies frontend and API health, database readiness, anonymous rejection on
-a private route, metrics protection, HTTPS, and non-wildcard CORS.
+a private route, metrics protection, the trusted TLS certificate and expiry,
+and both allowed and denied CORS origins.
+
+Run a real private upload and retrieval check with approved synthetic images:
+
+```powershell
+$env:STAGING_API_URL = "https://api.staging.example.org"
+$env:STAGING_TEST_USERNAME = "<dedicated-test-user>"
+$env:STAGING_TEST_PASSWORD = "<secret>"
+$env:STAGING_BEFORE_IMAGE = "C:\fixtures\before.jpg"
+$env:STAGING_AFTER_IMAGE = "C:\fixtures\after.jpg"
+$env:STAGING_UPLOAD_CONFIRM = "CREATE_STAGING_EVIDENCE"
+npm run staging:upload
+```
+
+The upload check accepts JPEG, PNG, or WebP fixtures, creates a durable staging
+submission, and verifies that both images can be retrieved only with the user's
+access token. Remove the drill record through the normal moderated retention
+workflow; do not edit storage directly.
 
 ## Controlled load test
 
@@ -74,6 +92,9 @@ in the release ticket. Increase traffic gradually and stop if database
 connections, memory, error rate, or p95 latency cross their alert thresholds.
 Upload and image-processing load requires approved synthetic fixtures and a
 dedicated staging user; do not point that traffic at production.
+Use the bounded `npm run staging:upload-load` procedure in
+`docs/PHASE_16_PRODUCT_DEVICE.md`; it requires unique fixture pairs and records
+every created submission ID.
 
 ## Rollback drill
 
@@ -92,6 +113,19 @@ If production smoke tests fail, the workflow runs the same deployment rollback.
 If a migration is not backward-compatible, stop before deployment and restore
 the database using `docs/DATABASE_AND_EVIDENCE_OPERATIONS.md`; never improvise a
 destructive rollback.
+
+The controlled staging helper exercises a new rollout, rollback to the recorded
+images, and HPA metrics:
+
+```powershell
+$env:STAGING_DRILL_CONFIRM = "RUN_STAGING_ROLLOUT_AND_ROLLBACK_DRILL"
+.\scripts\staging-kubernetes-drill.ps1 -Namespace city-cleanup-staging -Execute
+```
+
+After starting the read-only API load test in another terminal, repeat with
+`-RequireScaleUp -ScaleTarget backend-hpa` to require evidence that the backend
+HPA actually added a replica. Store pre/post replica counts, rollout revisions,
+image digests, and timestamps with the release evidence.
 
 ## Go/no-go record
 
