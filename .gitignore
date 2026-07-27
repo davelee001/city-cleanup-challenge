@@ -5,6 +5,7 @@ node_modules/
 .expo/
 dist/
 rendered-k8s/
+rendered-monitoring/
 coverage/
 .npm-cache-*/
 .expo-*/
