@@ -302,6 +302,26 @@ db.serialize(() => {
     FOREIGN KEY (actor_user_id) REFERENCES users (id)
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS system_audit_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor_user_id INTEGER,
+    actor_username TEXT,
+    category TEXT NOT NULL CHECK (
+      category IN ('authentication', 'administration', 'moderation', 'destructive')
+    ),
+    action TEXT NOT NULL,
+    outcome TEXT NOT NULL CHECK (outcome IN ('success', 'failure')),
+    request_id TEXT NOT NULL,
+    request_method TEXT NOT NULL,
+    request_path TEXT NOT NULL,
+    response_status INTEGER NOT NULL,
+    ip_hash TEXT,
+    user_agent_hash TEXT,
+    details TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (actor_user_id) REFERENCES users (id) ON DELETE SET NULL
+  )`);
+
   db.run(`INSERT OR IGNORE INTO reward_controls (id, paused, pause_reason)
     VALUES (1, 1, 'Rewards remain paused until the controlled testnet pilot is enabled')`);
 
@@ -314,6 +334,9 @@ db.serialize(() => {
   db.run('CREATE INDEX IF NOT EXISTS idx_wallet_challenges_user_created ON wallet_verification_challenges(user_id, created_at)');
   db.run('CREATE INDEX IF NOT EXISTS idx_reward_audit_payment_created ON reward_audit_log(payment_id, created_at)');
   db.run('CREATE INDEX IF NOT EXISTS idx_reward_audit_actor_created ON reward_audit_log(actor_user_id, created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_system_audit_created ON system_audit_events(created_at DESC)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_system_audit_category_created ON system_audit_events(category, created_at DESC)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_system_audit_actor_created ON system_audit_events(actor_user_id, created_at DESC)');
 
   ensureColumns('users', {
     celo_wallet_address: 'TEXT',
