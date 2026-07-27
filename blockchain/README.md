@@ -1,40 +1,49 @@
 # Celo reward contract
 
-This package contains the City Cleanup native CELO reward treasury, local
-contract tests, and the Celo Sepolia deployment script.
+This package contains the native CELO `RewardTreasury`, local contract tests,
+and a guarded Celo Sepolia deployment script.
 
-## Setup
+## Local verification
 
-Use Node.js 22 and install the pinned dependencies:
+Use Node.js 22:
 
 ```powershell
-npm install
+npm ci
 npm run compile
 npm test
 ```
 
-Local tests prove that a reward transfers once, a repeated claim ID reverts,
-only the owner can pay, and the owner can pause payments.
+Tests cover paused deployment, owner authorization, invalid inputs, the
+immutable payment ceiling, successful payment, duplicate rejection, failed
+recipient rollback, and nominated two-step ownership transfer.
 
-## Deploy to Celo Sepolia
+## Contract controls
 
-Copy `.env.example` to `.env` and supply a funded testnet deployment key. Never
-commit the key.
+The contract starts paused and accepts native CELO through each `payReward`
+transaction. A successful claim ID can never be paid again. The immutable
+deployment ceiling prevents a single call from exceeding the approved pilot
+maximum even if the application is misconfigured.
+
+Ownership transfer is two-step: the current owner nominates `pendingOwner`, and
+that address must call `acceptOwnership`. Use a reviewed dedicated signer or
+multisignature owner. Images, locations, and user details remain off-chain.
+
+## Guarded Celo Sepolia deployment
+
+Copy `.env.example` to an untracked secret source and configure a supported RPC,
+limited deployment signer, separate owner, reward ceiling, and confirmation:
 
 ```powershell
+$env:CELO_DEPLOY_CONFIRM = "DEPLOY_REWARD_TREASURY_TO_CELO_SEPOLIA"
 npm run deploy:celo-sepolia
 ```
 
-The script prints the deployed `RewardTreasury` address. Configure that address
-as `CELO_REWARD_CONTRACT_ADDRESS` in the backend and keep live rewards disabled
-until wallet ownership verification, funding, and monitoring are ready.
+The command verifies chain ID `11142220`, configuration, deployed bytecode,
+owner, pause state, and ceiling. It writes a non-secret JSON deployment record
+under `deployments/`. Preserve that record with the release evidence, verify
+the source on the selected Celo explorer, and keep both contract and application
+payout controls paused until the controlled pilot is approved.
 
-## Duplicate protection
-
-`payReward(bytes32 claimId, address recipient)` accepts native CELO as the
-transaction value. The contract records every successful claim ID in
-`paidClaims` and permanently rejects a second payment for that ID. Only the
-owner can pay, pause, resume, or transfer ownership.
-
-For production, transfer ownership to a reviewed multisignature account. Images,
-locations, and user details must remain off-chain.
+See
+[`docs/PHASE_18_CONTROLLED_CELO_LAUNCH.md`](../docs/PHASE_18_CONTROLLED_CELO_LAUNCH.md)
+for the full pilot and incident-drill sequence.
