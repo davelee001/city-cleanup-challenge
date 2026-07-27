@@ -3,10 +3,13 @@ pragma solidity ^0.8.19;
 
 contract RewardTreasury {
     address public owner;
+    address public pendingOwner;
     bool public paused;
+    uint256 public immutable maxRewardWei;
     mapping(bytes32 => bool) public paidClaims;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed pendingOwner);
     event RewardPaid(
         bytes32 indexed claimId,
         address indexed recipient,
@@ -24,10 +27,14 @@ contract RewardTreasury {
         _;
     }
 
-    constructor(address initialOwner) {
+    constructor(address initialOwner, uint256 initialMaxRewardWei) {
         require(initialOwner != address(0), "RewardTreasury: invalid owner");
+        require(initialMaxRewardWei > 0, "RewardTreasury: invalid maximum");
         owner = initialOwner;
+        paused = true;
+        maxRewardWei = initialMaxRewardWei;
         emit OwnershipTransferred(address(0), initialOwner);
+        emit RewardsPaused(true);
     }
 
     function payReward(
@@ -37,6 +44,7 @@ contract RewardTreasury {
         require(claimId != bytes32(0), "RewardTreasury: invalid claim");
         require(recipient != address(0), "RewardTreasury: invalid recipient");
         require(msg.value > 0, "RewardTreasury: empty reward");
+        require(msg.value <= maxRewardWei, "RewardTreasury: reward exceeds maximum");
         require(!paidClaims[claimId], "RewardTreasury: claim already paid");
 
         paidClaims[claimId] = true;
@@ -53,8 +61,15 @@ contract RewardTreasury {
 
     function transferOwnership(address nextOwner) external onlyOwner {
         require(nextOwner != address(0), "RewardTreasury: invalid owner");
+        pendingOwner = nextOwner;
+        emit OwnershipTransferStarted(owner, nextOwner);
+    }
+
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "RewardTreasury: pending owner required");
         address previousOwner = owner;
-        owner = nextOwner;
-        emit OwnershipTransferred(previousOwner, nextOwner);
+        owner = pendingOwner;
+        pendingOwner = address(0);
+        emit OwnershipTransferred(previousOwner, owner);
     }
 }
