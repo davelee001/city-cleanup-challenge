@@ -16,6 +16,7 @@ const values = {
   AWS_REGION: process.env.AWS_REGION,
   BACKEND_RELEASE_IMAGE: process.env.BACKEND_RELEASE_IMAGE,
   FRONTEND_RELEASE_IMAGE: process.env.FRONTEND_RELEASE_IMAGE,
+  SENTRY_RELEASE: process.env.SENTRY_RELEASE,
 };
 
 const missing = Object.entries(values)
@@ -30,6 +31,38 @@ for (const hostName of ['PUBLIC_APP_HOST', 'PUBLIC_API_HOST']) {
   if (!/^(?=.{1,253}$)(?!-)[a-z0-9.-]+(?<!-)$/.test(values[hostName])) {
     throw new Error(`${hostName} must be a hostname without a scheme or path.`);
   }
+}
+if (values.PUBLIC_APP_HOST === values.PUBLIC_API_HOST) {
+  throw new Error('PUBLIC_APP_HOST and PUBLIC_API_HOST must be different hostnames.');
+}
+if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(values.TLS_CONTACT_EMAIL)) {
+  throw new Error('TLS_CONTACT_EMAIL must be a valid email address.');
+}
+for (const name of ['AZURE_WORKLOAD_IDENTITY_CLIENT_ID', 'AZURE_TENANT_ID']) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    .test(values[name])) {
+    throw new Error(`${name} must be a valid UUID.`);
+  }
+}
+if (!/^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$/.test(values.AZURE_KEY_VAULT_NAME)) {
+  throw new Error('AZURE_KEY_VAULT_NAME must be a valid Key Vault name.');
+}
+if (
+  !/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(values.EVIDENCE_S3_BUCKET)
+  || values.EVIDENCE_S3_BUCKET.includes('..')
+) {
+  throw new Error('EVIDENCE_S3_BUCKET must be a valid S3 bucket name.');
+}
+if (!/^[a-z]{2}(?:-gov)?-[a-z]+-\d$/.test(values.AWS_REGION)) {
+  throw new Error('AWS_REGION must be a valid AWS region identifier.');
+}
+for (const name of ['BACKEND_RELEASE_IMAGE', 'FRONTEND_RELEASE_IMAGE']) {
+  if (!/:sha-[0-9a-f]{40}$/i.test(values[name]) || /\s/.test(values[name])) {
+    throw new Error(`${name} must use an immutable sha-<40-hex-commit> tag.`);
+  }
+}
+if (!/^[0-9a-f]{40}$/i.test(values.SENTRY_RELEASE)) {
+  throw new Error('SENTRY_RELEASE must be a 40-character Git commit SHA.');
 }
 if (!/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(values.DEPLOY_NAMESPACE)) {
   throw new Error('DEPLOY_NAMESPACE must be a valid lowercase Kubernetes namespace.');
@@ -46,6 +79,7 @@ const replacements = new Map([
   ['replace-with-azure-tenant-id', values.AZURE_TENANT_ID],
   ['replace-with-private-evidence-bucket', values.EVIDENCE_S3_BUCKET],
   ['replace-with-aws-region', values.AWS_REGION],
+  ['replace-with-release-sha', values.SENTRY_RELEASE],
   [
     'citycleanup.azurecr.io/backend:sha-replaced-by-release-pipeline',
     values.BACKEND_RELEASE_IMAGE,
