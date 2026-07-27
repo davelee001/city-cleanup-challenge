@@ -13,6 +13,7 @@
     "db:import-sqlite": "node scripts/migrate-sqlite-to-postgres.js",
     "db:backup": "node scripts/backup-postgres.js",
     "db:restore": "node scripts/restore-postgres.js",
+    "db:migrate-passwords": "node scripts/migrate-plaintext-passwords.js",
     "pilot:preflight": "node scripts/celo-pilot-preflight.js",
     "pilot:smoke": "node scripts/pilot-smoke-test.js",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
