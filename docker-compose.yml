@@ -66,7 +66,7 @@ services:
       - city-cleanup-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -99,16 +99,16 @@ services:
 
   # PostgreSQL Database (optional upgrade from SQLite)
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17.10-alpine3.23
     container_name: city-cleanup-postgres
     environment:
       - POSTGRES_DB=city_cleanup
       - POSTGRES_USER=cleanup_user
-      - POSTGRES_PASSWORD=cleanup_pass
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     networks:
       - city-cleanup-network
     restart: unless-stopped
@@ -125,7 +125,7 @@ services:
     image: redis:7-alpine
     container_name: city-cleanup-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
     networks:
@@ -159,13 +159,14 @@ services:
 
   # Prometheus - Metrics Collection
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.12.0
     container_name: city-cleanup-prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./monitoring/prometheus/alerts:/etc/prometheus/alerts
+      - ./rendered-monitoring/metrics-token:/etc/prometheus/secrets/metrics-token:ro
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -180,13 +181,16 @@ services:
 
   # Grafana - Visualization
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.1.0
     container_name: city-cleanup-grafana
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:?GRAFANA_ADMIN_USER is required}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SECURITY_DISABLE_GRAVATAR=true
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
       - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
@@ -201,10 +205,10 @@ services:
 
   # Loki - Log Aggregation
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.7.2
     container_name: city-cleanup-loki
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
       - loki-data:/loki
@@ -215,29 +219,14 @@ services:
     profiles:
       - monitoring
 
-  # Promtail - Log Shipper
-  promtail:
-    image: grafana/promtail:latest
-    container_name: city-cleanup-promtail
-    volumes:
-      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
-      - /var/log:/var/log
-      - ./backend/logs:/var/log/city-cleanup/backend
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - city-cleanup-network
-    restart: unless-stopped
-    profiles:
-      - monitoring
-
   # Alertmanager - Alert Management
   alertmanager:
-    image: prom/alertmanager:latest
+    image: prom/alertmanager:v0.32.1
     container_name: city-cleanup-alertmanager
     ports:
-      - "9093:9093"
+      - "127.0.0.1:9093:9093"
     volumes:
-      - ./monitoring/alertmanager/config.yml:/etc/alertmanager/config.yml
+      - ./rendered-monitoring/alertmanager.yml:/etc/alertmanager/config.yml:ro
       - alertmanager-data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/config.yml'
@@ -250,10 +239,10 @@ services:
 
   # Node Exporter - System Metrics
   node-exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.11.1
     container_name: city-cleanup-node-exporter
     ports:
-      - "9100:9100"
+      - "127.0.0.1:9100:9100"
     command:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
