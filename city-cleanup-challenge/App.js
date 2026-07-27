@@ -26,6 +26,28 @@ import Legal from './Legal';
 import GamificationDashboard from './components/GamificationDashboard';
 import { getStoredUser, logoutAuthSession } from './apiConfig';
 
+// Plain CSS-in-JS object (not a react-native StyleSheet) used only for the
+// web <a> card links below, since raw DOM host elements need real CSS
+// properties (e.g. borderStyle, boxShadow) rather than React Native's
+// shadow*/elevation props.
+const webCardLinkStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  backgroundColor: '#10243E',
+  borderColor: '#203F5D',
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderRadius: 16,
+  padding: 18,
+  width: 216,
+  minHeight: 174,
+  boxShadow: '0 8px 15px rgba(2, 9, 18, 0.14)',
+  textDecoration: 'none',
+  cursor: 'pointer',
+  boxSizing: 'border-box',
+};
+
 const BackButton = ({ label = 'Back to home', onPress }) => (
   <TouchableOpacity style={styles.backButton} onPress={onPress} accessibilityRole="button">
     <Text style={styles.backButtonText}>‹  {label}</Text>
@@ -61,6 +83,35 @@ export default function App() {
     });
   }, []);
 
+  // On web, every workspace section is addressable through a real URL
+  // hash (e.g. #/evidence). This lets a card be opened in a new tab,
+  // bookmarked, or navigated to with the browser's back/forward buttons,
+  // instead of only ever living inside in-memory state.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return undefined;
+
+    const applyHashToView = () => {
+      const key = window.location.hash.replace(/^#\/?/, '');
+      setActiveView(key || 'home');
+    };
+
+    applyHashToView();
+    window.addEventListener('hashchange', applyHashToView);
+    window.addEventListener('popstate', applyHashToView);
+    return () => {
+      window.removeEventListener('hashchange', applyHashToView);
+      window.removeEventListener('popstate', applyHashToView);
+    };
+  }, []);
+
+  const navigate = (key) => {
+    setActiveView(key);
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.history) {
+      const hash = key === 'home' ? '' : `#/${key}`;
+      window.history.pushState(null, '', `${window.location.pathname}${window.location.search}${hash}`);
+    }
+  };
+
   const handleLogin = (username, role = 'user') => {
     setUser(username);
     setUserRole(role);
@@ -70,7 +121,7 @@ export default function App() {
     await logoutAuthSession();
     setUser(null);
     setUserRole('user');
-    setActiveView('home');
+    navigate('home');
   };
 
   const renderHome = () => {
@@ -117,7 +168,7 @@ export default function App() {
               <View style={styles.heroActions}>
                 <TouchableOpacity
                   style={styles.primaryAction}
-                  onPress={() => setActiveView('evidence')}
+                  onPress={() => navigate('evidence')}
                   activeOpacity={0.86}
                 >
                   <Text style={styles.primaryActionIcon}>＋</Text>
@@ -125,7 +176,7 @@ export default function App() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.secondaryAction}
-                  onPress={() => setActiveView('events')}
+                  onPress={() => navigate('events')}
                   activeOpacity={0.82}
                 >
                   <Text style={styles.secondaryActionText}>Explore events</Text>
@@ -159,28 +210,57 @@ export default function App() {
               <Text style={styles.sectionTitle}>Workspace</Text>
               <Text style={styles.sectionSubtitle}>Everything you need to plan, submit, and track cleanup work.</Text>
             </View>
-            <Text style={styles.toolCount}>{items.length} tools</Text>
           </View>
 
           <View style={styles.grid}>
-            {items.map((item) => (
-            <TouchableOpacity
-              key={item.key}
-              style={styles.gridButton}
-              onPress={() => setActiveView(item.key)}
-              activeOpacity={0.82}
-            >
-              <View style={styles.cardTop}>
-                <View style={styles.gridIconWrap}>
-                  <Text style={styles.gridIcon}>{item.icon}</Text>
-                </View>
-                <Text style={styles.cardArrow}>↗</Text>
-              </View>
-              <Text style={styles.cardGroup}>{item.group}</Text>
-              <Text style={styles.gridText}>{item.title}</Text>
-              <Text style={styles.gridHint}>{item.hint}</Text>
-            </TouchableOpacity>
-            ))}
+            {items.map((item) => {
+              const cardInner = (
+                <>
+                  <View style={styles.cardTop}>
+                    <View style={styles.gridIconWrap}>
+                      <Text style={styles.gridIcon}>{item.icon}</Text>
+                    </View>
+                    <Text style={styles.cardArrow}>↗</Text>
+                  </View>
+                  <Text style={styles.cardGroup}>{item.group}</Text>
+                  <Text style={styles.gridText}>{item.title}</Text>
+                  <Text style={styles.gridHint}>{item.hint}</Text>
+                </>
+              );
+
+              // On web, render a real anchor so each tool behaves like an
+              // openable page: right-click → "open in new tab", cmd/ctrl-click,
+              // middle-click, and normal browser navigation all work, while a
+              // plain left click still navigates instantly within the app.
+              if (Platform.OS === 'web') {
+                return React.createElement(
+                  'a',
+                  {
+                    key: item.key,
+                    href: `#/${item.key}`,
+                    style: webCardLinkStyle,
+                    onClick: (event) => {
+                      const opensNewContext = event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1;
+                      if (opensNewContext) return;
+                      event.preventDefault();
+                      navigate(item.key);
+                    },
+                  },
+                  cardInner,
+                );
+              }
+
+              return (
+                <TouchableOpacity
+                  key={item.key}
+                  style={styles.gridButton}
+                  onPress={() => navigate(item.key)}
+                  activeOpacity={0.82}
+                >
+                  {cardInner}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </ScrollView>
@@ -191,7 +271,7 @@ export default function App() {
     if (activeView === 'home') return renderHome();
 
     if (activeView === 'gamification') {
-      return <GamificationDashboard username={user} onClose={() => setActiveView('home')} />;
+      return <GamificationDashboard username={user} onClose={() => navigate('home')} />;
     }
     let content;
     let backLabel = 'Back to home';
@@ -212,7 +292,7 @@ export default function App() {
         content = <Posts username={user} />;
         break;
       case 'events':
-        content = <Events username={user} onShowMap={() => setActiveView('map')} />;
+        content = <Events username={user} onShowMap={() => navigate('map')} />;
         break;
       case 'map':
         backLabel = 'Back to events';
@@ -235,7 +315,7 @@ export default function App() {
           <Dashboard
             username={user}
             userRole={userRole}
-            onAdminPanel={() => setActiveView('admin')}
+            onAdminPanel={() => navigate('admin')}
           />
         );
         break;
@@ -253,7 +333,7 @@ export default function App() {
       <>
         <BackButton
           label={backLabel}
-          onPress={() => setActiveView(activeView === 'map' ? 'events' : 'home')}
+          onPress={() => navigate(activeView === 'map' ? 'events' : 'home')}
         />
         {content}
       </>
@@ -426,7 +506,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { color: '#EDF5FF', fontSize: 21, fontWeight: '600', letterSpacing: -0.2 },
   sectionSubtitle: { color: '#8298AF', fontSize: 13, lineHeight: 19, marginTop: 5 },
-  toolCount: { color: '#7890AA', fontSize: 12, fontWeight: '600' },
   grid: {
     width: '100%',
     flexDirection: 'row',
