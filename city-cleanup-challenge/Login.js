@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { API_BASE_URL, apiFetch, setAuthSession } from './apiConfig';
 
-export default function Login({ onLogin, onSwitchToSignup }) {
+export default function Login({ onLogin, onSwitchToSignup, onViewLegal }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -158,6 +158,13 @@ export default function Login({ onLogin, onSwitchToSignup }) {
             </TouchableOpacity>
 
             <Text style={styles.securityNote}>🔒 Your session is protected with secure access tokens.</Text>
+            <TouchableOpacity
+              onPress={onViewLegal}
+              accessibilityRole="button"
+              accessibilityLabel="View privacy terms and support"
+            >
+              <Text style={styles.legalLink}>Privacy, terms, and support</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -297,4 +304,5 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { color: '#BBD8F7', fontSize: 15, fontWeight: '600' },
   securityNote: { color: '#7890AA', fontSize: 12, lineHeight: 18, marginTop: 20, textAlign: 'center' },
+  legalLink: { color: '#8DBDFF', fontSize: 12, fontWeight: '600', marginTop: 14, textAlign: 'center' },
 });
