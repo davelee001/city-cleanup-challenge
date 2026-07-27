@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
 
 import { API_BASE_URL, apiFetch } from './apiConfig';
+import { colors } from './theme';
+import ThemedButton from './components/ThemedButton';
 
 export default function Events({ username, onShowMap }) {
   const [events, setEvents] = useState([]);
@@ -148,14 +150,14 @@ export default function Events({ username, onShowMap }) {
       <Text style={styles.title}>Cleanup Events</Text>
       
       <View style={styles.buttonRow}>
-        <Button 
-          title="Create Event" 
-          onPress={() => setShowCreateForm(!showCreateForm)} 
+        <ThemedButton
+          title="Create Event"
+          onPress={() => setShowCreateForm(!showCreateForm)}
         />
-        <Button 
-          title="View Map" 
+        <ThemedButton
+          title="View Map"
           onPress={onShowMap}
-          color="#28a745"
+          variant="secondary"
         />
       </View>
 
@@ -165,12 +167,14 @@ export default function Events({ username, onShowMap }) {
           <TextInput
             style={styles.input}
             placeholder="Event Title"
+            placeholderTextColor={colors.textMuted}
             value={newEvent.title}
             onChangeText={(text) => setNewEvent({ ...newEvent, title: text })}
           />
           <TextInput
             style={styles.input}
             placeholder="Description"
+            placeholderTextColor={colors.textMuted}
             value={newEvent.description}
             onChangeText={(text) => setNewEvent({ ...newEvent, description: text })}
             multiline
@@ -178,24 +182,27 @@ export default function Events({ username, onShowMap }) {
           <TextInput
             style={styles.input}
             placeholder="Location (e.g., Central Park)"
+            placeholderTextColor={colors.textMuted}
             value={newEvent.location}
             onChangeText={(text) => setNewEvent({ ...newEvent, location: text })}
           />
           <TextInput
             style={styles.input}
             placeholder="Date (YYYY-MM-DD)"
+            placeholderTextColor={colors.textMuted}
             value={newEvent.date}
             onChangeText={(text) => setNewEvent({ ...newEvent, date: text })}
           />
           <TextInput
             style={styles.input}
             placeholder="Time (HH:MM)"
+            placeholderTextColor={colors.textMuted}
             value={newEvent.time}
             onChangeText={(text) => setNewEvent({ ...newEvent, time: text })}
           />
           <View style={styles.buttonRow}>
-            <Button title="Create" onPress={handleCreateEvent} disabled={loading} />
-            <Button title="Cancel" onPress={() => setShowCreateForm(false)} color="#6c757d" />
+            <ThemedButton title="Create" onPress={handleCreateEvent} disabled={loading} />
+            <ThemedButton title="Cancel" onPress={() => setShowCreateForm(false)} variant="secondary" />
           </View>
         </View>
       )}
@@ -242,60 +249,65 @@ export default function Events({ username, onShowMap }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#10243E' },
-  title: { fontSize: 22, fontWeight: '600', marginBottom: 16 },
-  buttonRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  createForm: { 
-    backgroundColor: '#0B1E36',
-    padding: 16, 
-    borderRadius: 8, 
-    marginBottom: 16 
+  container: { flex: 1, padding: 24, backgroundColor: colors.pageBackground },
+  title: { fontSize: 22, fontWeight: '600', marginBottom: 16, color: colors.textPrimary },
+  buttonRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, gap: 12 },
+  createForm: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16
   },
-  formTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
-  input: { 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
-    borderRadius: 4, 
-    padding: 10, 
+  formTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: colors.textPrimary },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    borderRadius: 8,
+    padding: 10,
     marginBottom: 12,
-    backgroundColor: '#10243E'
+    backgroundColor: colors.cardDeep,
+    color: colors.textPrimary
   },
   eventsList: { flex: 1 },
-  eventCard: { 
-    backgroundColor: '#132A46',
-    padding: 16, 
-    borderRadius: 8, 
-    marginBottom: 12 
+  eventCard: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12
   },
-  eventTitle: { fontSize: 18, fontWeight: '600', marginBottom: 4 },
-  eventDesc: { fontSize: 14, color: '#AFC0D4', marginBottom: 8 },
-  eventLocation: { fontSize: 14, marginBottom: 4 },
-  eventDate: { fontSize: 14, marginBottom: 4 },
-  eventCreator: { fontSize: 12, color: '#8EA4BC', marginBottom: 8 },
-  eventActions: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center' 
+  eventTitle: { fontSize: 18, fontWeight: '600', marginBottom: 4, color: colors.textPrimary },
+  eventDesc: { fontSize: 14, color: colors.textFaint, marginBottom: 8 },
+  eventLocation: { fontSize: 14, marginBottom: 4, color: colors.textFaint },
+  eventDate: { fontSize: 14, marginBottom: 4, color: colors.textFaint },
+  eventCreator: { fontSize: 12, color: colors.textMuted, marginBottom: 8 },
+  eventActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
-  checkinButton: { 
-    backgroundColor: '#007bff', 
-    padding: 8, 
-    borderRadius: 4 
+  checkinButton: {
+    backgroundColor: colors.accentBlue,
+    padding: 8,
+    borderRadius: 8
   },
-  checkinButtonText: { color: '#fff', fontWeight: '600' },
-  checkedIn: { 
-    backgroundColor: '#28a745', 
-    padding: 8, 
-    borderRadius: 4 
+  checkinButtonText: { color: colors.white, fontWeight: '600' },
+  checkedIn: {
+    backgroundColor: colors.successBg,
+    padding: 8,
+    borderRadius: 8
   },
-  checkedInText: { color: '#fff', fontWeight: '600' },
-  creatorBadge: { 
-    backgroundColor: '#ffc107', 
-    color: '#F5F8FF',
-    padding: 4, 
-    borderRadius: 4, 
-    fontSize: 12 
+  checkedInText: { color: colors.success, fontWeight: '600' },
+  creatorBadge: {
+    backgroundColor: colors.warningBg,
+    color: colors.warning,
+    padding: 4,
+    borderRadius: 6,
+    fontSize: 12
   },
-  error: { color: 'red', marginBottom: 8 },
-  empty: { color: '#8EA4BC', textAlign: 'center', marginTop: 20 }
+  error: { color: colors.danger, marginBottom: 8 },
+  empty: { color: colors.textMuted, textAlign: 'center', marginTop: 20 }
 });
