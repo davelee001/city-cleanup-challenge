@@ -14,6 +14,8 @@ import {
 import { API_BASE_URL, apiFetch } from '../apiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../theme';
+import ThemedButton from './ThemedButton';
 
 const { width } = Dimensions.get('window');
 
@@ -121,7 +123,7 @@ const GamificationDashboard = ({ username, onClose }) => {
       <ScrollView style={styles.tabContent}>
         {/* Level Card */}
         <LinearGradient
-          colors={['#4CAF50', '#8BC34A']}
+          colors={[colors.accentBlue, colors.accentTeal]}
           style={styles.levelCard}
         >
           <View style={styles.levelHeader}>
@@ -150,25 +152,25 @@ const GamificationDashboard = ({ username, onClose }) => {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <Ionicons name="trophy" size={24} color="#FFD700" />
+            <Ionicons name="trophy" size={24} color={colors.warning} />
             <Text style={styles.statNumber}>{formatNumber(userStats?.totalPoints || 0)}</Text>
             <Text style={styles.statLabel}>Total Points</Text>
           </View>
           
           <View style={styles.statCard}>
-            <Ionicons name="flame" size={24} color="#FF5722" />
+            <Ionicons name="flame" size={24} color={colors.danger} />
             <Text style={styles.statNumber}>{streakInfo?.currentStreak || 0}</Text>
             <Text style={styles.statLabel}>Day Streak</Text>
           </View>
 
           <View style={styles.statCard}>
-            <Ionicons name="leaf" size={24} color="#4CAF50" />
+            <Ionicons name="leaf" size={24} color={colors.accentTeal} />
             <Text style={styles.statNumber}>{formatNumber(environmentalImpact?.totalWasteCollected || 0)}</Text>
             <Text style={styles.statLabel}>kg Waste</Text>
           </View>
 
           <View style={styles.statCard}>
-            <Ionicons name="medal" size={24} color="#9C27B0" />
+            <Ionicons name="medal" size={24} color={colors.accentBlueSoft} />
             <Text style={styles.statNumber}>{userStats?.totalAchievements || 0}</Text>
             <Text style={styles.statLabel}>Achievements</Text>
           </View>
@@ -178,19 +180,19 @@ const GamificationDashboard = ({ username, onClose }) => {
         <View style={styles.impactCard}>
           <Text style={styles.cardTitle}>Environmental Impact</Text>
           <View style={styles.impactRow}>
-            <Ionicons name="cloud" size={20} color="#2196F3" />
+            <Ionicons name="cloud" size={20} color={colors.accentBlueSoft} />
             <Text style={styles.impactText}>
               {formatNumber(environmentalImpact?.totalCO2Saved || 0)} kg CO₂ saved
             </Text>
           </View>
           <View style={styles.impactRow}>
-            <Ionicons name="water" size={20} color="#00BCD4" />
+            <Ionicons name="water" size={20} color={colors.accentTeal} />
             <Text style={styles.impactText}>
               {formatNumber(environmentalImpact?.totalWaterSaved || 0)} L water saved
             </Text>
           </View>
           <View style={styles.impactRow}>
-            <Ionicons name="flash" size={20} color="#FFC107" />
+            <Ionicons name="flash" size={20} color={colors.warning} />
             <Text style={styles.impactText}>
               {formatNumber(environmentalImpact?.totalEnergySaved || 0)} kWh energy saved
             </Text>
@@ -296,7 +298,7 @@ const GamificationDashboard = ({ username, onClose }) => {
         ))}
         {achievements.length === 0 && (
           <View style={styles.noAchievements}>
-            <Ionicons name="medal-outline" size={64} color="#ccc" />
+            <Ionicons name="medal-outline" size={64} color={colors.textMuted} />
             <Text style={styles.noAchievementsText}>No achievements yet</Text>
             <Text style={styles.noAchievementsSubtext}>
               Participate in events to earn your first achievement!
@@ -330,12 +332,11 @@ const GamificationDashboard = ({ username, onClose }) => {
                 <Text style={styles.modalDate}>
                   Earned on {new Date(selectedAchievement.earnedAt).toLocaleDateString()}
                 </Text>
-                <TouchableOpacity
-                  style={styles.modalCloseButton}
+                <ThemedButton
+                  title="Close"
                   onPress={() => setShowAchievementModal(false)}
-                >
-                  <Text style={styles.modalCloseText}>Close</Text>
-                </TouchableOpacity>
+                  style={styles.modalCloseButton}
+                />
               </>
             )}
           </View>
@@ -349,9 +350,9 @@ const GamificationDashboard = ({ username, onClose }) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#fff" />
+            <Ionicons name="close" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Gamification</Text>
+          <Text style={styles.headerTitle}>Achievements</Text>
         </View>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading your achievements...</Text>
@@ -362,20 +363,17 @@ const GamificationDashboard = ({ username, onClose }) => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#4CAF50', '#8BC34A']}
-        style={styles.header}
-      >
+      <View style={styles.header}>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <Ionicons name="close" size={24} color="#fff" />
+          <Ionicons name="close" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Gamification</Text>
+        <Text style={styles.headerTitle}>Achievements</Text>
         <View style={styles.headerStats}>
           <Text style={styles.headerStatsText}>
             Level {dashboardData?.currentLevel?.currentLevel || 1} • {formatNumber(dashboardData?.userStats?.totalPoints || 0)} XP
           </Text>
         </View>
-      </LinearGradient>
+      </View>
 
       <View style={styles.tabBar}>
         <TouchableOpacity
@@ -385,7 +383,7 @@ const GamificationDashboard = ({ username, onClose }) => {
           <Ionicons 
             name="home" 
             size={20} 
-            color={activeTab === 'overview' ? '#4CAF50' : '#666'} 
+            color={activeTab === 'overview' ? colors.accentTeal : colors.textFaint} 
           />
           <Text style={[styles.tabText, activeTab === 'overview' && styles.activeTabText]}>
             Overview
@@ -399,7 +397,7 @@ const GamificationDashboard = ({ username, onClose }) => {
           <Ionicons 
             name="trophy" 
             size={20} 
-            color={activeTab === 'leaderboard' ? '#4CAF50' : '#666'} 
+            color={activeTab === 'leaderboard' ? colors.accentTeal : colors.textFaint} 
           />
           <Text style={[styles.tabText, activeTab === 'leaderboard' && styles.activeTabText]}>
             Leaderboard
@@ -413,7 +411,7 @@ const GamificationDashboard = ({ username, onClose }) => {
           <Ionicons 
             name="medal" 
             size={20} 
-            color={activeTab === 'achievements' ? '#4CAF50' : '#666'} 
+            color={activeTab === 'achievements' ? colors.accentTeal : colors.textFaint} 
           />
           <Text style={[styles.tabText, activeTab === 'achievements' && styles.activeTabText]}>
             Achievements
@@ -440,19 +438,22 @@ const GamificationDashboard = ({ username, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#07182D',
+    backgroundColor: colors.pageBackground,
   },
   header: {
     paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   closeButton: {
     alignSelf: 'flex-end',
     marginBottom: 10,
   },
   headerTitle: {
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
@@ -461,18 +462,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   headerStatsText: {
-    color: '#fff',
+    color: colors.textFaint,
     fontSize: 16,
     textAlign: 'center',
     opacity: 0.9,
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#10243E',
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderSoft,
   },
   tabButton: {
     flex: 1,
@@ -484,16 +483,16 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 3,
-    borderBottomColor: '#4CAF50',
+    borderBottomColor: colors.accentTeal,
   },
   tabText: {
     marginLeft: 5,
-    color: '#AFC0D4',
+    color: colors.textFaint,
     fontSize: 14,
     fontWeight: '500',
   },
   activeTabText: {
-    color: '#4CAF50',
+    color: colors.accentTeal,
     fontWeight: '600',
   },
   content: {
@@ -514,12 +513,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   levelTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 20,
     fontWeight: '600',
   },
   levelNumber: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     opacity: 0.9,
   },
@@ -532,11 +531,11 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#10243E',
+    backgroundColor: colors.white,
     borderRadius: 4,
   },
   progressText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     textAlign: 'center',
   },
@@ -547,41 +546,37 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: (width - 60) / 2,
-    backgroundColor: '#10243E',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 20,
     margin: 5,
     alignItems: 'center',
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
   },
   statNumber: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#EAF2FF',
+    color: colors.textPrimary,
     marginVertical: 8,
   },
   statLabel: {
     fontSize: 14,
-    color: '#AFC0D4',
+    color: colors.textFaint,
     textAlign: 'center',
   },
   impactCard: {
-    backgroundColor: '#10243E',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#EAF2FF',
+    color: colors.textPrimary,
     marginBottom: 15,
   },
   impactRow: {
@@ -592,23 +587,21 @@ const styles = StyleSheet.create({
   impactText: {
     marginLeft: 10,
     fontSize: 16,
-    color: '#AFC0D4',
+    color: colors.textFaint,
   },
   achievementsCard: {
-    backgroundColor: '#10243E',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 20,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
   },
   achievementRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: colors.borderSoft,
   },
   achievementIcon: {
     fontSize: 24,
@@ -620,22 +613,20 @@ const styles = StyleSheet.create({
   achievementName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#EAF2FF',
+    color: colors.textPrimary,
   },
   achievementPoints: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: colors.accentTeal,
     marginTop: 2,
   },
   leaderboardCard: {
-    backgroundColor: '#10243E',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 20,
     marginBottom: 15,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
   },
   leaderboardRow: {
     flexDirection: 'row',
@@ -648,22 +639,22 @@ const styles = StyleSheet.create({
   rank: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#AFC0D4',
+    color: colors.textFaint,
   },
   username: {
     flex: 1,
     fontSize: 16,
-    color: '#EAF2FF',
+    color: colors.textPrimary,
     marginLeft: 10,
   },
   currentUser: {
-    color: '#4CAF50',
+    color: colors.accentTeal,
     fontWeight: '600',
   },
   score: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#AFC0D4',
+    color: colors.textFaint,
   },
   achievementCategory: {
     marginBottom: 20,
@@ -671,7 +662,7 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#EAF2FF',
+    color: colors.textPrimary,
     marginBottom: 10,
   },
   achievementGrid: {
@@ -680,15 +671,13 @@ const styles = StyleSheet.create({
   },
   achievementCard: {
     width: (width - 60) / 3,
-    backgroundColor: '#10243E',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 15,
     margin: 5,
     alignItems: 'center',
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
   },
   achievementCardIcon: {
     fontSize: 32,
@@ -697,13 +686,13 @@ const styles = StyleSheet.create({
   achievementCardName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#EAF2FF',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 4,
   },
   achievementCardDate: {
     fontSize: 10,
-    color: '#AFC0D4',
+    color: colors.textFaint,
   },
   noAchievements: {
     alignItems: 'center',
@@ -712,18 +701,18 @@ const styles = StyleSheet.create({
   noAchievementsText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#AFC0D4',
+    color: colors.textFaint,
     marginTop: 15,
   },
   noAchievementsSubtext: {
     fontSize: 14,
-    color: '#7890AA',
+    color: colors.textMuted,
     textAlign: 'center',
     marginTop: 5,
   },
   noData: {
     textAlign: 'center',
-    color: '#7890AA',
+    color: colors.textMuted,
     fontSize: 16,
     paddingVertical: 20,
   },
@@ -734,7 +723,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#AFC0D4',
+    color: colors.textFaint,
   },
   modalOverlay: {
     flex: 1,
@@ -743,12 +732,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#10243E',
+    backgroundColor: colors.card,
     borderRadius: 20,
     padding: 30,
     alignItems: 'center',
     width: width * 0.85,
     maxWidth: 300,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   modalIcon: {
     fontSize: 64,
@@ -757,37 +748,29 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#EAF2FF',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 10,
   },
   modalDescription: {
     fontSize: 16,
-    color: '#AFC0D4',
+    color: colors.textFaint,
     textAlign: 'center',
     marginBottom: 15,
   },
   modalPoints: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4CAF50',
+    color: colors.accentTeal,
     marginBottom: 10,
   },
   modalDate: {
     fontSize: 14,
-    color: '#7890AA',
+    color: colors.textMuted,
     marginBottom: 20,
   },
   modalCloseButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  modalCloseText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    width: '100%',
   },
 });
 
