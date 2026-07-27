@@ -26,6 +26,11 @@ data:
   WALLET_VERIFICATION_URI: "https://city-cleanup.example.com"
   WALLET_CHALLENGE_TTL_MS: "600000"
   METRICS_ENABLED: "true"
+  SENTRY_ENABLED: "true"
+  SENTRY_ENVIRONMENT: "production"
+  SENTRY_RELEASE: "replace-with-release-sha"
+  SENTRY_TRACES_SAMPLE_RATE: "0.1"
+  SENTRY_PROFILES_SAMPLE_RATE: "0"
   API_RATE_LIMIT: "1000"
   AUTH_RATE_LIMIT: "20"
   RATE_LIMIT_WINDOW_MS: "900000"
@@ -44,4 +49,4 @@ metadata:
   namespace: city-cleanup
 data:
   NODE_ENV: "production"
-  REACT_APP_API_URL: "https://api.city-cleanup.example.com"
+  EXPO_PUBLIC_API_URL: "/api/v1"
