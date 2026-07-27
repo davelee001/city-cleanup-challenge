@@ -22,6 +22,8 @@ const { createRewardRouter } = require('./routes/rewards');
 const { createWalletRouter } = require('./routes/wallets');
 const GamificationIntegration = require('./services/gamificationIntegration');
 const metricsService = require('./services/metrics');
+const sentryService = require('./services/sentry');
+const { auditMiddleware, listAuditEvents } = require('./services/auditService');
 const {
 	createApiRateLimiter,
 	createAuthRateLimiter,
@@ -96,6 +98,7 @@ emitter.on('plan:created', (plan) => {
 
 function createApp() {
 	const app = express();
+	sentryService.initialize(app);
 	app.set('db', db);
 	if (config.api.trustProxyHops > 0) {
 		app.set('trust proxy', config.api.trustProxyHops);
@@ -106,6 +109,7 @@ function createApp() {
 		origin: config.cors.origin,
 		credentials: true
 	}));
+	app.use(auditMiddleware(db));
 	app.use(express.json({ limit: config.api.jsonBodyLimitBytes }));
 	app.use(morgan('dev'));
 	app.use(metricsService.requestMiddleware());
@@ -216,6 +220,7 @@ function createApp() {
 					return res.status(400).json({ success: false, message });
 				}
                 const newUser = { id: this.lastID, username, email, phone, location, role };
+				req.auditActor = newUser;
                 // Emit an event for the new user signup
                 emitter.emit('user:signup', newUser);
 				res.json({ success: true, user: newUser });
@@ -237,6 +242,7 @@ function createApp() {
 			}
 			try {
 				const tokens = await issueTokenPair(user);
+				req.auditActor = publicUser(user);
 				return res.json({ success: true, user: publicUser(user), tokens });
 			} catch (tokenError) {
 				console.error('Token issuance failed:', tokenError);
@@ -252,6 +258,7 @@ function createApp() {
 		}
 		try {
 			const session = await rotateRefreshToken(refreshToken);
+			req.auditActor = session.user;
 			return res.json({ success: true, ...session });
 		} catch (error) {
 			return res.status(401).json({
@@ -551,6 +558,36 @@ function createApp() {
 			}
 			res.json({ success: true });
 		});
+	});
+
+	apiRouter.get('/admin/audit-events', requireAdmin, async (req, res) => {
+		const allowedCategories = [
+			'authentication',
+			'administration',
+			'moderation',
+			'destructive',
+		];
+		if (req.query.category && !allowedCategories.includes(req.query.category)) {
+			return res.status(400).json({
+				success: false,
+				message: 'Invalid audit category',
+			});
+		}
+		try {
+			const events = await listAuditEvents(db, {
+				category: req.query.category,
+				actorUserId: req.query.actorUserId,
+				limit: req.query.limit,
+				offset: req.query.offset,
+			});
+			return res.json({ success: true, events });
+		} catch (error) {
+			console.error('Unable to list audit events:', error);
+			return res.status(500).json({
+				success: false,
+				message: 'Unable to retrieve audit events',
+			});
+		}
 	});
 
 	// Usage Analytics
@@ -1295,6 +1332,18 @@ function createApp() {
 			});
 		}
 		return next(error);
+	});
+	app.use(sentryService.errorHandler());
+	app.use((error, req, res, next) => {
+		if (res.headersSent) return next(error);
+		console.error('Unhandled request error:', error);
+		return res.status(error.status || 500).json({
+			success: false,
+			message: error.status && error.status < 500
+				? error.message
+				: 'Internal server error',
+			requestId: req.auditRequestId,
+		});
 	});
 
 	return app;
