@@ -26,19 +26,19 @@
     "expo-linear-gradient": "~56.0.4",
     "expo-location": "~56.0.22",
     "leaflet": "^1.9.4",
-    "react": "19.2.3",
+    "react": "19.2.8",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "19.2.3",
+    "react-dom": "19.2.8",
     "react-hot-toast": "^2.4.1",
-    "react-native": "0.85.3",
-    "react-native-maps": "1.27.2",
+    "react-native": "0.86.2",
+    "react-native-maps": "1.29.0",
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@testing-library/react-native": "^13.3.3",
     "eslint": "^8.57.1",
     "jest-expo": "~56.0.5",
-    "react-test-renderer": "19.2.3"
+    "react-test-renderer": "19.2.8"
   },
   "jest": {
     "preset": "jest-expo",
