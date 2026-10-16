@@ -4,5 +4,6 @@
   "frontendOrigin": "http://localhost:19006",
   "submissionId": 33,
   "registrationHttpStatus": 200,
-  "loginHttpStatus": 200
+  "loginHttpStatus": 200,
+  "submissionHttpStatus": 201
 }
