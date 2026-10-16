@@ -1,0 +1,13 @@
+{
+  "label": "REAL INFERENCE BENCHMARK ON LABELED ILLUSTRATIONS; NOT REAL CLEANUP EVIDENCE",
+  "variant": {
+    "name": "compact-512-256",
+    "imageSize": 512,
+    "tokens": 256,
+    "options": {
+      "num_ctx": 2048,
+      "num_thread": 4,
+      "repeat_penalty": 1.1
+    }
+  }
+}
