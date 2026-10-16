@@ -15,5 +15,7 @@
     "num_batch": 128,
     "num_predict": 160,
     "repeat_penalty": 1.1
-  }
+  },
+  "preprocessingMs": 79.5916,
+  "inferenceMs": 144304.16989999998
 }
