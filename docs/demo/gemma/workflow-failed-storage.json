@@ -1,5 +1,8 @@
 {
   "label": "ISOLATED SYNTHETIC WORKFLOW TEST; NOT REAL CLEANUP OR IMPACT",
   "session": "workflow-1792155391434",
-  "coldRequested": true
+  "coldRequested": true,
+  "modelStateBefore": {
+    "models": []
+  }
 }
