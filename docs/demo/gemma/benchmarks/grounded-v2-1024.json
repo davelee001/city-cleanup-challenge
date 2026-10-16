@@ -169,5 +169,30 @@
   "structuralError": "Duplicate category",
   "qualityFlags": [
     "repeated_findings"
-  ]
+  ],
+  "findings": {
+    "assessment": "The images depict an illustrative demonstration of a road cleanup scenario.",
+    "wasteCategories": [
+      "unknown",
+      "unknown"
+    ],
+    "visualDifferences": [
+      "sameScene=likely",
+      "sameScene=likely"
+    ],
+    "environmentalConcerns": [
+      "[unknwon]",
+      "[unknwon]"
+    ],
+    "limitations": [
+      "The images are illustrative and do not represent actual cleanup evidence.",
+      "Changes to the road or sky are assumed, introducing uncertainty about the scene."
+    ],
+    "recommendations": [
+      "Use gloves/tools for ordinary litter; consult trained services for hazards."
+    ],
+    "cleanupEvidence": "uncertain",
+    "sameScene": "likely",
+    "needsHumanReview": true
+  }
 }
