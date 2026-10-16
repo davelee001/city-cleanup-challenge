@@ -3,5 +3,6 @@
   "apiOrigin": "http://localhost:3000",
   "frontendOrigin": "http://localhost:19006",
   "submissionId": 33,
-  "registrationHttpStatus": 200
+  "registrationHttpStatus": 200,
+  "loginHttpStatus": 200
 }
