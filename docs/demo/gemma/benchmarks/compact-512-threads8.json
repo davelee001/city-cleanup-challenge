@@ -162,5 +162,28 @@
   "inferenceMs": 185104.3384,
   "totalMs": 185149.4083,
   "parsed": true,
-  "qualityFlags": []
+  "qualityFlags": [],
+  "findings": {
+    "assessment": "Illustrative demonstration of a road before and after a hypothetical cleanup.",
+    "wasteCategories": [
+      "plastic",
+      "unknown"
+    ],
+    "visualDifferences": [
+      "The road is cleaner in the second image.",
+      "A yellow object is present in the first image but absent in the second."
+    ],
+    "environmentalConcerns": [],
+    "limitations": [
+      "The images are illustrative only, not real cleanup evidence.",
+      "The scene is a simplified drawing and does not represent a realistic environment."
+    ],
+    "recommendations": [
+      "Human review is required to verify the accuracy of the demonstration.",
+      "Further details about the cleanup process would be beneficial."
+    ],
+    "cleanupEvidence": "no_visible_improvement",
+    "sameScene": "likely",
+    "needsHumanReview": true
+  }
 }
