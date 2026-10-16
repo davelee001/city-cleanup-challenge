@@ -185,5 +185,22 @@
     "cleanupEvidence": "no_visible_improvement",
     "sameScene": "likely",
     "needsHumanReview": true
+  },
+  "response": {
+    "model": "gemma3:4b",
+    "created_at": "2026-10-16T12:37:38.1884623Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\"assessment\": \"The images depict a before-and-after illustration of a road with some visible litter.\",\n\"wasteCategories\": [\"plastic\", \"paper\"],\n\"visualDifferences\": [\"A yellow object is present in the 'before' image but absent in the 'after' image.\", \"A blue object is present in the 'before' image but absent in the 'after' image.\"],\n\"environmentalConcerns\": [],\n\"limitations\": [\"The images are illustrative and not real cleanup evidence.\", \"The scene is a simplified drawing, limiting accurate assessment.\"],\n\"recommendations\": [\"Human review is required to confirm accuracy of visual differences.\", \"Further investigation is needed to determine the actual conditions of the area.\"],\n\"cleanupEvidence\": \"no_visible_improvement\",\n\"sameScene\": \"likely\",\n\"needsHumanReview\": true}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 42744871700,
+    "load_duration": 6558200,
+    "prompt_eval_count": 796,
+    "prompt_eval_cached_count": 791,
+    "prompt_eval_duration": 810117000,
+    "eval_count": 175,
+    "eval_duration": 41843204000
   }
 }
