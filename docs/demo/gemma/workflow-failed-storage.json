@@ -129,5 +129,6 @@
       "repeat_penalty": 1.1
     }
   },
-  "passed": false
+  "passed": false,
+  "error": "Expected values to be strictly equal:\n\n404 !== 200\n"
 }
