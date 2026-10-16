@@ -1,4 +1,12 @@
 {
   "label": "FOREGROUND GEMMA BROWSER STREAM TEST; LABELED ILLUSTRATIONS, TEST QUANTITY AND EMULATED GPS; NOT REAL CLEANUP",
-  "startedAt": "2026-10-16T13:53:15.279Z"
+  "startedAt": "2026-10-16T13:53:15.279Z",
+  "checks": {
+    "chatOpened": true,
+    "liveGenerationVisible": true,
+    "validatedFindingsVisible": true,
+    "actualLocalOllama": true,
+    "humanReviewRequired": true,
+    "completedReplayWithoutReinference": true
+  }
 }
