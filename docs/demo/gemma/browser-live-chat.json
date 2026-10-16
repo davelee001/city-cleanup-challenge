@@ -25,5 +25,47 @@
       "elapsedMs": 186039
     }
   ],
-  "passed": true
+  "passed": true,
+  "analysis": {
+    "status": "completed",
+    "version": "gemma-cleanup-v2",
+    "model": "gemma3:4b",
+    "provider": "ollama",
+    "promptVersion": "grounded-example-v3",
+    "settings": {
+      "imageMaxSize": 1024,
+      "maxOutputTokens": 384,
+      "contextLength": 2048,
+      "numThreads": 4
+    },
+    "analyzedAt": "2026-10-16T13:56:22.112Z",
+    "timings": {
+      "preprocessingMs": 27,
+      "requestMs": 184808,
+      "loadMs": 11,
+      "promptMs": 165298,
+      "generationMs": 19363,
+      "promptTokens": 765,
+      "generatedTokens": 94,
+      "totalMs": 184839
+    },
+    "findings": {
+      "assessment": "Illustrative demonstration showing a road before and after a simulated cleanup operation.",
+      "wasteCategories": [],
+      "visualDifferences": [
+        "The road is cleaner in the 'after' image compared to the 'before' image."
+      ],
+      "environmentalConcerns": [],
+      "limitations": [
+        "Images cannot establish disposal or weight.",
+        "AI observations require human review. Photos cannot establish weight, exact quantities, disposal, location, authenticity, or chemical safety."
+      ],
+      "recommendations": [
+        "Use gloves and litter tools; leave unknown hazards to trained services."
+      ],
+      "cleanupEvidence": "uncertain",
+      "sameScene": "uncertain",
+      "needsHumanReview": true
+    }
+  }
 }
