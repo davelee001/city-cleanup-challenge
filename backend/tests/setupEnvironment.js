@@ -9,3 +9,5 @@ process.env.EVIDENCE_STORAGE_PATH = path.join(
   String(process.pid)
 );
 process.env.METRICS_ENABLED = 'true';
+// Local opt-in Gemma settings must not enable inference in unrelated tests.
+process.env.GEMMA_VERIFICATION_ENABLED = 'false';
