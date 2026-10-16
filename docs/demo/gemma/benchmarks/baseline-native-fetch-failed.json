@@ -155,5 +155,6 @@
   "preprocessingMs": 27.3284000000001,
   "inferenceMs": 304750.34140000003,
   "totalMs": 304782.9316,
-  "error": "TypeError"
+  "error": "TypeError",
+  "parsed": false
 }
