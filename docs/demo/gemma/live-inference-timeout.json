@@ -62,5 +62,97 @@
       "path": "docs/demo/gemma/after.png",
       "sha256": "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
     }
-  ]
+  ],
+  "verification": {
+    "version": "phase9-v2",
+    "smartVerification": {
+      "status": "unavailable",
+      "version": "gemma-cleanup-v1",
+      "reason": "inference_or_validation_failed",
+      "needsHumanReview": true
+    },
+    "thresholds": {
+      "perceptualDistance": 12,
+      "sceneHighRiskBelow": 0.3,
+      "sceneMediumRiskBelow": 0.48,
+      "syntheticHighRiskAt": 0.6,
+      "syntheticMediumRiskAt": 0.25
+    },
+    "overallRisk": "medium",
+    "reviewReasons": [
+      "gemma_unavailable"
+    ],
+    "exactDuplicate": {
+      "matched": false,
+      "submissionId": null
+    },
+    "perceptualDuplicate": {
+      "matched": false,
+      "distance": null,
+      "threshold": 12,
+      "submissionId": null,
+      "existingKind": null
+    },
+    "sceneConsistency": {
+      "score": 0.934,
+      "riskLevel": "low",
+      "perceptualDistance": 6,
+      "colorDifference": 0.001,
+      "signals": [],
+      "disclaimer": "Scene consistency is a review aid and does not determine authenticity."
+    },
+    "syntheticImageRisk": {
+      "level": "low",
+      "score": 0.1,
+      "before": {
+        "score": 0.1,
+        "level": "low",
+        "signals": [
+          "camera_metadata_absent"
+        ],
+        "disclaimer": "Heuristic risk signals are not proof that an image is AI-generated."
+      },
+      "after": {
+        "score": 0.1,
+        "level": "low",
+        "signals": [
+          "camera_metadata_absent"
+        ],
+        "disclaimer": "Heuristic risk signals are not proof that an image is AI-generated."
+      },
+      "disclaimer": "Synthetic-image risk is heuristic and always requires human interpretation."
+    },
+    "images": {
+      "before": {
+        "perceptualHash": "6616064e9e160f23",
+        "width": 960,
+        "height": 640,
+        "format": "png",
+        "entropy": 2.291,
+        "sharpness": 2.63,
+        "averageColor": [
+          123.8,
+          151,
+          134.1
+        ],
+        "captureMetadata": {},
+        "qualitySignals": []
+      },
+      "after": {
+        "perceptualHash": "6616460e9e96272b",
+        "width": 960,
+        "height": 640,
+        "format": "png",
+        "entropy": 2.226,
+        "sharpness": 2.599,
+        "averageColor": [
+          123.6,
+          150.7,
+          133.7
+        ],
+        "captureMetadata": {},
+        "qualitySignals": []
+      }
+    }
+  }
 }
