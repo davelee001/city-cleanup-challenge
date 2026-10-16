@@ -24,5 +24,6 @@
       "stage": "findings",
       "elapsedMs": 186039
     }
-  ]
+  ],
+  "passed": true
 }
