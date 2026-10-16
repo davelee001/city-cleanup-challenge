@@ -11,5 +11,35 @@
     }
   },
   "recordedAt": "2026-10-16T12:37:38.190Z",
-  "ollamaVersion": "0.40.5"
+  "ollamaVersion": "0.40.5",
+  "model": {
+    "name": "gemma3:4b",
+    "model": "gemma3:4b",
+    "modified_at": "2026-10-16T15:10:20.3813785+03:00",
+    "size": 3350272403,
+    "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "details": {
+      "parent_model": "dhiltgen/gemma3:4b-it-q4_K_M-llamacpp",
+      "format": "gguf",
+      "family": "gemma3",
+      "families": [
+        "gemma3",
+        "clip"
+      ],
+      "parameter_size": "3.9B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 131072,
+      "embedding_length": 2560,
+      "runner": "llamacpp"
+    },
+    "capabilities": [
+      "completion",
+      "vision"
+    ]
+  },
+  "hardware": {
+    "cpu": "Intel(R) Core(TM) i7-10610U CPU @ 1.80GHz",
+    "logicalCpus": 8,
+    "memoryBytes": 16942211072
+  }
 }
