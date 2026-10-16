@@ -166,5 +166,8 @@
   "inferenceMs": 227406.87339999998,
   "totalMs": 227466.4608,
   "parsed": true,
-  "structuralError": "Duplicate category"
+  "structuralError": "Duplicate category",
+  "qualityFlags": [
+    "repeated_findings"
+  ]
 }
