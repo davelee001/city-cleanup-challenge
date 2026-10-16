@@ -148,5 +148,13 @@
       "sameScene",
       "needsHumanReview"
     ]
+  },
+  "options": {
+    "temperature": 0,
+    "seed": 42,
+    "num_predict": 384,
+    "num_ctx": 2048,
+    "num_thread": 4,
+    "repeat_penalty": 1.1
   }
 }
