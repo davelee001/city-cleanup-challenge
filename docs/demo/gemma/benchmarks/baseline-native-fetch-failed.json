@@ -150,5 +150,6 @@
     "temperature": 0,
     "seed": 42,
     "num_predict": 1800
-  }
+  },
+  "imagePayloadBytes": 40670
 }
