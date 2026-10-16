@@ -156,5 +156,6 @@
     "num_ctx": 2048,
     "num_thread": 8,
     "repeat_penalty": 1.1
-  }
+  },
+  "imagePayloadBytes": 18174
 }
