@@ -19,5 +19,6 @@
   "preprocessingMs": 79.5916,
   "inferenceMs": 144304.16989999998,
   "doneReason": "length",
-  "promptTokens": 366
+  "promptTokens": 366,
+  "generatedTokens": 160
 }
