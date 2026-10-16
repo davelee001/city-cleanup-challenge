@@ -17,5 +17,6 @@
     "repeat_penalty": 1.1
   },
   "preprocessingMs": 79.5916,
-  "inferenceMs": 144304.16989999998
+  "inferenceMs": 144304.16989999998,
+  "doneReason": "length"
 }
