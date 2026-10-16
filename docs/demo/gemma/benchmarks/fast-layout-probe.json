@@ -21,5 +21,6 @@
   "doneReason": "length",
   "promptTokens": 366,
   "generatedTokens": 160,
-  "loadMs": 27824.245
+  "loadMs": 27824.245,
+  "promptMs": 68186.107
 }
