@@ -151,5 +151,6 @@
     "prompt_eval_duration": 141719589000,
     "eval_count": 96,
     "eval_duration": 20333085000
-  }
+  },
+  "aiCompletionObservedMs": 192507.51129999998
 }
