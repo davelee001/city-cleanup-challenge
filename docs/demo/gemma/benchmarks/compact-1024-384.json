@@ -186,5 +186,22 @@
     "cleanupEvidence": "no_visible_improvement",
     "sameScene": "likely",
     "needsHumanReview": true
+  },
+  "response": {
+    "model": "gemma3:4b",
+    "created_at": "2026-10-16T12:33:25.1923757Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"assessment\": \"The images depict a before-and-after illustration of a road scene, intended as a demonstration.\",\n  \"wasteCategories\": [\n    \"plastic\",\n    \"paper\",\n    \"organic\"\n  ],\n  \"visualDifferences\": [\n    \"There is visible litter on the road in the 'before' image and no litter in the 'after' image.\",\n    \"The shape of the road appears to be altered between the two images.\"\n  ],\n  \"environmentalConcerns\": [],\n  \"limitations\": [\n    \"The images are illustrative only and do not represent real cleanup evidence.\",\n    \"The scene is a simplified drawing, limiting accurate assessment of waste categories.\"\n  ],\n  \"recommendations\": [\n    \"Human review is required to confirm the accuracy of the illustration.\",\n    \"Further investigation is needed to determine the context and purpose of this demonstration.\"\n  ],\n  \"cleanupEvidence\": \"no_visible_improvement\",\n  \"sameScene\": \"likely\",\n  \"needsHumanReview\": true\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 232122471500,
+    "load_duration": 25091793600,
+    "prompt_eval_count": 796,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 155899835000,
+    "eval_count": 231,
+    "eval_duration": 51006036000
   }
 }
