@@ -4,10 +4,17 @@ import {
   apiUrl,
   clearAuthSession,
   getStoredUser,
+  normalizeApiBaseUrl,
   setAuthSession,
 } from '../../apiConfig';
 
 describe('authenticated API session', () => {
+  it('uses the backend default and accepts server origins or versioned URLs', () => {
+    expect(normalizeApiBaseUrl()).toBe('http://localhost:3000/api/v1');
+    expect(normalizeApiBaseUrl(' http://localhost:3000/ ')).toBe('http://localhost:3000/api/v1');
+    expect(normalizeApiBaseUrl('http://localhost:3001/api/v1/')).toBe('http://localhost:3001/api/v1');
+    expect(normalizeApiBaseUrl('https://cleanup.example/custom/api/v1')).toBe('https://cleanup.example/custom/api/v1');
+  });
   beforeEach(() => {
     global.fetch = jest.fn();
   });

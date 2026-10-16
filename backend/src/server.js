@@ -1,9 +1,9 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const { createApp } = require('./app');
 const db = require('./db');
 const sentryService = require('./services/sentry');
 
-const PORT = process.env.PORT || 3000;
+const { port: PORT } = require('./config');
 const app = createApp();
 let server;
 let shuttingDown = false;

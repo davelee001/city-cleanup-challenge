@@ -6,6 +6,13 @@
   },
   "main": "src/server.js",
   "scripts": {
+    "gemma:smoke": "node scripts/gemma-smoke.js",
+    "gemma:demo:live": "node scripts/gemma-live-demo.js",
+    "gemma:benchmark": "node scripts/gemma-benchmark.js",
+    "gemma:benchmark:summary": "node scripts/gemma-benchmark-summary.js",
+    "gemma:workflow": "node scripts/gemma-workflow-smoke.js",
+    "gemma:demo": "node scripts/gemma-demo.js",
+    "gemma:demo:submit": "node scripts/gemma-demo-submit.js",
     "start": "node src/server.js",
     "dev": "nodemon --quiet src/server.js",
     "health": "node scripts/health-check.js",

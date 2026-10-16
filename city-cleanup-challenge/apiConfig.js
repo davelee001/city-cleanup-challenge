@@ -2,9 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-export const API_BASE_URL = (
-  configuredApiUrl || 'http://localhost:3001/api/v1'
-).replace(/\/+$/, '');
+// Accept either a server origin or the complete versioned API URL.
+export function normalizeApiBaseUrl(value) {
+  const base = (value?.trim() || 'http://localhost:3000/api/v1').replace(/\/+$/, '');
+  const url = new URL(base);
+  return url.pathname === '/' ? `${base}/api/v1` : base;
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(configuredApiUrl);
 
 export const SOCIAL_API_BASE_URL = `${API_BASE_URL}/social`;
 

@@ -1,4 +1,5 @@
 const request = require('supertest');
+jest.mock('../src/services/gemmaTransport', () => ({ fetch: (...args) => global.fetch(...args) }));
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
@@ -21,6 +22,18 @@ const signupData = (username, overrides = {}) => ({
 });
 
 describe('API Endpoints', () => {
+  it('allows browser login preflight from Expo without allowing arbitrary origins', async () => {
+    const preflight = await request(app).options('/api/v1/login')
+      .set('Origin', 'http://localhost:19006')
+      .set('Access-Control-Request-Method', 'POST')
+      .set('Access-Control-Request-Headers', 'content-type');
+    expect(preflight.statusCode).toBe(204);
+    expect(preflight.headers['access-control-allow-origin']).toBe('http://localhost:19006');
+    const untrusted = await request(app).options('/api/v1/login')
+      .set('Origin', 'https://untrusted.example')
+      .set('Access-Control-Request-Method', 'POST');
+    expect(untrusted.headers['access-control-allow-origin']).toBeUndefined();
+  });
   it('should return 200 for health check', async () => {
     const res = await request(app).get('/health');
     expect(res.statusCode).toBe(200);
@@ -566,6 +579,130 @@ describe('Phase 3 cleanup evidence workflow', () => {
     ]);
   });
 
+  const waitForAnalysis = async (id) => {
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const detail = await authenticated(request(app).get(`/api/v1/evidence/submissions/${id}`), ownerToken);
+      if (detail.body.submission.verification.smartVerification.status !== 'pending') return detail.body.submission;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    throw new Error('Background analysis did not finish');
+  };
+  const openAnalysis = (id) => authenticated(request(app).post(`/api/v1/evidence/submissions/${id}/analyze`), ownerToken).then((response) => {
+    expect(response.statusCode).toBe(200);
+    return response;
+  });
+
+  it('persists mocked Gemma findings through the authenticated submission workflow', async () => {
+    const originalFetch = global.fetch;
+    const originalFlag = process.env.GEMMA_VERIFICATION_ENABLED;
+    const sample = require('./fixtures/gemma-cleanup.sample.json');
+    process.env.GEMMA_VERIFICATION_ENABLED = 'true';
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, body: [Buffer.from(JSON.stringify({
+      done: true, message: { content: JSON.stringify(sample) },
+    }))] });
+    try {
+      const before = await sharp({ create: { width: 32, height: 32, channels: 3, background: '#417854' } }).png().toBuffer();
+      const after = await sharp(before).modulate({ brightness: 1.2 }).png().toBuffer();
+      const response = await submitEvidence(ownerToken, before, after);
+      expect(response.statusCode).toBe(201);
+      const submission = response.body.submission;
+      createdSubmissionIds.push(submission.id);
+      expect(submission.status).toBe('manual_review');
+      expect(submission.verification.smartVerification.status).toBe('pending');
+      expect(global.fetch).not.toHaveBeenCalled();
+      await authenticated(request(app).post(`/api/v1/evidence/submissions/${submission.id}/analyze`), otherToken).expect(403);
+      const live = await openAnalysis(submission.id);
+      expect(live.headers['content-type']).toContain('application/x-ndjson');
+      expect(live.headers['cache-control']).toBe('private, no-store');
+      const events = live.text.trim().split('\n').map((line) => JSON.parse(line));
+      expect(events.some((event) => event.type === 'finding' && event.message === sample.assessment)).toBe(true);
+      expect(events.at(-1).type).toBe('result');
+      const completed = await waitForAnalysis(submission.id);
+      expect(completed.verification.smartVerification).toMatchObject({ status: 'completed', findings: { needsHumanReview: true } });
+      expect(completed.verification.smartVerification.findings.assessment).toBe(sample.assessment);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    } finally {
+      global.fetch = originalFetch;
+      if (originalFlag === undefined) delete process.env.GEMMA_VERIFICATION_ENABLED;
+      else process.env.GEMMA_VERIFICATION_ENABLED = originalFlag;
+    }
+  });
+
+  it.each(['approved', 'rejected'])('allows a human decision of %s only after Gemma finishes', async (decision) => {
+    const originalFetch = global.fetch;
+    const originalFlag = process.env.GEMMA_VERIFICATION_ENABLED;
+    const sample = require('./fixtures/gemma-cleanup.sample.json');
+    process.env.GEMMA_VERIFICATION_ENABLED = 'true';
+    let release;
+    let started;
+    const began = new Promise((resolve) => { started = resolve; });
+    global.fetch = jest.fn().mockImplementation(() => {
+      started();
+      return new Promise((resolve) => { release = () => resolve({ ok: true, body: [Buffer.from(JSON.stringify({ done: true, message: { content: JSON.stringify(sample) } }))] }); });
+    });
+    try {
+      const before = await sharp({ create: { width: decision === 'approved' ? 40 : 42, height: 40, channels: 3, background: '#267ab2' } }).png().toBuffer();
+      const after = await sharp(before).modulate({ brightness: 1.3 }).png().toBuffer();
+      const response = await submitEvidence(ownerToken, before, after);
+      expect(response.statusCode).toBe(201);
+      const id = response.body.submission.id;
+      createdSubmissionIds.push(id);
+      expect(response.body.submission.verification.smartVerification.status).toBe('pending');
+      const live = openAnalysis(id);
+      await began;
+      await authenticated(request(app).post(`/api/v1/evidence/submissions/${id}/analyze`), ownerToken).expect(409);
+      for (const earlyDecision of ['approved', 'rejected']) {
+        const blocked = await authenticated(request(app).patch(`/api/v1/evidence/submissions/${id}/review`), reviewerToken)
+          .send({ decision: earlyDecision, reason: 'Human decision must wait for Gemma.' }).expect(409);
+        expect(blocked.body.code).toBe('AI_REVIEW_PENDING');
+      }
+      release();
+      await live;
+      const completed = await waitForAnalysis(id);
+      expect(completed.status).toBe('manual_review');
+      expect(completed.verification.smartVerification.status).toBe('completed');
+      const reviewed = await authenticated(request(app).patch(`/api/v1/evidence/submissions/${id}/review`), reviewerToken)
+        .send({ decision, reason: 'Automated test of human review after Gemma.' }).expect(200);
+      expect(reviewed.body.submission.status).toBe(decision);
+    } finally {
+      release?.();
+      global.fetch = originalFetch;
+      if (originalFlag === undefined) delete process.env.GEMMA_VERIFICATION_ENABLED;
+      else process.env.GEMMA_VERIFICATION_ENABLED = originalFlag;
+    }
+  });
+
+  it('keeps timed-out live inference available for human review', async () => {
+    const originalFetch = global.fetch;
+    const originalFlag = process.env.GEMMA_VERIFICATION_ENABLED;
+    const originalTimeout = process.env.GEMMA_TIMEOUT_MS;
+    process.env.GEMMA_VERIFICATION_ENABLED = 'true';
+    process.env.GEMMA_TIMEOUT_MS = '100';
+    global.fetch = jest.fn().mockImplementation((url, { signal }) => new Promise((resolve, reject) => {
+      signal.addEventListener('abort', () => { const error = new Error('aborted'); error.name = 'AbortError'; reject(error); }, { once: true });
+    }));
+    try {
+      const before = await sharp({ create: { width: 44, height: 44, channels: 3, background: '#a67281' } }).png().toBuffer();
+      const after = await sharp(before).modulate({ brightness: 1.3 }).png().toBuffer();
+      const response = await submitEvidence(ownerToken, before, after);
+      expect(response.statusCode).toBe(201);
+      const id = response.body.submission.id;
+      createdSubmissionIds.push(id);
+      expect(response.body.submission.verification.smartVerification.status).toBe('pending');
+      await openAnalysis(id);
+      const completed = await waitForAnalysis(id);
+      expect(completed.status).toBe('manual_review');
+      expect(completed.verification.smartVerification).toMatchObject({ status: 'unavailable', reason: 'timeout' });
+      expect(completed.verification.reviewReasons).toContain('gemma_unavailable');
+      await authenticated(request(app).get(`/api/v1/evidence/submissions/${id}/images/before`), ownerToken).expect(200);
+    } finally {
+      global.fetch = originalFetch;
+      for (const [key, value] of Object.entries({ GEMMA_VERIFICATION_ENABLED: originalFlag, GEMMA_TIMEOUT_MS: originalTimeout })) {
+        if (value === undefined) delete process.env[key]; else process.env[key] = value;
+      }
+    }
+  });
+
   it('prevents other users from accessing private submission evidence', async () => {
     const submissionId = createdSubmissionIds[0];
     await authenticated(
@@ -604,6 +741,22 @@ describe('Phase 3 cleanup evidence workflow', () => {
         .send({ reason: 'A second appeal must not be accepted by the API.' }),
       otherToken
     ).expect(409);
+  });
+
+  it('separates the latest personal submission from stored admin records', async () => {
+    const mine = await authenticated(request(app).get('/api/v1/evidence/submissions?scope=mine&latest=true'), ownerToken);
+    expect(mine.statusCode).toBe(200);
+    expect(mine.body.submissions).toHaveLength(1);
+    expect(mine.body.submissions[0].username).toBe(owner);
+    const stored = await authenticated(request(app).get('/api/v1/evidence/submissions'), reviewerToken);
+    expect(stored.body.submissions.length).toBeGreaterThan(1);
+    expect(stored.body.submissions.some((item) => item.id === createdSubmissionIds[0])).toBe(true);
+    const adminMine = await authenticated(request(app).get('/api/v1/evidence/submissions?scope=mine&latest=true'), reviewerToken);
+    expect(adminMine.body.submissions).toEqual([]);
+    const restricted = await authenticated(request(app).get('/api/v1/evidence/submissions?scope=all'), ownerToken);
+    expect(restricted.body.submissions.every((item) => item.username === owner)).toBe(true);
+    const older = await authenticated(request(app).get(`/api/v1/evidence/submissions/${createdSubmissionIds[0]}`), ownerToken);
+    expect(older.statusCode).toBe(200);
   });
 
   it('restricts review decisions to admins and prevents self-review', async () => {

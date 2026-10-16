@@ -1,0 +1,65 @@
+{
+  "label": "EXISTING APP IN CHROME; LABELED ILLUSTRATIONS AND EMULATED LOCATION, NOT REAL-WORLD EVIDENCE",
+  "apiOrigin": "http://localhost:3000",
+  "frontendOrigin": "http://localhost:19006",
+  "submissionId": 33,
+  "registrationHttpStatus": 200,
+  "loginHttpStatus": 200,
+  "submissionHttpStatus": 201,
+  "submissionServerMs": 315.955,
+  "pendingVisible": true,
+  "privateImageStatus": 200,
+  "privateImageCache": "private, no-store",
+  "analysis": {
+    "status": "completed",
+    "version": "gemma-cleanup-v2",
+    "model": "gemma3:4b",
+    "provider": "ollama",
+    "promptVersion": "grounded-example-v3",
+    "settings": {
+      "imageMaxSize": 1024,
+      "maxOutputTokens": 384,
+      "contextLength": 2048,
+      "numThreads": 4
+    },
+    "analyzedAt": "2026-10-16T13:20:00.898Z",
+    "timings": {
+      "preprocessingMs": 27,
+      "requestMs": 208114,
+      "loadMs": 25938,
+      "promptMs": 161351,
+      "generationMs": 20714,
+      "promptTokens": 765,
+      "generatedTokens": 96,
+      "totalMs": 208144
+    },
+    "findings": {
+      "assessment": "Illustrative demonstration showing a road before and after a simulated cleanup operation.",
+      "wasteCategories": [],
+      "visualDifferences": [
+        "The road is depicted as cleaner in the 'AFTER' image compared to the 'BEFORE' image."
+      ],
+      "environmentalConcerns": [],
+      "limitations": [
+        "Images cannot establish disposal or weight.",
+        "AI observations require human review. Photos cannot establish weight, exact quantities, disposal, location, authenticity, or chemical safety."
+      ],
+      "recommendations": [
+        "Use gloves and litter tools; leave unknown hazards to trained services."
+      ],
+      "cleanupEvidence": "uncertain",
+      "sameScene": "uncertain",
+      "needsHumanReview": true
+    }
+  },
+  "submissionStatus": "manual_review",
+  "ui": "‹  Back to home\nPHASE 3\nVerified cleanup evidence\nCapture your work, attach consented GPS evidence, and follow its review status.\nNew cleanup submission\nSelect before and after photos you have permission to use. Selection time is not proof of capture time. Include the same scene before and after cleanup. Label illustrations as test data in the notes; they do not establish real cleanup activity.\n＋\nBefore cleanup\n＋\nAfter cleanup\nWaste category\nPlastic\nGlass\nMetal\nPaper\nMixed\nItem count\nEstimated weight (kg)\nNotes (optional)\n✓\nI consent to sharing this cleanup’s GPS coordinates and accuracy for verification.\nSubmission received but rejected as an exact duplicate.\nSubmit for verification\nMy submissions\n#34 · plastic\nhigh risk\nRejected\n3 items\n10/16/2026, 1:20:38 PM\nBefore\nAfter\nGemma Smart Verification\nAI analysis skipped for exact duplicate evidence.\nAI findings are advisory. Approval, appeals, and rewards follow the existing review process.\nThis evidence exactly matches an image that was already submitted.\nSubmit one-time appeal\n#33 · plastic\nmedium risk\nAwaiting review\n3 items\n10/16/2026, 1:16:32 PM\nBefore\nAfter\nGemma Smart Verification\ngemma3:4b · Human decision required\nIllustrative demonstration showing a road before and after a simulated cleanup operation.\nVisible categories: None identified\nCleanup evidence: uncertain\nSame scene: uncertain\nVisual differences\n• The road is depicted as cleaner in the 'AFTER' image compared to the 'BEFORE' image.\nPossible environmental concerns\nNone identified; absence is not a safety assessment.\nUncertainty and evidence limitations\n• Images cannot establish disposal or weight.\n• AI observations require human review. Photos cannot establish weight, exact quantities, disposal, location, authenticity, or chemical safety.\nSafe cleanup recommendations\n• Use gloves and litter tools; leave unknown hazards to trained services.\nAI findings are advisory. Approval, appeals, and rewards follow the existing review process.",
+  "checks": {
+    "actualLocalGemmaCompleted": true,
+    "findingsVisibleAfterAutomaticPoll": true,
+    "humanReviewRequired": true,
+    "evidenceAwaitingHumanReview": true,
+    "privateImagesNoStore": true,
+    "browserDuplicateRejectedAndAiSkipped": true
+  }
+}

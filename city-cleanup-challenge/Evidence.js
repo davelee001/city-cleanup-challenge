@@ -13,8 +13,13 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { API_BASE_URL, apiFetch } from './apiConfig';
+import SmartVerification from './components/SmartVerification';
+import GemmaConversation from './components/GemmaConversation';
 
 const CATEGORIES = ['plastic', 'glass', 'metal', 'paper', 'mixed'];
+const REVIEW_SECTIONS = ['Pending', 'Approved', 'Rejected'];
+const reviewSection = (status) => status === 'rejected' ? 'Rejected'
+  : ['approved', 'payment_pending', 'paid'].includes(status) ? 'Approved' : 'Pending';
 const STATUS_LABELS = {
   manual_review: 'Awaiting review',
   approved: 'Approved',
@@ -81,7 +86,8 @@ async function appendPhoto(formData, field, photo) {
   });
 }
 
-export default function Evidence({ userRole = 'user' }) {
+export default function Evidence({ userRole = 'user', storedData = false, initialSection = 'Pending' }) {
+  const isReviewer = storedData && userRole === 'admin';
   const [beforePhoto, setBeforePhoto] = useState(null);
   const [afterPhoto, setAfterPhoto] = useState(null);
   const [category, setCategory] = useState('plastic');
@@ -90,6 +96,9 @@ export default function Evidence({ userRole = 'user' }) {
   const [notes, setNotes] = useState('');
   const [locationConsent, setLocationConsent] = useState(false);
   const [submissions, setSubmissions] = useState([]);
+  const [activeSection, setActiveSection] = useState(REVIEW_SECTIONS.includes(initialSection) ? initialSection : 'Pending');
+  const visibleSubmissions = isReviewer
+    ? submissions.filter((submission) => reviewSection(submission.status) === activeSection) : submissions;
   const [reviewReason, setReviewReason] = useState('');
   const [appealReason, setAppealReason] = useState('');
   const [loading, setLoading] = useState(false);
@@ -98,36 +107,61 @@ export default function Evidence({ userRole = 'user' }) {
 
   const loadSubmissions = useCallback(async () => {
     try {
-      const response = await apiFetch(`${API_BASE_URL}/evidence/submissions`);
+      const query = isReviewer ? '' : '?scope=mine&latest=true';
+      const response = await apiFetch(`${API_BASE_URL}/evidence/submissions${query}`);
       const data = await response.json();
       if (response.ok && data.success) setSubmissions(data.submissions);
     } catch {
       setError('Could not load cleanup submissions.');
     }
-  }, []);
+  }, [isReviewer]);
 
   useEffect(() => {
     loadSubmissions();
   }, [loadSubmissions]);
 
+  useEffect(() => {
+    if (!isReviewer && !submissions.some((submission) => submission.status === 'manual_review'
+      && submission.verification?.smartVerification?.status !== 'pending')) return undefined;
+    const timer = setInterval(loadSubmissions, 10000);
+    return () => clearInterval(timer);
+  }, [submissions, loadSubmissions, isReviewer]);
+
   const capturePhoto = async (kind) => {
     setError('');
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (permission.status !== 'granted') {
-      setError('Camera permission is required to capture cleanup evidence.');
-      return;
+    try {
+      if (Platform.OS === 'web') {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'], allowsEditing: false, quality: 0.9, exif: true,
+        });
+        const asset = selectedAsset(result);
+        if (!asset) return;
+        // Selection time is not proof of capture time; preserve the existing
+        // metadata checks and human review for uploaded photos.
+        const selected = { ...asset, capturedAt: new Date().toISOString() };
+        if (kind === 'before') setBeforePhoto(selected);
+        else setAfterPhoto(selected);
+        return;
+      }
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (permission.status !== 'granted') {
+        setError('Camera permission is required to capture cleanup evidence.');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 0.9,
+        exif: true,
+      });
+      const asset = selectedAsset(result);
+      if (!asset) return;
+      const captured = { ...asset, capturedAt: new Date().toISOString() };
+      if (kind === 'before') setBeforePhoto(captured);
+      else setAfterPhoto(captured);
+    } catch {
+      setError('Could not select or capture the photo. Please try again.');
     }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 0.9,
-      exif: true,
-    });
-    const asset = selectedAsset(result);
-    if (!asset) return;
-    const captured = { ...asset, capturedAt: new Date().toISOString() };
-    if (kind === 'before') setBeforePhoto(captured);
-    else setAfterPhoto(captured);
   };
 
   const submitEvidence = async () => {
@@ -180,7 +214,7 @@ export default function Evidence({ userRole = 'user' }) {
       setMessage(
         data.submission.status === 'rejected'
           ? 'Submission received but rejected as an exact duplicate.'
-          : 'Evidence submitted securely and queued for verification.'
+          : 'Images received successfully. Please wait for Gemma verification and human approval. Follow the live analysis below.'
       );
       setBeforePhoto(null);
       setAfterPhoto(null);
@@ -261,17 +295,18 @@ export default function Evidence({ userRole = 'user' }) {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>PHASE 3</Text>
-        <Text style={styles.title}>Verified cleanup evidence</Text>
+        <Text style={styles.title}>{isReviewer ? 'Stored evidence' : 'Verified cleanup evidence'}</Text>
         <Text style={styles.subtitle}>
-          Capture your work, attach consented GPS evidence, and follow its review status.
+          {isReviewer ? 'Stored submissions and authorized human review.' : 'Submit your cleanup, see Gemma findings, and follow human approval.'}
         </Text>
       </View>
 
-      <View style={styles.card}>
+      {!isReviewer && <View style={styles.card}>
         <Text style={styles.cardTitle}>New cleanup submission</Text>
         <Text style={styles.help}>
-          Use the camera for both photos. Include the same scene before cleanup and the collected
-          solid waste afterward.
+          {Platform.OS === 'web' ? 'Select before and after photos you have permission to use. Selection time is not proof of capture time. ' : 'Use the camera for both photos. '}
+          Include the same scene before and after cleanup. Label illustrations as test data in the notes;
+          they do not establish real cleanup activity.
         </Text>
 
         <View style={styles.photoRow}>
@@ -281,6 +316,7 @@ export default function Evidence({ userRole = 'user' }) {
           ].map(([kind, photo, label]) => (
             <TouchableOpacity
               key={kind}
+              accessibilityRole="button"
               style={styles.photoBox}
               onPress={() => capturePhoto(kind)}
               disabled={loading}
@@ -359,7 +395,7 @@ export default function Evidence({ userRole = 'user' }) {
         </TouchableOpacity>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        {message ? <Text style={styles.success}>{message}</Text> : null}
+        {message ? <Text style={styles.success} accessibilityRole="alert" accessibilityLiveRegion="polite">{message}</Text> : null}
 
         <TouchableOpacity
           style={[styles.submitButton, loading && styles.disabled]}
@@ -372,13 +408,30 @@ export default function Evidence({ userRole = 'user' }) {
             <Text style={styles.submitText}>Submit for verification</Text>
           )}
         </TouchableOpacity>
-      </View>
+      </View>}
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>
-          {userRole === 'admin' ? 'Review queue and submissions' : 'My submissions'}
+          {isReviewer ? 'Stored submissions and review queue' : 'Your latest submission'}
         </Text>
-        {userRole === 'admin' ? (
+        {isReviewer ? (
+          <View style={styles.categoryRow}>
+            {REVIEW_SECTIONS.map((section) => (
+              <TouchableOpacity key={section} accessibilityRole="tab"
+                accessibilityState={{ selected: activeSection === section }}
+                aria-selected={activeSection === section}
+                style={[styles.category, activeSection === section && styles.categorySelected]}
+                onPress={() => setActiveSection(section)}>
+                <Text style={[styles.categoryText, activeSection === section && styles.categoryTextSelected]}>
+                  {section} ({submissions.filter((item) => reviewSection(item.status) === section).length})
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
+        {isReviewer && error ? <Text style={styles.error} accessibilityRole="alert">{error}</Text> : null}
+        {isReviewer && message ? <Text style={styles.success} accessibilityLiveRegion="polite">{message}</Text> : null}
+        {isReviewer && activeSection === 'Pending' ? (
           <TextInput
             style={styles.input}
             value={reviewReason}
@@ -387,7 +440,7 @@ export default function Evidence({ userRole = 'user' }) {
             placeholderTextColor="#7890AA"
           />
         ) : null}
-        {userRole !== 'admin' && submissions.some((item) => item.status === 'rejected' && !item.appealReason) ? (
+        {!isReviewer && submissions.some((item) => item.status === 'rejected' && !item.appealReason) ? (
           <TextInput
             style={styles.input}
             value={appealReason}
@@ -396,11 +449,20 @@ export default function Evidence({ userRole = 'user' }) {
             placeholderTextColor="#7890AA"
           />
         ) : null}
-        {submissions.length === 0 ? (
-          <Text style={styles.empty}>No cleanup evidence has been submitted yet.</Text>
+        {visibleSubmissions.length === 0 ? (
+          <Text style={styles.empty}>{isReviewer ? `No ${activeSection.toLowerCase()} submissions.` : 'No cleanup evidence has been submitted yet.'}</Text>
         ) : (
-          submissions.map((submission) => (
+          visibleSubmissions.map((submission) => (
             <View key={submission.id} style={styles.submission}>
+              {!isReviewer && submission.status === 'manual_review' ? (
+                <Text style={styles.success} accessibilityLiveRegion="polite">
+                  {submission.verification?.smartVerification?.status === 'completed'
+                    ? 'Images received. Gemma verification is complete. Please wait for human approval.'
+                    : submission.verification?.smartVerification?.status === 'pending'
+                      ? 'Images received. Please wait for Gemma verification and human approval.'
+                      : 'Images received. Your submission is awaiting human review.'}
+                </Text>
+              ) : null}
               <View style={styles.submissionHeader}>
                 <Text style={styles.submissionTitle}>
                   #{submission.id} · {submission.wasteCategory}
@@ -416,7 +478,7 @@ export default function Evidence({ userRole = 'user' }) {
                   </Text>
                 </View>
               </View>
-              {userRole === 'admin' ? (
+              {isReviewer ? (
                 <Text style={styles.meta}>Submitted by {submission.username}</Text>
               ) : null}
               <Text style={styles.meta}>
@@ -435,7 +497,16 @@ export default function Evidence({ userRole = 'user' }) {
                   <ProtectedEvidenceImage path={submission.images.after} />
                 </View>
               </View>
-              {userRole === 'admin' && submission.verification ? (
+              {isReviewer ? <SmartVerification analysis={submission.verification?.smartVerification} />
+                : <GemmaConversation submission={submission} onComplete={loadSubmissions} />}
+              <Text style={styles.label}>Human review</Text>
+              <Text style={styles.meta}>
+                {submission.status === 'manual_review' && submission.verification?.smartVerification?.status === 'pending'
+                  ? 'Human review starts after Gemma analysis finishes.'
+                  : submission.status === 'manual_review' ? 'Awaiting human approval'
+                  : STATUS_LABELS[submission.status] || submission.status}
+              </Text>
+              {isReviewer && submission.verification ? (
                 <View style={styles.riskPanel}>
                   <Text style={styles.riskTitle}>
                     Verification {submission.verificationVersion || submission.verification.version}
@@ -469,7 +540,7 @@ export default function Evidence({ userRole = 'user' }) {
               {submission.rejectionReason ? (
                 <Text style={styles.rejection}>{submission.rejectionReason}</Text>
               ) : null}
-              {userRole !== 'admin' && submission.status === 'rejected' && !submission.appealReason ? (
+              {!isReviewer && submission.status === 'rejected' && !submission.appealReason ? (
                 <TouchableOpacity
                   style={styles.appealButton}
                   onPress={() => appealSubmission(submission.id)}
@@ -477,7 +548,8 @@ export default function Evidence({ userRole = 'user' }) {
                   <Text style={styles.reviewText}>Submit one-time appeal</Text>
                 </TouchableOpacity>
               ) : null}
-              {userRole === 'admin' && submission.status === 'manual_review' ? (
+              {isReviewer && submission.status === 'manual_review'
+                && submission.verification?.smartVerification?.status !== 'pending' ? (
                 <View style={styles.reviewRow}>
                   <TouchableOpacity
                     style={[styles.reviewButton, styles.approveButton]}

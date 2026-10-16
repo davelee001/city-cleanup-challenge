@@ -1,0 +1,50 @@
+{
+  "label": "ACTUAL LOCAL GEMMA SPEED EXPERIMENT ON LABELED ILLUSTRATIONS; NOT REAL PHOTO ACCURACY VALIDATION",
+  "recordedAt": "2026-10-16T14:11:47.337Z",
+  "imageLayout": "One side-by-side image; before left and after right; 512x384 per source",
+  "inputHashes": [
+    "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+    "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+  ],
+  "prompt": "Compare LEFT before and RIGHT after. Return schema JSON, one short sentence per list. Visible discarded waste only; never infer quantities, weight, disposal, authenticity or chemical safety. Empty lists beat guesses. For illustrations say illustrative, categories=[], concerns=[], cleanupEvidence=uncertain, sameScene=uncertain. Grass/trees are not waste. Describe only visible differences. Require human review. Recommend gloves/tools and trained handling of unknown hazards.",
+  "options": {
+    "temperature": 0,
+    "seed": 42,
+    "num_ctx": 2048,
+    "num_thread": 8,
+    "num_batch": 128,
+    "num_predict": 160,
+    "repeat_penalty": 1.1
+  },
+  "preprocessingMs": 79.5916,
+  "inferenceMs": 144304.16989999998,
+  "doneReason": "length",
+  "promptTokens": 366,
+  "generatedTokens": 160,
+  "loadMs": 27824.245,
+  "promptMs": 68186.107,
+  "generationMs": 48016.664,
+  "validationError": "Unterminated string in JSON at position 679 (line 15 column 4)",
+  "provider": {
+    "model": "gemma3:4b",
+    "created_at": "2026-10-16T14:11:47.1267143Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"assessment\": \"The image shows a visual comparison between a scene before and after an apparent cleanup operation.\",\n  \"wasteCategories\": [\"unknown\"],\n  \"visualDifferences\": [\n    \"A white rectangular object is present in the left image, absent in the right image indicating removal of something from the scene.  \"\n  ],\n  \"environmentalConcerns\": [],\n  \"limitations\": [\n    \"The illustration does not provide information about quantities or disposal methods of any waste.\"\n  ],\n  \"recommendations\": [\n    \"Due to the unknown nature of the objects, it is recommended to wear gloves and use appropriate tools when handling the scene.\"\n  ],\n  \"cleanupEvidence\": \"uncertain\",\n  \""
+    },
+    "done": true,
+    "done_reason": "length",
+    "total_duration": 144087104600,
+    "load_duration": 27824245000,
+    "prompt_eval_count": 366,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 68186107000,
+    "eval_count": 160,
+    "eval_duration": 48016664000
+  },
+  "limitations": [
+    "Combining images reduces visible detail and can hide small waste or hazards.",
+    "One synthetic pair cannot establish real-photo accuracy.",
+    "Not enabled in application unless measurements and quality justify it."
+  ]
+}

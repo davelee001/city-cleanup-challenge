@@ -1,0 +1,237 @@
+{
+  "label": "REAL LOCAL GEMMA INFERENCE ON LABELED ILLUSTRATIONS; NOT REAL CLEANUP EVIDENCE",
+  "startedAt": "2026-10-16T12:13:36.089Z",
+  "elapsedMs": 303113,
+  "timeoutMs": 600000,
+  "ollamaVersion": "0.40.5",
+  "model": {
+    "name": "gemma3:4b",
+    "model": "gemma3:4b",
+    "modified_at": "2026-10-16T15:10:20.3813785+03:00",
+    "size": 3350272403,
+    "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "details": {
+      "parent_model": "dhiltgen/gemma3:4b-it-q4_K_M-llamacpp",
+      "format": "gguf",
+      "family": "gemma3",
+      "families": [
+        "gemma3",
+        "clip"
+      ],
+      "parameter_size": "3.9B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 131072,
+      "embedding_length": 2560,
+      "runner": "llamacpp"
+    },
+    "capabilities": [
+      "completion",
+      "vision"
+    ]
+  },
+  "runtime": {
+    "models": [
+      {
+        "name": "gemma3:4b",
+        "model": "gemma3:4b",
+        "size": 2888784936,
+        "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "gemma3",
+          "families": [
+            "gemma3",
+            "clip"
+          ],
+          "parameter_size": "3.9B",
+          "quantization_level": "Q4_K_M"
+        },
+        "expires_at": "2026-10-16T15:28:39.2018993+03:00",
+        "size_vram": 0,
+        "context_length": 4096,
+        "runner": "llamacpp"
+      }
+    ]
+  },
+  "images": [
+    {
+      "path": "docs/demo/gemma/before.png",
+      "sha256": "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14"
+    },
+    {
+      "path": "docs/demo/gemma/after.png",
+      "sha256": "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+    }
+  ],
+  "verification": {
+    "version": "phase9-v2",
+    "smartVerification": {
+      "status": "completed",
+      "version": "gemma-cleanup-v1",
+      "model": "gemma3:4b",
+      "provider": "ollama",
+      "analyzedAt": "2026-10-16T12:18:39.205Z",
+      "findings": {
+        "assessment": "Illustrative demonstration of a community cleanup, showing a before and after scenario.",
+        "wasteCategories": [
+          "plastic",
+          "organic",
+          "unknown"
+        ],
+        "visualDifferences": [
+          "The road appears cleaner in the 'AFTER' image compared to the 'BEFORE' image.",
+          "A yellow marker is present in both images.",
+          "A white marker is present in both images.",
+          "A blue marker is present in both images.",
+          "The tree remains in the same location in both images.",
+          "The ground is a similar color in both images.",
+          "The sky is a similar color in both images.",
+          "The grass is a similar color in both images.",
+          "The road is a similar color in both images.",
+          "The markers are present in both images.",
+          "The tree is present in both images.",
+          "The ground is present in both images. The road is present in both images. "
+        ],
+        "environmentalConcerns": [
+          "Potential for reduced litter on the road surface.",
+          "The overall scene appears to be improved.",
+          "The environmental impact of the cleanup is not directly observable.",
+          "The scene is illustrative and does not represent a real-world cleanup.",
+          "The markers are present in both images.",
+          "The tree is present in both images.",
+          "The ground is present in both images.",
+          "The sky is present in both images.",
+          "The grass is present in both images.",
+          "The road is present in both images.",
+          "The markers are present in both images.",
+          "The tree is present in both images.  The ground is present in both images.  The road is present in both images.  "
+        ],
+        "limitations": [
+          "The images are illustrative and do not represent a real-world cleanup.",
+          "The scale of the cleanup is not known.",
+          "The type of waste removed is not specified.",
+          "The images are a simplified representation.",
+          "The images are a demonstration.",
+          "The images are a demonstration. ",
+          "AI observations require human review. Photos cannot establish weight, exact quantities, disposal, location, authenticity, or chemical safety."
+        ],
+        "recommendations": [
+          "Wear gloves when handling litter.",
+          "Use appropriate tools for collecting litter.",
+          "Dispose of sharps, chemicals, medical/electrical waste through trained local services.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards.",
+          "Do not handle unknown hazards. "
+        ],
+        "cleanupEvidence": "visible_improvement",
+        "sameScene": "likely",
+        "needsHumanReview": true
+      }
+    },
+    "thresholds": {
+      "perceptualDistance": 12,
+      "sceneHighRiskBelow": 0.3,
+      "sceneMediumRiskBelow": 0.48,
+      "syntheticHighRiskAt": 0.6,
+      "syntheticMediumRiskAt": 0.25
+    },
+    "overallRisk": "low",
+    "reviewReasons": [],
+    "exactDuplicate": {
+      "matched": false,
+      "submissionId": null
+    },
+    "perceptualDuplicate": {
+      "matched": false,
+      "distance": null,
+      "threshold": 12,
+      "submissionId": null,
+      "existingKind": null
+    },
+    "sceneConsistency": {
+      "score": 0.934,
+      "riskLevel": "low",
+      "perceptualDistance": 6,
+      "colorDifference": 0.001,
+      "signals": [],
+      "disclaimer": "Scene consistency is a review aid and does not determine authenticity."
+    },
+    "syntheticImageRisk": {
+      "level": "low",
+      "score": 0.1,
+      "before": {
+        "score": 0.1,
+        "level": "low",
+        "signals": [
+          "camera_metadata_absent"
+        ],
+        "disclaimer": "Heuristic risk signals are not proof that an image is AI-generated."
+      },
+      "after": {
+        "score": 0.1,
+        "level": "low",
+        "signals": [
+          "camera_metadata_absent"
+        ],
+        "disclaimer": "Heuristic risk signals are not proof that an image is AI-generated."
+      },
+      "disclaimer": "Synthetic-image risk is heuristic and always requires human interpretation."
+    },
+    "images": {
+      "before": {
+        "perceptualHash": "6616064e9e160f23",
+        "width": 960,
+        "height": 640,
+        "format": "png",
+        "entropy": 2.291,
+        "sharpness": 2.63,
+        "averageColor": [
+          123.8,
+          151,
+          134.1
+        ],
+        "captureMetadata": {},
+        "qualitySignals": []
+      },
+      "after": {
+        "perceptualHash": "6616460e9e96272b",
+        "width": 960,
+        "height": 640,
+        "format": "png",
+        "entropy": 2.226,
+        "sharpness": 2.599,
+        "averageColor": [
+          123.6,
+          150.7,
+          133.7
+        ],
+        "captureMetadata": {},
+        "qualitySignals": []
+      }
+    }
+  },
+  "providerResponse": {
+    "model": "gemma3:4b",
+    "created_at": "2026-10-16T12:18:39.2013674Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\"assessment\":\"Illustrative demonstration of a community cleanup, showing a before and after scenario.\",\"wasteCategories\":[\"plastic\",\"organic\",\"unknown\"],\"visualDifferences\":[\"The road appears cleaner in the 'AFTER' image compared to the 'BEFORE' image.\",\"A yellow marker is present in both images.\",\"A white marker is present in both images.\",\"A blue marker is present in both images.\",\"The tree remains in the same location in both images.\",\"The ground is a similar color in both images.\",\"The sky is a similar color in both images.\",\"The grass is a similar color in both images.\",\"The road is a similar color in both images.\",\"The markers are present in both images.\",\"The tree is present in both images.\",\"The ground is present in both images. The road is present in both images. \"], \"environmentalConcerns\":[\"Potential for reduced litter on the road surface.\",\"The overall scene appears to be improved.\",\"The environmental impact of the cleanup is not directly observable.\",\"The scene is illustrative and does not represent a real-world cleanup.\",\"The markers are present in both images.\",\"The tree is present in both images.\",\"The ground is present in both images.\",\"The sky is present in both images.\",\"The grass is present in both images.\",\"The road is present in both images.\",\"The markers are present in both images.\",\"The tree is present in both images.  The ground is present in both images.  The road is present in both images.  \"], \"limitations\":[\"The images are illustrative and do not represent a real-world cleanup.\",\"The scale of the cleanup is not known.\",\"The type of waste removed is not specified.\",\"The images are a simplified representation.\",\"The images are a demonstration.\",\"The images are a demonstration.\",\"The images are a demonstration.\",\"The images are a demonstration.\",\"The images are a demonstration.\",\"The images are a demonstration.\",\"The images are a demonstration.\",\"The images are a demonstration. \"], \"recommendations\":[\"Wear gloves when handling litter.\",\"Use appropriate tools for collecting litter.\",\"Dispose of sharps, chemicals, medical/electrical waste through trained local services.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards.\",\"Do not handle unknown hazards. \"], \"cleanupEvidence\":\"visible_improvement\",\"sameScene\":\"likely\",\"needsHumanReview\":false}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 302745132500,
+    "load_duration": 8489800,
+    "prompt_eval_count": 981,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 161654269000,
+    "eval_count": 537,
+    "eval_duration": 118211785000
+  }
+}

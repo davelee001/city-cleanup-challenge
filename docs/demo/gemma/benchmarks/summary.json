@@ -1,0 +1,250 @@
+{
+  "recordedAt": "2026-10-16T13:08:22.673Z",
+  "scope": "One identical labeled illustration pair; not a real-photo accuracy benchmark. One run per configuration unless named repeat.",
+  "validation": "Recomputed against each recorded variant schema; semantic heuristics evaluated with the final policy. Original raw responses and times unchanged.",
+  "results": [
+    {
+      "name": "historical-baseline",
+      "totalMs": 303113,
+      "preprocessingMs": null,
+      "loadMs": 8.4898,
+      "promptMs": 161654.269,
+      "generationMs": 118211.785,
+      "promptTokens": 981,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 537,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [
+        "repeated_findings",
+        "illustrative_evidence_requires_uncertainty",
+        "unsupported_organic_category"
+      ],
+      "syntheticReferenceIssues": [
+        "illustrations_do_not_establish_real_material_categories",
+        "removed_markers_incorrectly_claimed_in_both_images",
+        "illustrative_cleanup_evidence_not_marked_uncertain"
+      ],
+      "notes": "Historical warm-model run; preprocessing not separately measured."
+    },
+    {
+      "name": "baseline-native-fetch-failed",
+      "coldRequested": true,
+      "totalMs": 304782.9316,
+      "preprocessingMs": 27.3284000000001,
+      "loadMs": null,
+      "promptMs": null,
+      "generationMs": null,
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "Invalid fields",
+      "qualityFlags": [],
+      "syntheticReferenceIssues": [
+        "no_valid_output"
+      ],
+      "error": "TypeError"
+    },
+    {
+      "name": "baseline-repeat",
+      "coldRequested": true,
+      "totalMs": 300644.6442,
+      "preprocessingMs": 22.807699999999954,
+      "loadMs": 23125.0603,
+      "promptMs": 158280.839,
+      "generationMs": 119027.652,
+      "promptTokens": 981,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 537,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [
+        "repeated_findings",
+        "illustrative_evidence_requires_uncertainty",
+        "unsupported_organic_category"
+      ],
+      "syntheticReferenceIssues": [
+        "illustrations_do_not_establish_real_material_categories",
+        "removed_markers_incorrectly_claimed_in_both_images",
+        "illustrative_cleanup_evidence_not_marked_uncertain"
+      ]
+    },
+    {
+      "name": "compact-1024-384",
+      "totalMs": 232150.2322,
+      "preprocessingMs": 18.614999999990687,
+      "loadMs": 25091.7936,
+      "promptMs": 155899.835,
+      "generationMs": 51006.036,
+      "promptTokens": 796,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 231,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [
+        "illustrative_evidence_requires_uncertainty",
+        "unsupported_organic_category"
+      ],
+      "syntheticReferenceIssues": [
+        "illustrations_do_not_establish_real_material_categories",
+        "unsupported_road_shape_change",
+        "illustrative_cleanup_evidence_not_marked_uncertain"
+      ]
+    },
+    {
+      "name": "compact-512-256",
+      "totalMs": 42803.42579999997,
+      "preprocessingMs": 50.6820000000298,
+      "loadMs": 6.5582,
+      "promptMs": 810.117,
+      "generationMs": 41843.204,
+      "promptTokens": 796,
+      "cachedPromptTokens": 791,
+      "generatedTokens": 175,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [
+        "illustrative_evidence_requires_uncertainty"
+      ],
+      "syntheticReferenceIssues": [
+        "illustrations_do_not_establish_real_material_categories",
+        "illustrative_cleanup_evidence_not_marked_uncertain"
+      ]
+    },
+    {
+      "name": "compact-512-384",
+      "totalMs": 210186.26060000004,
+      "preprocessingMs": 50.10879999998724,
+      "loadMs": 6.9616,
+      "promptMs": 172220.716,
+      "generationMs": 37692.102,
+      "promptTokens": 796,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 152,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [
+        "contradictory_findings",
+        "illustrative_evidence_requires_uncertainty"
+      ],
+      "syntheticReferenceIssues": [
+        "illustrations_do_not_establish_real_material_categories",
+        "illustrative_cleanup_evidence_not_marked_uncertain"
+      ]
+    },
+    {
+      "name": "compact-512-threads8",
+      "totalMs": 185149.4083,
+      "preprocessingMs": 43.36149999999907,
+      "loadMs": 24965.3016,
+      "promptMs": 126981.043,
+      "generationMs": 33025.055999,
+      "promptTokens": 796,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 148,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [
+        "illustrative_evidence_requires_uncertainty"
+      ],
+      "syntheticReferenceIssues": [
+        "illustrations_do_not_establish_real_material_categories",
+        "illustrative_cleanup_evidence_not_marked_uncertain"
+      ]
+    },
+    {
+      "name": "grounded-v2-1024",
+      "coldRequested": true,
+      "totalMs": 227466.4608,
+      "preprocessingMs": 20.993799999996554,
+      "loadMs": 29240.5347,
+      "promptMs": 149843.049,
+      "generationMs": 48141.039,
+      "promptTokens": 756,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 195,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "Duplicate category",
+      "qualityFlags": [
+        "placeholder_findings",
+        "repeated_findings"
+      ],
+      "syntheticReferenceIssues": []
+    },
+    {
+      "name": "resize-only-512",
+      "totalMs": 229442.8985,
+      "preprocessingMs": 42.269800000000004,
+      "loadMs": 4.5411,
+      "promptMs": 173448.325,
+      "generationMs": 55745.159,
+      "promptTokens": 981,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 250,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [
+        "contradictory_findings",
+        "illustrative_evidence_requires_uncertainty"
+      ],
+      "syntheticReferenceIssues": [
+        "unsupported_road_shape_change",
+        "illustrative_cleanup_evidence_not_marked_uncertain"
+      ]
+    },
+    {
+      "name": "grounded-v3-workflow-cold",
+      "coldRequested": true,
+      "totalMs": 191701,
+      "preprocessingMs": 21,
+      "loadMs": 29504.5147,
+      "promptMs": 141719.589,
+      "generationMs": 20333.085,
+      "promptTokens": 765,
+      "cachedPromptTokens": 0,
+      "generatedTokens": 96,
+      "doneReason": "stop",
+      "inputHashes": [
+        "1c601da2fdf1d052d18f6c2c07aaf61225b39261cfb4762bf41b1eae5d795e14",
+        "874cf6202f3debd400c022dd1f72ac4ac1350f32eaaa93fba10e7cfd8de421e3"
+      ],
+      "structuralValidation": "passed",
+      "qualityFlags": [],
+      "syntheticReferenceIssues": [],
+      "notes": "Real application workflow passed: true"
+    }
+  ]
+}

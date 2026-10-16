@@ -1,8 +1,119 @@
 # City Cleanup Challenge
 
+Gemma 3 Vision setup, architecture audit, tests, and hackathon walkthrough:
+[Gemma Smart Verification](docs/GEMMA_SMART_VERIFICATION.md). AI verification is disabled by default.
+For local startup, login troubleshooting, and the complete Chrome workflow, see
+[Browser testing](docs/BROWSER_TESTING.md).
+Measured inference profiles, configuration comparisons, quality limitations, and
+workflow validation are in the [Gemma benchmark report](docs/GEMMA_BENCHMARK.md).
+
 A comprehensive location-based cleanup event platform with React Native (Expo) frontend and Node.js Express backend. Join cleanup events, track your environmental impact, and help make your city cleaner!
 
-## Current Build Status (July 26, 2026)
+## Gemma Smart Verification — current workflow (October 16, 2026)
+
+The existing Expo application now uses real Gemma 3 Vision inference through
+local Ollama, with an optional compatible hosted endpoint. AI is advisory and
+disabled by default. It cannot approve submissions or authorize payouts.
+
+1. A user signs in and submits permitted before-and-after photographs with GPS
+   consent, waste details, and optional notes.
+2. The application confirms **Images received** and saves the evidence privately.
+   The submission page shows only that user's latest submission.
+3. **Gemma live analysis** opens an authenticated foreground connection. It shows
+   actual preparation and generation progress, then presents validated findings
+   line by line: visible waste, image differences, concerns, limitations, and
+   safe cleanup recommendations. Findings are withheld until the complete
+   structured output passes validation. Leaving the page cancels inference.
+4. An authorized admin opens **Pending**, **Rejected**, or **Approved** from the
+   admin home screen. Admins review evidence instead of seeing a submission
+   action. Approve/Reject controls become available after the AI attempt finishes;
+   a review reason is required and self-review is prohibited.
+5. The uploader sees the human decision. Previous submissions remain stored;
+   exact duplicates are rejected and the existing one-time appeal remains available.
+
+Timeouts, invalid output, and cancellation preserve evidence for human review.
+Celo reward controls remain in place; local testing has broadcasting disabled
+and dry-run enabled. Private images, local databases, secrets, and downloaded
+model files are excluded from Git.
+
+### Run locally in the browser
+
+Use Node.js 22 and install dependencies with `npm ci` in both `backend/` and
+`city-cleanup-challenge/`. Configuration belongs in **backend/.env** and
+**city-cleanup-challenge/.env**, rather than the root `.env`. On first setup,
+copy each folder's `.env.example` and configure distinct strong JWT secrets;
+preserve existing environment files and database paths on an existing install.
+
+For local Gemma testing, set these values in `backend/.env`:
+
+```dotenv
+PORT=3000
+GEMMA_VERIFICATION_ENABLED=true
+GEMMA_PROVIDER=ollama
+GEMMA_ENDPOINT=http://127.0.0.1:11434/api/chat
+GEMMA_MODEL=gemma3:4b
+GEMMA_TIMEOUT_MS=600000
+CORS_ORIGIN=http://localhost:19006,http://127.0.0.1:19006
+API_RATE_LIMIT=1000
+AUTH_RATE_LIMIT=100
+CELO_REWARDS_ENABLED=false
+CELO_REWARD_DRY_RUN=true
+```
+
+Set `EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1` in the frontend `.env`.
+Use three terminals; skip starting Ollama if its service is already running:
+
+```powershell
+# Terminal 1: standard Ollama installation; pull only on first setup
+ollama pull gemma3:4b
+ollama serve
+```
+
+```powershell
+# Terminal 2, from the repository root
+cd backend
+npm start
+```
+
+```powershell
+# Terminal 3, from the repository root
+cd city-cleanup-challenge
+$env:EXPO_PUBLIC_API_URL='http://localhost:3000/api/v1'
+npm start -- --web --port 19006 --clear
+```
+
+Open [the app](http://localhost:19006), register or sign in, and choose
+**Submit evidence**. Allow browser location access and keep the live analysis
+page open. Backend checks: [health](http://localhost:3000/health) and
+[readiness](http://localhost:3000/ready). Admin review pages:
+[Pending](http://localhost:19006/#/evidence-pending),
+[Rejected](http://localhost:19006/#/evidence-rejected), and
+[Approved](http://localhost:19006/#/evidence-approved).
+Local polling limits above prevent normal multi-tab testing from exhausting
+the shared localhost request budget. Docker uses its separately configured ports.
+
+### Measured results and limitations
+
+- Real foreground `gemma3:4b` inference completed in **184.839 seconds** on the
+  tested CPU; the browser displayed live generation and validated findings.
+  This is a measured example, not a latency guarantee.
+- A lower-cost experiment took **144.304 seconds**, but produced truncated,
+  invalid JSON. It was **not enabled**. Seconds-long valid local verification
+  has not been demonstrated on this machine.
+- All recorded image comparisons use **clearly labeled illustrations**.
+  Consented real-photo validation remains pending. These results do not establish
+  real-world cleanup impact, material quantities, or real-photo accuracy.
+- Latest executed checks: **139 backend tests**, **28 frontend tests**, and both
+  lint checks passed. These checks ran on Node 24.19.0; the repository requires
+  Node 22. Browser tests also verified real inference and the admin review cards.
+
+See [Browser testing](docs/BROWSER_TESTING.md) for detailed setup and testing,
+[Gemma integration](docs/GEMMA_SMART_VERIFICATION.md) for configuration and
+privacy controls, and [benchmarks](docs/GEMMA_BENCHMARK.md) for recorded runs
+and tradeoffs. The delivery-phase notes below describe earlier milestones;
+their test counts are historical.
+
+## Earlier Delivery Phase Status (July 26, 2026)
 
 Phase 1, Phase 2, Phase 3 evidence submission, the Phase 4 advanced
 verification foundation, the Phase 5 Celo Sepolia reward foundation, the Phase
@@ -1056,11 +1167,12 @@ refresh token during logout.
 - **cleanup_plans** — Admin-managed cleanup plans with unique codes
 - **usage_analytics** — Comprehensive user activity tracking and system metrics
 
-### Default Admin Account
-- **Username**: `admin`
-- **Password**: `admin123`
-- **Note**: Created automatically on first database initialization
-- **Access**: Full admin panel access with all system management capabilities
+### Administrator Accounts
+
+There is no automatically created default administrator or shared default
+password. New browser registrations receive the ordinary user role. Admin
+access requires an explicitly provisioned account in the installation's
+database; local test accounts are not distributed with the repository.
 
 ### Latest Database Enhancements (v2.0)
 - **Role System**: Enhanced user authentication with admin/user role distinction

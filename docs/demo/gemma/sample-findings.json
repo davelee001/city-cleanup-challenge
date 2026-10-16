@@ -1,0 +1,22 @@
+{
+  "assessment": "ILLUSTRATIVE SAMPLE: The after image appears to show less scattered litter. This is not a real model inference.",
+  "wasteCategories": [
+    "plastic",
+    "paper"
+  ],
+  "visualDifferences": [
+    "Illustrative observation: fewer visible wrappers on the path."
+  ],
+  "environmentalConcerns": [
+    "Loose litter near vegetation may disperse into nearby drainage."
+  ],
+  "limitations": [
+    "Sample observations only; images do not establish disposal or waste weight."
+  ],
+  "recommendations": [
+    "Use gloves and litter tools for ordinary litter; leave sharps and unknown hazards to trained local services."
+  ],
+  "cleanupEvidence": "uncertain",
+  "sameScene": "likely",
+  "needsHumanReview": true
+}

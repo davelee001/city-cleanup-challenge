@@ -9,6 +9,7 @@ const {
 } = require('../services/evidenceVerification');
 const { ensureRewardClaim } = require('../services/rewardService');
 const evidenceStorage = require('../services/evidenceStorage');
+const { createEvidenceAiWorker } = require('../services/evidenceAiWorker');
 const { EVIDENCE_ROOT } = evidenceStorage;
 const ALLOWED_CATEGORIES = new Set(['plastic', 'glass', 'metal', 'paper', 'mixed']);
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -198,6 +199,8 @@ function canAccessSubmission(user, submission) {
 
 function createEvidenceRouter(db) {
   const router = express.Router();
+  const aiWorker = createEvidenceAiWorker(db);
+  const liveAnalyses = new Set();
 
   router.post(
     '/submissions',
@@ -267,6 +270,7 @@ function createEvidenceRouter(db) {
           priorFingerprints,
           exactDuplicate: isDuplicate,
           exactDuplicateSubmissionId: duplicateOf,
+          deferSmartVerification: true,
         });
       } catch (error) {
         console.error('Evidence verification failed:', error);
@@ -375,10 +379,11 @@ function createEvidenceRouter(db) {
         });
 
         const submission = await getSubmission(db, submissionId);
-        return res.status(201).json({
+        const response = res.status(201).json({
           success: true,
           submission: serializeSubmission(submission),
         });
+        return response;
       } catch (error) {
         await Promise.allSettled(storedFiles.map((file) => evidenceStorage.remove(file)));
         return res.status(500).json({ success: false, message: 'Unable to save cleanup evidence' });
@@ -386,10 +391,62 @@ function createEvidenceRouter(db) {
     }
   );
 
+  router.post('/submissions/:id/analyze', async (req, res) => {
+    const controller = new AbortController();
+    let heartbeat;
+    let id;
+    let ownsAnalysis = false;
+    const disconnected = () => controller.abort();
+    const send = (event) => {
+      if (!res.destroyed && !res.writableEnded) res.write(`${JSON.stringify(event)}\n`);
+    };
+    try {
+      const submission = await getSubmission(db, req.params.id);
+      if (!submission) return res.status(404).json({ success: false, message: 'Submission not found' });
+      // Only the uploader starts a model request; admins review saved findings.
+      if (Number(submission.user_id) !== Number(req.user.id)) return res.status(403).json({ success: false, message: 'Only the uploader can start analysis' });
+      id = submission.id;
+      const previous = JSON.parse(submission.verification_summary || '{}').smartVerification;
+      if (liveAnalyses.has(id)) return res.status(409).json({ success: false, message: 'This submission already has a live analysis open.' });
+      res.set({ 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'private, no-store', 'X-Accel-Buffering': 'no' });
+      res.flushHeaders();
+      if (previous?.status !== 'pending') {
+        send({ type: 'result', analysis: previous });
+        return res.end();
+      }
+      liveAnalyses.add(id);
+      ownsAnalysis = true;
+      res.on('close', disconnected);
+      heartbeat = setInterval(() => send({ type: 'heartbeat' }), 10000);
+      const analysis = await aiWorker.analyzeSubmission(id, { signal: controller.signal, onProgress: send });
+      if (analysis.status === 'completed') {
+        const f = analysis.findings;
+        const lines = [f.assessment, `Visible categories: ${f.wasteCategories.join(', ') || 'None identified'}`,
+          ...f.visualDifferences.map((x) => `Visual comparison: ${x}`),
+          ...f.environmentalConcerns.map((x) => `Environmental concern: ${x}`),
+          ...f.limitations.map((x) => `Limitation: ${x}`),
+          ...f.recommendations.map((x) => `Safe cleanup: ${x}`),
+          `Cleanup evidence: ${f.cleanupEvidence}; same scene: ${f.sameScene}.`,
+          'Gemma analysis finished. An authorized human reviewer must approve or reject this submission.'];
+        for (const message of lines) send({ type: 'finding', message });
+      }
+      send({ type: 'result', analysis });
+      return res.end();
+    } catch {
+      if (!res.headersSent) return res.status(500).json({ success: false, message: 'Unable to analyze evidence' });
+      send({ type: 'error', message: 'Analysis could not finish. Your evidence remains saved. Refresh to check its status.' });
+      res.end();
+    } finally {
+      clearInterval(heartbeat);
+      res.off('close', disconnected);
+      if (ownsAnalysis) liveAnalyses.delete(id);
+    }
+  });
+
   router.get('/submissions', async (req, res) => {
     const params = [];
     const filters = [];
-    if (req.user.role !== 'admin') {
+    if (req.user.role !== 'admin' || req.query.scope === 'mine') {
       filters.push('s.user_id = ?');
       params.push(req.user.id);
     }
@@ -405,7 +462,7 @@ function createEvidenceRouter(db) {
          FROM cleanup_submissions s
          JOIN users u ON u.id = s.user_id
          ${where}
-         ORDER BY s.created_at DESC, s.id DESC`,
+         ORDER BY s.created_at DESC, s.id DESC${req.query.latest === 'true' ? ' LIMIT 1' : ''}`,
         params
       );
       return res.json({
@@ -550,6 +607,14 @@ function createEvidenceRouter(db) {
       }
       if (!['manual_review', 'automated_review'].includes(submission.status)) {
         return res.status(409).json({ success: false, message: 'Submission is not awaiting review' });
+      }
+      const verification = JSON.parse(submission.verification_summary || '{}');
+      if (verification.smartVerification?.status === 'pending') {
+        return res.status(409).json({
+          success: false,
+          code: 'AI_REVIEW_PENDING',
+          message: 'Wait for Gemma analysis to finish before approving or rejecting this submission.',
+        });
       }
       await dbRun(
         db,

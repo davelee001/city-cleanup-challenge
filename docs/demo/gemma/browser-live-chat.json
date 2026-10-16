@@ -1,0 +1,77 @@
+{
+  "label": "FOREGROUND GEMMA BROWSER STREAM TEST; LABELED ILLUSTRATIONS, TEST QUANTITY AND EMULATED GPS; NOT REAL CLEANUP",
+  "startedAt": "2026-10-16T13:53:15.279Z",
+  "checks": {
+    "chatOpened": true,
+    "liveGenerationVisible": true,
+    "validatedFindingsVisible": true,
+    "actualLocalOllama": true,
+    "humanReviewRequired": true,
+    "completedReplayWithoutReinference": true
+  },
+  "chatOpenedMs": 425,
+  "submissionId": 38,
+  "stages": [
+    {
+      "stage": "image_processing",
+      "elapsedMs": 432
+    },
+    {
+      "stage": "generation",
+      "elapsedMs": 166838
+    },
+    {
+      "stage": "findings",
+      "elapsedMs": 186039
+    }
+  ],
+  "passed": true,
+  "analysis": {
+    "status": "completed",
+    "version": "gemma-cleanup-v2",
+    "model": "gemma3:4b",
+    "provider": "ollama",
+    "promptVersion": "grounded-example-v3",
+    "settings": {
+      "imageMaxSize": 1024,
+      "maxOutputTokens": 384,
+      "contextLength": 2048,
+      "numThreads": 4
+    },
+    "analyzedAt": "2026-10-16T13:56:22.112Z",
+    "timings": {
+      "preprocessingMs": 27,
+      "requestMs": 184808,
+      "loadMs": 11,
+      "promptMs": 165298,
+      "generationMs": 19363,
+      "promptTokens": 765,
+      "generatedTokens": 94,
+      "totalMs": 184839
+    },
+    "findings": {
+      "assessment": "Illustrative demonstration showing a road before and after a simulated cleanup operation.",
+      "wasteCategories": [],
+      "visualDifferences": [
+        "The road is cleaner in the 'after' image compared to the 'before' image."
+      ],
+      "environmentalConcerns": [],
+      "limitations": [
+        "Images cannot establish disposal or weight.",
+        "AI observations require human review. Photos cannot establish weight, exact quantities, disposal, location, authenticity, or chemical safety."
+      ],
+      "recommendations": [
+        "Use gloves and litter tools; leave unknown hazards to trained services."
+      ],
+      "cleanupEvidence": "uncertain",
+      "sameScene": "uncertain",
+      "needsHumanReview": true
+    }
+  },
+  "ui": "‹  Back to home\nPHASE 3\nVerified cleanup evidence\nSubmit your cleanup, see Gemma findings, and follow human approval.\nNew cleanup submission\nSelect before and after photos you have permission to use. Selection time is not proof of capture time. Include the same scene before and after cleanup. Label illustrations as test data in the notes; they do not establish real cleanup activity.\n＋\nBefore cleanup\n＋\nAfter cleanup\nWaste category\nPlastic\nGlass\nMetal\nPaper\nMixed\nItem count\nEstimated weight (kg)\nNotes (optional)\n✓\nI consent to sharing this cleanup’s GPS coordinates and accuracy for verification.\nEvidence saved. Opening live Gemma verification below.\nSubmit for verification\nYour latest submission\n#38 · plastic\nmedium risk\nAwaiting review\n3 items\n10/16/2026, 1:53:17 PM\nBefore\nAfter\nGemma live analysis\nCompare my before and after cleanup images.\nGemma · validated finding\nIllustrative demonstration showing a road before and after a simulated cleanup operation.\nGemma · validated finding\nVisible categories: None identified\nGemma · validated finding\nVisual comparison: The road is cleaner in the 'after' image compared to the 'before' image.\nGemma · validated finding\nLimitation: Images cannot establish disposal or weight.\nGemma · validated finding\nLimitation: AI observations require human review. Photos cannot establish weight, exact quantities, disposal, location, authenticity, or chemical safety.\nGemma · validated finding\nSafe cleanup: Use gloves and litter tools; leave unknown hazards to trained services.\nGemma · validated finding\nCleanup evidence: uncertain; same scene: uncertain.\nGemma · validated finding\nGemma analysis finished. An authorized human reviewer must approve or reject this submission.\nAI observations are advisory. A human makes the final approval or rejection.\nHuman review\nAwaiting human approval",
+  "completedReplay": {
+    "status": 200,
+    "contentType": "application/x-ndjson; charset=utf-8"
+  },
+  "harnessNote": "Initial observer selected the CORS OPTIONS preflight instead of the POST response; collection assertion corrected. No model failure. Recorded original live generation/findings stages and saved model output; completed replay did not rerun inference."
+}
