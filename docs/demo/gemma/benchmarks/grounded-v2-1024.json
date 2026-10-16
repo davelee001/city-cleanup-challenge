@@ -160,5 +160,7 @@
     "num_ctx": 2048,
     "num_thread": 4,
     "repeat_penalty": 1.1
-  }
+  },
+  "imagePayloadBytes": 40670,
+  "preprocessingMs": 20.993799999996554
 }
