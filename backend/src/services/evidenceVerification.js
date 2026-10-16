@@ -1,5 +1,7 @@
 const sharp = require('sharp');
 const exifr = require('exifr');
+const { analyzeCleanup } = require('./gemmaVerification');
+const { VERSION: GEMMA_VERSION } = require('./gemmaVerification');
 
 const VERIFICATION_VERSION = 'phase9-v2';
 function configuredNumber(name, fallback, minimum, maximum) {
@@ -216,6 +218,7 @@ async function verifyEvidencePair({
   priorFingerprints = [],
   exactDuplicate = false,
   exactDuplicateSubmissionId = null,
+  deferSmartVerification = false,
 }) {
   const [before, after] = await Promise.all([
     analyzeImage(beforeBuffer),
@@ -267,8 +270,22 @@ async function verifyEvidencePair({
     reviewReasons.push('image_quality_review');
   }
 
+  const smartVerification = exactDuplicate
+    ? { status: 'skipped', reason: 'exact_duplicate' }
+    : deferSmartVerification && process.env.GEMMA_VERIFICATION_ENABLED === 'true'
+      ? { status: 'pending', version: GEMMA_VERSION, queuedAt: new Date().toISOString(), needsHumanReview: true }
+    : await analyzeCleanup({ beforeBuffer, afterBuffer });
+  if (smartVerification.status === 'unavailable'
+    || (smartVerification.status === 'completed'
+      && (smartVerification.findings.cleanupEvidence !== 'visible_improvement'
+        || smartVerification.findings.sameScene !== 'likely'))) {
+    reviewReasons.push(smartVerification.status === 'unavailable' ? 'gemma_unavailable' : 'gemma_uncertain');
+    if (overallRisk === 'low') overallRisk = 'medium';
+  }
+
   return {
     version: VERIFICATION_VERSION,
+    smartVerification,
     thresholds: {
       perceptualDistance: PERCEPTUAL_DISTANCE_THRESHOLD,
       sceneHighRiskBelow: SCENE_HIGH_RISK_BELOW,
@@ -312,10 +329,24 @@ async function verifyEvidencePair({
   };
 }
 
+function applySmartVerification(summary, smartVerification) {
+  const result = { ...summary, smartVerification, reviewReasons: [...(summary.reviewReasons || [])] };
+  if (smartVerification.status === 'unavailable'
+    || (smartVerification.status === 'completed'
+      && (smartVerification.findings.cleanupEvidence !== 'visible_improvement'
+        || smartVerification.findings.sameScene !== 'likely'))) {
+    const reason = smartVerification.status === 'unavailable' ? 'gemma_unavailable' : 'gemma_uncertain';
+    result.reviewReasons = [...new Set([...result.reviewReasons, reason])];
+    if (result.overallRisk === 'low') result.overallRisk = 'medium';
+  }
+  return result;
+}
+
 module.exports = {
   VERIFICATION_VERSION,
   PERCEPTUAL_DISTANCE_THRESHOLD,
   analyzeImage,
   hammingDistance,
   verifyEvidencePair,
+  applySmartVerification,
 };
