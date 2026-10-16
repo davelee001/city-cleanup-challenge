@@ -4,5 +4,10 @@
   "coldRequested": true,
   "modelStateBefore": {
     "models": []
+  },
+  "checks": {
+    "savedBeforeInference": true,
+    "anonymousDenied": 401,
+    "otherUserImageDenied": 403
   }
 }
