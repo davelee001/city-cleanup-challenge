@@ -1,5 +1,12 @@
 # City Cleanup Challenge
 
+Gemma 3 Vision setup, architecture audit, tests, and hackathon walkthrough:
+[Gemma Smart Verification](docs/GEMMA_SMART_VERIFICATION.md). AI verification is disabled by default.
+For local startup, login troubleshooting, and the complete Chrome workflow, see
+[Browser testing](docs/BROWSER_TESTING.md).
+Measured inference profiles, configuration comparisons, quality limitations, and
+workflow validation are in the [Gemma benchmark report](docs/GEMMA_BENCHMARK.md).
+
 A comprehensive location-based cleanup event platform with React Native (Expo) frontend and Node.js Express backend. Join cleanup events, track your environmental impact, and help make your city cleaner!
 
 ## Current Build Status (July 26, 2026)
