@@ -127,7 +127,10 @@ export default function App() {
   const renderHome = () => {
     const items = userRole === 'admin'
       ? [
-        ...homeItems,
+        { key: 'evidence-pending', icon: '◷', title: 'Pending', hint: 'Review evidence waiting for approval', group: 'Admin' },
+        { key: 'evidence-rejected', icon: '×', title: 'Rejected', hint: 'View rejected submissions and reasons', group: 'Admin' },
+        { key: 'evidence-approved', icon: '✓', title: 'Approved', hint: 'View approved cleanup submissions', group: 'Admin' },
+        ...homeItems.filter((item) => item.key !== 'evidence'),
         { key: 'dashboard', icon: '▥', title: 'Impact analytics', hint: 'Review verified platform performance', group: 'Admin' },
         { key: 'reward-admin', icon: 'CE', title: 'Reward operations', hint: 'Control and audit CELO payouts', group: 'Admin' },
         { key: 'admin', icon: '⚙', title: 'Admin panel', hint: 'Manage users and content', group: 'Admin' },
@@ -163,16 +166,16 @@ export default function App() {
               <Text style={styles.eyebrow}>YOUR CLEANUP DASHBOARD</Text>
               <Text style={styles.welcome}>Welcome back, {user}</Text>
               <Text style={styles.welcomeSubtitle}>
-                Document your work, follow its verification, and see the impact you create.
+                {userRole === 'admin' ? 'Review cleanup evidence and manage approval decisions.' : 'Document your work, follow its verification, and see the impact you create.'}
               </Text>
               <View style={styles.heroActions}>
                 <TouchableOpacity
                   style={styles.primaryAction}
-                  onPress={() => navigate('evidence')}
+                  onPress={() => navigate(userRole === 'admin' ? 'evidence-pending' : 'evidence')}
                   activeOpacity={0.86}
                 >
                   <Text style={styles.primaryActionIcon}>＋</Text>
-                  <Text style={styles.primaryActionText}>Submit cleanup evidence</Text>
+                  <Text style={styles.primaryActionText}>{userRole === 'admin' ? 'Review pending evidence' : 'Submit cleanup evidence'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.secondaryAction}
@@ -208,7 +211,7 @@ export default function App() {
           <View style={styles.sectionHeading}>
             <View>
               <Text style={styles.sectionTitle}>Workspace</Text>
-              <Text style={styles.sectionSubtitle}>Everything you need to plan, submit, and track cleanup work.</Text>
+              <Text style={styles.sectionSubtitle}>{userRole === 'admin' ? 'Review pending evidence and track approved and rejected submissions.' : 'Everything you need to plan, submit, and track cleanup work.'}</Text>
             </View>
           </View>
 
@@ -302,7 +305,14 @@ export default function App() {
         content = <Progress username={user} />;
         break;
       case 'evidence':
-        content = <Evidence userRole={userRole} />;
+        content = <Evidence key="evidence" userRole={userRole} storedData={userRole === 'admin'} />;
+        break;
+      case 'stored-evidence':
+      case 'evidence-pending':
+      case 'evidence-rejected':
+      case 'evidence-approved':
+        content = userRole === 'admin' ? <Evidence key={activeView} userRole={userRole} storedData
+          initialSection={activeView === 'evidence-approved' ? 'Approved' : activeView === 'evidence-rejected' ? 'Rejected' : 'Pending'} /> : <Text>Administrator access required.</Text>;
         break;
       case 'wallet':
         content = <Wallet />;
