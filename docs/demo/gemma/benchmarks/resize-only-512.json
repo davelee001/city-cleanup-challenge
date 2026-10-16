@@ -1,0 +1,10 @@
+{
+  "label": "REAL INFERENCE BENCHMARK ON LABELED ILLUSTRATIONS; NOT REAL CLEANUP EVIDENCE",
+  "variant": {
+    "name": "resize-only-512",
+    "imageSize": 512,
+    "legacy": true,
+    "tokens": 1800,
+    "options": {}
+  }
+}
