@@ -1,5 +1,6 @@
 {
   "label": "REAL LOCAL GEMMA INFERENCE ON LABELED ILLUSTRATIONS; NOT REAL CLEANUP EVIDENCE",
   "startedAt": "2026-10-16T12:10:50.079Z",
-  "elapsedMs": 120270
+  "elapsedMs": 120270,
+  "ollamaVersion": "0.40.5"
 }
