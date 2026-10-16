@@ -4,5 +4,16 @@
   "coldRequested": true,
   "modelStateBefore": {
     "models": []
+  },
+  "checks": {
+    "savedBeforeInference": true,
+    "anonymousDenied": 401,
+    "otherUserImageDenied": 403,
+    "ownerImageAccessiblePrivately": true,
+    "duplicateRejectedWithoutAi": true,
+    "modelOutputPassedQualityValidation": true,
+    "noAutomaticApproval": true,
+    "authorizedReviewAndOneTimeAppeal": true,
+    "noPaidRewards": true
   }
 }
