@@ -1,0 +1,13 @@
+{
+  "label": "REAL INFERENCE BENCHMARK ON LABELED ILLUSTRATIONS; NOT REAL CLEANUP EVIDENCE",
+  "variant": {
+    "name": "grounded-v2-1024",
+    "imageSize": 1024,
+    "tokens": 384,
+    "options": {
+      "num_ctx": 2048,
+      "num_thread": 4,
+      "repeat_penalty": 1.1
+    }
+  }
+}
