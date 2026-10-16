@@ -9,5 +9,6 @@
     "humanReviewRequired": true,
     "completedReplayWithoutReinference": true
   },
-  "chatOpenedMs": 425
+  "chatOpenedMs": 425,
+  "submissionId": 38
 }
