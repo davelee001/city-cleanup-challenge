@@ -1,4 +1,5 @@
 {
   "label": "ISOLATED SYNTHETIC WORKFLOW TEST; NOT REAL CLEANUP OR IMPACT",
-  "session": "workflow-1792155522874"
+  "session": "workflow-1792155522874",
+  "coldRequested": true
 }
