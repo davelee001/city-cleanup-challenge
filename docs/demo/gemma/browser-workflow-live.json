@@ -6,5 +6,6 @@
   "registrationHttpStatus": 200,
   "loginHttpStatus": 200,
   "submissionHttpStatus": 201,
-  "submissionServerMs": 315.955
+  "submissionServerMs": 315.955,
+  "pendingVisible": true
 }
