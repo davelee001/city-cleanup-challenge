@@ -27,5 +27,30 @@
       "completion",
       "vision"
     ]
+  },
+  "runtime": {
+    "models": [
+      {
+        "name": "gemma3:4b",
+        "model": "gemma3:4b",
+        "size": 2888784936,
+        "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "gemma3",
+          "families": [
+            "gemma3",
+            "clip"
+          ],
+          "parameter_size": "3.9B",
+          "quantization_level": "Q4_K_M"
+        },
+        "expires_at": "2026-10-16T15:22:50.3489246+03:00",
+        "size_vram": 0,
+        "context_length": 4096,
+        "runner": "llamacpp"
+      }
+    ]
   }
 }
