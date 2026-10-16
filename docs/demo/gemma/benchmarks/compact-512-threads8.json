@@ -185,5 +185,22 @@
     "cleanupEvidence": "no_visible_improvement",
     "sameScene": "likely",
     "needsHumanReview": true
+  },
+  "response": {
+    "model": "gemma3:4b",
+    "created_at": "2026-10-16T12:40:43.3386033Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\"assessment\": \"Illustrative demonstration of a road before and after a hypothetical cleanup.\", \"wasteCategories\": [\"plastic\", \"unknown\"], \"visualDifferences\": [\"The road is cleaner in the second image.\", \"A yellow object is present in the first image but absent in the second.\"], \"environmentalConcerns\": [], \"limitations\": [\"The images are illustrative only, not real cleanup evidence.\", \"The scene is a simplified drawing and does not represent a realistic environment.\"], \"recommendations\": [\"Human review is required to verify the accuracy of the demonstration.\", \"Further details about the cleanup process would be beneficial.\"], \"cleanupEvidence\": \"no_visible_improvement\", \"sameScene\": \"likely\", \"needsHumanReview\": true}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 185092157300,
+    "load_duration": 24965301600,
+    "prompt_eval_count": 796,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 126981043000,
+    "eval_count": 148,
+    "eval_duration": 33025055999
   }
 }
