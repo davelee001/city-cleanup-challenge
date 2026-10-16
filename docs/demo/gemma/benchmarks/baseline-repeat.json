@@ -160,5 +160,72 @@
     "repeated_findings",
     "illustrative_evidence_requires_uncertainty",
     "unsupported_organic_category"
-  ]
+  ],
+  "findings": {
+    "assessment": "Illustrative demonstration of a community cleanup, showing a before and after scenario.",
+    "wasteCategories": [
+      "plastic",
+      "organic",
+      "unknown"
+    ],
+    "visualDifferences": [
+      "The road appears cleaner in the 'AFTER' image compared to the 'BEFORE' image.",
+      "A yellow marker is present in both images.",
+      "A white marker is present in both images.",
+      "A blue marker is present in both images.",
+      "The tree remains in the same location in both images.",
+      "The ground is a similar color in both images.",
+      "The sky is a similar color in both images.",
+      "The grass is a similar color in both images.",
+      "The road is a similar color in both images.",
+      "The markers are present in both images.",
+      "The tree is present in both images.",
+      "The ground is present in both images. The road is present in both images. "
+    ],
+    "environmentalConcerns": [
+      "Potential for reduced litter on the road surface.",
+      "The overall scene appears to be improved.",
+      "The environmental impact of the cleanup is not directly observable.",
+      "The scene is illustrative and does not represent a real-world cleanup.",
+      "The markers are present in both images.",
+      "The tree is present in both images.",
+      "The ground is present in both images.",
+      "The sky is present in both images.",
+      "The grass is present in both images.",
+      "The road is present in both images.",
+      "The markers are present in both images.",
+      "The tree is present in both images.  The ground is present in both images.  The road is present in both images.  "
+    ],
+    "limitations": [
+      "The images are illustrative and do not represent a real-world cleanup.",
+      "The scale of the cleanup is not known.",
+      "The type of waste removed is not specified.",
+      "The images are a simplified representation.",
+      "The images are a demonstration.",
+      "The images are a demonstration.",
+      "The images are a demonstration.",
+      "The images are a demonstration.",
+      "The images are a demonstration.",
+      "The images are a demonstration.",
+      "The images are a demonstration.",
+      "The images are a demonstration. "
+    ],
+    "recommendations": [
+      "Wear gloves when handling litter.",
+      "Use appropriate tools for collecting litter.",
+      "Dispose of sharps, chemicals, medical/electrical waste through trained local services.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards.",
+      "Do not handle unknown hazards. "
+    ],
+    "cleanupEvidence": "visible_improvement",
+    "sameScene": "likely",
+    "needsHumanReview": false
+  }
 }
