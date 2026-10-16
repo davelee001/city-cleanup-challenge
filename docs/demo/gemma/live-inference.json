@@ -1,5 +1,6 @@
 {
   "label": "REAL LOCAL GEMMA INFERENCE ON LABELED ILLUSTRATIONS; NOT REAL CLEANUP EVIDENCE",
   "startedAt": "2026-10-16T12:13:36.089Z",
-  "elapsedMs": 303113
+  "elapsedMs": 303113,
+  "timeoutMs": 600000
 }
