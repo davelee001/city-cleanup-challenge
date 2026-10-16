@@ -157,5 +157,6 @@
     "num_thread": 4,
     "repeat_penalty": 1.1
   },
-  "imagePayloadBytes": 40670
+  "imagePayloadBytes": 40670,
+  "preprocessingMs": 18.614999999990687
 }
