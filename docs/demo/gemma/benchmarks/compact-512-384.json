@@ -162,5 +162,27 @@
   "inferenceMs": 210134.6508,
   "totalMs": 210186.26060000004,
   "parsed": true,
-  "qualityFlags": []
+  "qualityFlags": [],
+  "findings": {
+    "assessment": "The images depict a before-and-after illustration of a road with some visible litter.",
+    "wasteCategories": [
+      "plastic",
+      "paper"
+    ],
+    "visualDifferences": [
+      "A yellow object is present in the 'before' image but absent in the 'after' image.",
+      "The road appears cleaner in the 'after' image."
+    ],
+    "environmentalConcerns": [],
+    "limitations": [
+      "The images are illustrative and not real cleanup evidence.",
+      "The scene is a simplified drawing, limiting accurate assessment."
+    ],
+    "recommendations": [
+      "Human review is required to confirm accuracy of the illustration."
+    ],
+    "cleanupEvidence": "no_visible_improvement",
+    "sameScene": "likely",
+    "needsHumanReview": true
+  }
 }
