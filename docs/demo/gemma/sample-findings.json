@@ -17,5 +17,6 @@
     "Use gloves and litter tools for ordinary litter; leave sharps and unknown hazards to trained local services."
   ],
   "cleanupEvidence": "uncertain",
-  "sameScene": "likely"
+  "sameScene": "likely",
+  "needsHumanReview": true
 }
