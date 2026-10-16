@@ -152,5 +152,6 @@
     "num_predict": 1800
   },
   "imagePayloadBytes": 40670,
-  "preprocessingMs": 27.3284000000001
+  "preprocessingMs": 27.3284000000001,
+  "inferenceMs": 304750.34140000003
 }
