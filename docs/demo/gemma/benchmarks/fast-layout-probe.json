@@ -23,5 +23,6 @@
   "generatedTokens": 160,
   "loadMs": 27824.245,
   "promptMs": 68186.107,
-  "generationMs": 48016.664
+  "generationMs": 48016.664,
+  "validationError": "Unterminated string in JSON at position 679 (line 15 column 4)"
 }
