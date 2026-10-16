@@ -7,5 +7,6 @@
   "loginHttpStatus": 200,
   "submissionHttpStatus": 201,
   "submissionServerMs": 315.955,
-  "pendingVisible": true
+  "pendingVisible": true,
+  "privateImageStatus": 200
 }
