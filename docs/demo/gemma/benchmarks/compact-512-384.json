@@ -9,5 +9,7 @@
       "num_thread": 4,
       "repeat_penalty": 1.1
     }
-  }
+  },
+  "recordedAt": "2026-10-16T12:36:55.384Z",
+  "ollamaVersion": "0.40.5"
 }
