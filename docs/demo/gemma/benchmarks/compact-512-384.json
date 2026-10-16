@@ -161,5 +161,6 @@
   "preprocessingMs": 50.10879999998724,
   "inferenceMs": 210134.6508,
   "totalMs": 210186.26060000004,
-  "parsed": true
+  "parsed": true,
+  "qualityFlags": []
 }
