@@ -156,5 +156,6 @@
   "inferenceMs": 304750.34140000003,
   "totalMs": 304782.9316,
   "error": "TypeError",
-  "parsed": false
+  "parsed": false,
+  "structuralError": "Cannot read properties of undefined (reading 'message')"
 }
