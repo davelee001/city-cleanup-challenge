@@ -1,3 +1,7 @@
 {
-  "assessment": "ILLUSTRATIVE SAMPLE: The after image appears to show less scattered litter. This is not a real model inference."
+  "assessment": "ILLUSTRATIVE SAMPLE: The after image appears to show less scattered litter. This is not a real model inference.",
+  "wasteCategories": [
+    "plastic",
+    "paper"
+  ]
 }
