@@ -134,5 +134,22 @@
       "num_thread": 4,
       "repeat_penalty": 1.1
     }
+  },
+  "providerResponse": {
+    "model": "gemma3:4b",
+    "created_at": "2026-10-16T13:02:01.218971Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\"assessment\":\"Illustrative demonstration showing a road before and after a simulated cleanup operation.\",\"wasteCategories\":[],\"visualDifferences\":[\"The road is depicted as cleaner in the 'AFTER' image compared to the 'BEFORE' image.\"],\"environmentalConcerns\":[],\"limitations\":[\"Images cannot establish disposal or weight.\"],\"recommendations\":[\"Use gloves and litter tools; leave unknown hazards to trained services.\"],\"cleanupEvidence\":\"uncertain\",\"sameScene\":\"uncertain\",\"needsHumanReview\":true}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 191667535700,
+    "load_duration": 29504514700,
+    "prompt_eval_count": 765,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 141719589000,
+    "eval_count": 96,
+    "eval_duration": 20333085000
   }
 }
