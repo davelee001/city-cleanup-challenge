@@ -157,5 +157,6 @@
   "totalMs": 304782.9316,
   "error": "TypeError",
   "parsed": false,
-  "structuralError": "Cannot read properties of undefined (reading 'message')"
+  "structuralError": "Cannot read properties of undefined (reading 'message')",
+  "qualityFlags": []
 }
