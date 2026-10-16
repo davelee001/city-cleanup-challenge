@@ -8,5 +8,6 @@
   "submissionHttpStatus": 201,
   "submissionServerMs": 315.955,
   "pendingVisible": true,
-  "privateImageStatus": 200
+  "privateImageStatus": 200,
+  "privateImageCache": "private, no-store"
 }
