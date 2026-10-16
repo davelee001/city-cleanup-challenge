@@ -159,5 +159,6 @@
   },
   "imagePayloadBytes": 18174,
   "preprocessingMs": 50.6820000000298,
-  "inferenceMs": 42751.170599999954
+  "inferenceMs": 42751.170599999954,
+  "totalMs": 42803.42579999997
 }
