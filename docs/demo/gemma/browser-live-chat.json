@@ -8,5 +8,6 @@
     "actualLocalOllama": true,
     "humanReviewRequired": true,
     "completedReplayWithoutReinference": true
-  }
+  },
+  "chatOpenedMs": 425
 }
