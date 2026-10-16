@@ -10,5 +10,7 @@
   "coldRequested": true,
   "modelStateBefore": {
     "models": []
-  }
+  },
+  "recordedAt": "2026-10-16T12:55:48.106Z",
+  "ollamaVersion": "0.40.5"
 }
