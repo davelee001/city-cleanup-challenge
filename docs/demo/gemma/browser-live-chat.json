@@ -72,5 +72,6 @@
   "completedReplay": {
     "status": 200,
     "contentType": "application/x-ndjson; charset=utf-8"
-  }
+  },
+  "harnessNote": "Initial observer selected the CORS OPTIONS preflight instead of the POST response; collection assertion corrected. No model failure. Recorded original live generation/findings stages and saved model output; completed replay did not rerun inference."
 }
