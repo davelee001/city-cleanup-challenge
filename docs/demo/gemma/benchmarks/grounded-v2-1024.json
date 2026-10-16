@@ -194,5 +194,22 @@
     "cleanupEvidence": "uncertain",
     "sameScene": "likely",
     "needsHumanReview": true
+  },
+  "response": {
+    "model": "gemma3:4b",
+    "created_at": "2026-10-16T12:50:11.3424512Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"assessment\": \"The images depict an illustrative demonstration of a road cleanup scenario.\",\n  \"wasteCategories\": [\n    \"unknown\",\n    \"unknown\"\n  ],\n  \"visualDifferences\": [\n    \"sameScene=likely\",\n    \"sameScene=likely\"\n  ],\n  \"environmentalConcerns\": [\n    \"[unknwon]\",\n    \"[unknwon]\"\n  ],\n  \"limitations\": [\n    \"The images are illustrative and do not represent actual cleanup evidence.\",\n    \"Changes to the road or sky are assumed, introducing uncertainty about the scene.\"\n  ],\n  \"recommendations\": [\n    \"Use gloves/tools for ordinary litter; consult trained services for hazards.\"\n  ],\n  \"cleanupEvidence\": \"uncertain\",\n  \"sameScene\": \"likely\",\"needsHumanReview\": true\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 227390187300,
+    "load_duration": 29240534700,
+    "prompt_eval_count": 756,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 149843049000,
+    "eval_count": 195,
+    "eval_duration": 48141039000
   }
 }
