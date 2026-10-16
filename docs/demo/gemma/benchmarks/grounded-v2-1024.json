@@ -9,5 +9,9 @@
       "num_thread": 4,
       "repeat_penalty": 1.1
     }
+  },
+  "coldRequested": true,
+  "modelStateBefore": {
+    "models": []
   }
 }
