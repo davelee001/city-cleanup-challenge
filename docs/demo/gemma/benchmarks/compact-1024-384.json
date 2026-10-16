@@ -162,5 +162,29 @@
   "inferenceMs": 232128.5551,
   "totalMs": 232150.2322,
   "parsed": true,
-  "qualityFlags": []
+  "qualityFlags": [],
+  "findings": {
+    "assessment": "The images depict a before-and-after illustration of a road scene, intended as a demonstration.",
+    "wasteCategories": [
+      "plastic",
+      "paper",
+      "organic"
+    ],
+    "visualDifferences": [
+      "There is visible litter on the road in the 'before' image and no litter in the 'after' image.",
+      "The shape of the road appears to be altered between the two images."
+    ],
+    "environmentalConcerns": [],
+    "limitations": [
+      "The images are illustrative only and do not represent real cleanup evidence.",
+      "The scene is a simplified drawing, limiting accurate assessment of waste categories."
+    ],
+    "recommendations": [
+      "Human review is required to confirm the accuracy of the illustration.",
+      "Further investigation is needed to determine the context and purpose of this demonstration."
+    ],
+    "cleanupEvidence": "no_visible_improvement",
+    "sameScene": "likely",
+    "needsHumanReview": true
+  }
 }
