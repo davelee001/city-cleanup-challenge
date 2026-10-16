@@ -2,5 +2,6 @@
   "label": "EXISTING APP IN CHROME; LABELED ILLUSTRATIONS AND EMULATED LOCATION, NOT REAL-WORLD EVIDENCE",
   "apiOrigin": "http://localhost:3000",
   "frontendOrigin": "http://localhost:19006",
-  "submissionId": 33
+  "submissionId": 33,
+  "registrationHttpStatus": 200
 }
