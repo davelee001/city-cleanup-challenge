@@ -10,5 +10,19 @@
     "completedReplayWithoutReinference": true
   },
   "chatOpenedMs": 425,
-  "submissionId": 38
+  "submissionId": 38,
+  "stages": [
+    {
+      "stage": "image_processing",
+      "elapsedMs": 432
+    },
+    {
+      "stage": "generation",
+      "elapsedMs": 166838
+    },
+    {
+      "stage": "findings",
+      "elapsedMs": 186039
+    }
+  ]
 }
