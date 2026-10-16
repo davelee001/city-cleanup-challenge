@@ -98,7 +98,9 @@ async function send(storagePath, response) {
     if (!fs.existsSync(absolutePath)) {
       return false;
     }
-    response.sendFile(absolutePath);
+    // The configured private evidence root may itself have a hidden ancestor.
+    // Root containment and owner/admin authorization are enforced before this call.
+    response.sendFile(absolutePath, { dotfiles: 'allow' });
     return true;
   }
 
@@ -118,10 +120,37 @@ async function send(storagePath, response) {
   }
 }
 
+async function read(storagePath) {
+  const maximum = 10 * 1024 * 1024;
+  if (!String(storagePath).startsWith('s3://')) {
+    const localPath = resolveLocalPath(storagePath);
+    if ((await fs.promises.stat(localPath)).size > maximum) throw new Error('Evidence too large');
+    const buffer = await fs.promises.readFile(localPath);
+    if (buffer.length > maximum) throw new Error('Evidence too large');
+    return buffer;
+  }
+  const location = parseS3Location(storagePath);
+  const object = await s3.send(new GetObjectCommand({ Bucket: location.bucketName, Key: location.key }));
+  const chunks = [];
+  let bytes = 0;
+  try {
+    for await (const chunk of object.Body) {
+      bytes += chunk.length;
+      if (bytes > maximum) throw new Error('Evidence too large');
+      chunks.push(Buffer.from(chunk));
+    }
+  } catch (error) {
+    object.Body.destroy?.();
+    throw error;
+  }
+  return Buffer.concat(chunks);
+}
+
 module.exports = {
   EVIDENCE_ROOT,
   put,
   remove,
   send,
+  read,
   useCloudStorage,
 };
