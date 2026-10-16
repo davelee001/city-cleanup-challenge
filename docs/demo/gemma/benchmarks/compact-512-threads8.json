@@ -158,5 +158,6 @@
     "repeat_penalty": 1.1
   },
   "imagePayloadBytes": 18174,
-  "preprocessingMs": 43.36149999999907
+  "preprocessingMs": 43.36149999999907,
+  "inferenceMs": 185104.3384
 }
