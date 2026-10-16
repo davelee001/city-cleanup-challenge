@@ -51,5 +51,6 @@
       "sameScene": "uncertain",
       "needsHumanReview": true
     }
-  }
+  },
+  "submissionStatus": "manual_review"
 }
