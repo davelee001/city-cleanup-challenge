@@ -41,5 +41,10 @@
     "prompt_eval_duration": 68186107000,
     "eval_count": 160,
     "eval_duration": 48016664000
-  }
+  },
+  "limitations": [
+    "Combining images reduces visible detail and can hide small waste or hazards.",
+    "One synthetic pair cannot establish real-photo accuracy.",
+    "Not enabled in application unless measurements and quality justify it."
+  ]
 }
